@@ -2,8 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/jcanton/pynek/badge.svg?branch=master)](https://coveralls.io/github/jcanton/pynek?branch=master)
 
 
-pynek
-=====
+# pynek
 
 Python scripts for nek5000
 

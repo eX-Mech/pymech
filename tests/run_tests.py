@@ -13,7 +13,14 @@ def test_nek_scripts():
 
 	fname = 'nek/channel3D_0.f00001'
 
-	return 0
+	ts = time.time()
+	field = ns.readnek(fname)
+	te = time.time()
+
+	if (field.nel == 18432):
+		return 0
+	else:
+		return 1
 
 #------------------------------------------------------------------------------
 # test simson scripts

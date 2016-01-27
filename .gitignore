@@ -1,3 +1,11 @@
+#
+# gitignore: files not tu be versioned
 
+
+# text editors stuff
 *.swp
 *~
+
+# python stuff
+.cache
+__pycache__

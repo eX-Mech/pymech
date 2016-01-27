@@ -1,0 +1,32 @@
+language:
+  - python
+
+python:
+  - 2.6
+  - 2.7
+  - 3.2
+  - 3.3
+  - 3.4
+  - 3.5
+
+install:
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
+    then pip install pytest-cov python-coveralls;
+    else pip install pytest;
+    fi
+  - pip install pep8
+
+script:
+  - pep8 example.py
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
+    then py.test -vv ./tests/run_tests.py --cov ./tests/run_tests.py;
+    else py.test -vv ./tests/run_tests.py;
+    fi
+
+after_success:
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
+    then coveralls;
+    fi
+
+notifications:
+  email: false

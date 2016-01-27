@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/jcanton/pynek.svg?branch=master)](https://travis-ci.org/jcanton/pynek/builds)
-[![Coverage Status](https://coveralls.io/repos/jcanton/pynek/badge.png?branch=master)](https://coveralls.io/r/jcanton/pynek?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/jcanton/pynek/badge.svg?branch=master)](https://coveralls.io/github/jcanton/pynek?branch=master)
 
 
 pynek

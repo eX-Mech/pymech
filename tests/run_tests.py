@@ -19,7 +19,14 @@ def test_nek_scripts():
 	field = ns.readnek(fname)
 	te = time.time()
 
-	assert field.nel == 512
+	assert field.endian == 'little'
+	assert field.istep  == 10
+	assert field.lr1    == [8, 8, 8]
+	assert field.ndim   == 3
+	assert field.nel    == 512
+	assert field.var    == [3, 3, 1, 0, 0]
+	assert field.wdsz   == 4
+	assert (field.time - 0.2) < 1e-3
 
 #------------------------------------------------------------------------------
 # test simson scripts
@@ -42,5 +49,11 @@ def test_simson_scripts():
 	field = ss.readdns(fname)
 	te = time.time()
 
-	assert field.nel == 1
-	assert field.var == [3, 3, 0, 0, 0]
+	assert field.endian == 'little'
+	assert field.istep  == []
+	assert field.lr1    == [48, 65, 48]
+	assert field.ndim   == 3
+	assert field.nel    == 1
+	assert field.var    == [3, 3, 0, 0, 0]
+	assert field.wdsz   == 8
+	assert (field.time - 10000.439742009798) < 1e-3

@@ -4,10 +4,10 @@
 
 # pymech
 
-Python scripts for nek5000
+Python scripts for nek5000 and simson
 
 by Jacopo Canton and Nicolò Fabbiane (in alphabetical order)
-December, 2015
+January, 2016
 
 Python unit tested using [pytest](http://pytest.org) deployed to
 [Travis-CI](https://travis-ci.org/jcanton/pymech/builds) with test coverage

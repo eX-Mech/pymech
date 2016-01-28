@@ -14,8 +14,7 @@ install:
     then pip install pytest-cov python-coveralls;
     else pip install pytest;
     fi
-  - pip install vtk
-  - pip install mayavi
+  - pip install -r mayavi
   #- pip install pep8
 
 script:

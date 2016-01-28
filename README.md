@@ -6,7 +6,7 @@
 
 Python scripts for nek5000
 
-by Jacopo Canton and Nicolo' Fabbiane (in alphabetical order)
+by Jacopo Canton and Nicolò Fabbiane (in alphabetical order)
 December, 2015
 
 Python unit tested using [pytest](http://pytest.org) deployed to

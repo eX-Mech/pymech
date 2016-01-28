@@ -41,11 +41,11 @@ def readdns(fname):
 	if ((etagL >= 44) & (etagL <= 1644)):
 		# print('Reading little-endian file\n')
 		emode = '<'
-		nscal = (etagL-44)/(2*wdsz)
+		nscal = int((etagL-44)/(2*wdsz))
 	elif ((etagB >= 44) & (etagB <= 1644)):
 		# print('Reading big-endian file\n')
 		emode = '>'
-		nscal = (etagB-44)/(2*wdsz)
+		nscal = int((etagB-44)/(2*wdsz))
 	else:
 		print('ERROR: could not initerpret endianness')
 		return -3 

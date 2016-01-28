@@ -41,11 +41,11 @@ def readdns(fname):
 	if ((etagL >= 44) & (etagL <= 1644)):
 		# print('Reading little-endian file\n')
 		emode = '<'
-		nscal = int((etagL-44)/(2*wdsz))
+		nscal = etagL-44)/(2*wdsz)
 	elif ((etagB >= 44) & (etagB <= 1644)):
 		# print('Reading big-endian file\n')
 		emode = '>'
-		nscal = int((etagB-44)/(2*wdsz))
+		nscal = (etagB-44)/(2*wdsz)
 	else:
 		print('ERROR: could not initerpret endianness')
 		return -3 
@@ -201,7 +201,7 @@ def readdns(fname):
 				fi = infile.read(lr1[0]*wdsz)
 				fi = list(struct.unpack(emode+lr1[0]*realtype, fi))
 				ip = 0
-				for ix in range(lr1[0]/2):
+				for ix in range(int(lr1[0]/2)):
 					fou[izf,iy,ix] = (fi[ip] + 1j*fi[ip+1]) * nppl * (-1)**idim
 					ip += 2
 				# end-of-line
@@ -221,7 +221,7 @@ def readdns(fname):
 				fi = infile.read(lr1[0]*wdsz)
 				fi = list(struct.unpack(emode+lr1[0]*realtype, fi))
 				ip = 0
-				for ix in range(lr1[0]/2):
+				for ix in range(int(lr1[0]/2)):
 					fou[izf,iy,ix] = (fi[ip] + 1j*fi[ip+1]) * nppl
 					ip += 2
 				# end-of-line

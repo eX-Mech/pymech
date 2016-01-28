@@ -9,12 +9,21 @@ python:
   - 3.4
   - 3.5
 
+addons:
+  apt:
+    packages:
+    - python-vtk
+    - python-qt4
+    - python-qt4-gl
+    - python-imaging
+    - python-pip
+
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
     then pip install pytest-cov python-coveralls;
     else pip install pytest;
     fi
-  - pip install -r mayavi
+  - pip install mayavi
   #- pip install pep8
 
 script:

@@ -14,7 +14,7 @@ Contents:
    tests.rst
 
 
-... Indices and tables
+.. Indices and tables
    
    * :ref:`genindex`
    * :ref:`modindex`

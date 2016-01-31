@@ -15,3 +15,4 @@ deployed to [Coveralls](https://coveralls.io/r/jcanton/pymech).
 
 - [Build and test history](https://travis-ci.org/jcanton/pymech/builds)
 - [Code coverage](https://coveralls.io/r/jcanton/pymech)
+- [Documentation](http://pymech.readthedocs.org)

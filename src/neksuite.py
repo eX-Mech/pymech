@@ -75,7 +75,7 @@ def readnek(fname):
 	nf = int(header[10])
 	#
 	# get variables [XUPT]
-	vars = header[-1]
+	vars = header[-1].decode('utf-8')
 	var = [0 for i in range(5)]
 	for v in vars:
 		if (v == 'X'):

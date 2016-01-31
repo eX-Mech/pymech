@@ -6,7 +6,7 @@
 
 Python scripts for nek5000 and simson
 
-by Jacopo Canton and Nicolò Fabbiane (in alphabetical order)
+by Jacopo Canton and Nicolò Fabbiane (in alphabetical order)<br>
 January, 2016
 
 Python unit tested using [pytest](http://pytest.org) deployed to

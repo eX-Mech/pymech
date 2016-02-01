@@ -9,10 +9,10 @@ python:
    - 3.4
    - 3.5
 
-#addons:
-#  apt:
-#    packages:
-#    - python-vtk
+addons:
+  apt:
+    packages:
+    - python-vtk
 
 install:
    - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];

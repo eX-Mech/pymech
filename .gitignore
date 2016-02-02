@@ -10,3 +10,6 @@
 *.pyc
 .cache
 __pycache__
+
+# documentation (sphinx) stuff
+docs/_build

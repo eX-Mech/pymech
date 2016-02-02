@@ -5,10 +5,6 @@ def test_neksuite_readnek():
 	import sys
 	sys.path.append('./src/')
 	import neksuite as ns
-	#import numpy as np
-	#import scipy.interpolate as spi
-	#import matplotlib.pyplot as plt
-	#from mayavi import mlab
 	import time
 
 	fname = './tests/nek/channel3D_0.f00001'
@@ -35,10 +31,6 @@ def test_simsonsuite_readdns():
 	import sys
 	sys.path.append('./src/')
 	import simsonsuite as ss
-	#import numpy as np
-	#import scipy.interpolate as spi
-	#import matplotlib.pyplot as plt
-	#from mayavi import mlab
 	import time
 
 	fname = './tests/simson/channel3D_t10000v.u'
@@ -57,3 +49,26 @@ def test_simsonsuite_readdns():
 	assert field.var    == [3, 3, 0, 0, 0]
 	assert field.wdsz   == 8
 	assert (field.time - 10000.439742009798) < 1e-3
+
+# #------------------------------------------------------------------------------
+# # test vtk scripts
+# #
+# def test_vtksuite_exa2vtk():
+# 	import sys
+# 	sys.path.append('./src/')
+# 	import neksuite as ns
+# 	import vtksuite as vs
+# 	import time
+# 
+# 	# test using neksuite
+# 	fname = './tests/nek/channel3D_0.f00001'
+# 
+# 	# read file
+# 	#
+# 	ts = time.time()
+# 	field = ns.readnek(fname)
+# 	te = time.time()
+# 
+# 	# convert file with downsampling
+# 	#
+# 	vtkdataset = vs.exa2vtk(field, True)

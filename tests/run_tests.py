@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # test nek scripts
 #
-def test_nek_scripts():
+def test_neksuite_readnek():
 	import sys
 	sys.path.append('./src/')
 	import neksuite as ns
@@ -31,7 +31,7 @@ def test_nek_scripts():
 #------------------------------------------------------------------------------
 # test simson scripts
 #
-def test_simson_scripts():
+def test_simsonsuite_readdns():
 	import sys
 	sys.path.append('./src/')
 	import simsonsuite as ss

@@ -205,3 +205,118 @@ def readnek(fname):
 	#
 	# output
 	return data
+
+
+#==============================================================================
+def readrea(fname):
+	"""
+	    readrea
+	    A function for reading .rea files for nek5000
+
+	    input variable:
+	    fname : file name
+	"""
+	#
+	try:
+		infile = open(fname, 'r')
+	except IOError as e:
+		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		#return -1
+	#
+	#---------------------------------------------------------------------------
+	# READ HEADER (2 lines) + ndim + number of parameters
+	#---------------------------------------------------------------------------
+	#
+	infile.readline()
+	infile.readline()
+	ndim = int(infile.readline().split()[0])
+	npar = int(infile.readline().split()[0])
+	#
+	nface = 2*ndim
+	#
+	#---------------------------------------------------------------------------
+	# READ parameters
+	#---------------------------------------------------------------------------
+	#
+	param = np.zeros((npar,1))
+	for ipar in range(npar):
+		param[ipar] = float(infile.readline().split()[0])
+	#
+	#---------------------------------------------------------------------------
+	# skip passive scalars
+	#---------------------------------------------------------------------------
+	#
+	npscal = int(infile.readline().split()[0])
+	for ipscal in range(npscal):
+		infile.readline()
+	#
+	#---------------------------------------------------------------------------
+	# skip logical switches
+	#---------------------------------------------------------------------------
+	#
+	nswitch = int(infile.readline().split()[0])
+	for iswitch in range(nswitch):
+		infile.readline()
+	#
+	#---------------------------------------------------------------------------
+	# skip XFAC,YFAC,XZERO,YZERO
+	#---------------------------------------------------------------------------
+	#
+	infile.readline()
+	#
+	#---------------------------------------------------------------------------
+	# READ MESH
+	#---------------------------------------------------------------------------
+	#
+	infile.readline()
+	nel = int(infile.readline().split()[0])
+	#
+	# initialize data structure
+	lr1 = [2, 2, ndim-1]
+	var = [ndim, 0, 0, 0, 0]
+	#
+	data = exdat.exadata(ndim, nel, lr1, var)
+	#
+	# read geometry
+	data.lims.pos[:,0] =  float('inf')
+	data.lims.pos[:,1] = -float('inf')
+	for iel in range(nel):
+		# skip element number and group
+		infile.readline()
+		for idim in range(var[0]-1): # if ndim == 3 do this twice
+			for jdim in range(var[0]):
+				fi = infile.readline().split()
+				data.elem[iel].pos[jdim,idim,0,0] = float(fi[0])
+				data.elem[iel].pos[jdim,idim,0,1] = float(fi[1])
+				data.elem[iel].pos[jdim,idim,1,0] = float(fi[2])
+				data.elem[iel].pos[jdim,idim,1,1] = float(fi[3])
+	#
+	#---------------------------------------------------------------------------
+	# CURVED SIDE DATA (skip everything)
+	#---------------------------------------------------------------------------
+	#
+	infile.readline()
+	ncurved = int(infile.readline().split()[0])
+	for icurved in range(ncurved):
+		infile.readline()
+	#
+	#---------------------------------------------------------------------------
+	# BOUNDARY CONDITIONS (skip everything)
+	#---------------------------------------------------------------------------
+	#
+	infile.readline()
+	infile.readline()
+	for iel in range(nel):
+		for iface in range(nface):
+			infile.readline()
+	#
+	#---------------------------------------------------------------------------
+	# FORGET ABOUT WHAT FOLLOWS
+	#---------------------------------------------------------------------------	
+	#
+	#
+	# close file
+	infile.close()
+	#
+	# output
+	return data

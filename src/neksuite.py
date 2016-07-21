@@ -292,13 +292,16 @@ def readrea(fname):
 				data.elem[iel].pos[jdim,idim,1,1] = float(fi[3])
 	#
 	#---------------------------------------------------------------------------
-	# CURVED SIDE DATA (skip everything)
+	# CURVED SIDE DATA
 	#---------------------------------------------------------------------------
 	#
 	infile.readline()
 	ncurved = int(infile.readline().split()[0])
 	for icurved in range(ncurved):
-		infile.readline()
+		line = infile.readline().split()
+		iel   = int(line[1])-1
+		iedge = int(line[0])-1
+		data.elem[iel].curv[iedge] = float(line[2])
 	#
 	#---------------------------------------------------------------------------
 	# BOUNDARY CONDITIONS (skip everything)

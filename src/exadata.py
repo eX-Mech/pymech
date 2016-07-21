@@ -36,6 +36,8 @@ class elem:
 	def __init__(self, var, lr1):
 		#                    x,y,z   lz      ly      lx
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
+		#                     one per edge
+		self.curv = np.zeros((12, 1))
 		#                    u,v,w   lz      ly      lx
 		self.vel  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
       #                    p       lz      ly      lx     

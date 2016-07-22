@@ -298,10 +298,19 @@ def readrea(fname):
 	infile.readline()
 	ncurved = int(infile.readline().split()[0])
 	for icurved in range(ncurved):
-		line = infile.readline().split()
-		iel   = int(line[1])-1
-		iedge = int(line[0])-1
-		data.elem[iel].curv[iedge] = float(line[2])
+		line = infile.readline()
+		if (nel < 1e3):
+			iedge = int(line[0:3])-1
+			iel   = int(line[3:6])-1
+			data.elem[iel].curv[iedge] = float(line[6:16])
+		elif (nel < 1e6):
+			iedge = int(line[0:2])-1
+			iel   = int(line[2:8])-1
+			data.elem[iel].curv[iedge] = float(line[8:18])
+		else:
+			iedge = int(line[0:2])-1
+			iel   = int(line[2:12])-1
+			data.elem[iel].curv[iedge] = float(line[12:22])
 	#
 	#---------------------------------------------------------------------------
 	# BOUNDARY CONDITIONS (skip everything)

@@ -48,7 +48,7 @@ def readdns(fname):
 		nscal = int((etagB-44)/(2*wdsz))
 	else:
 		print('ERROR: could not initerpret endianness')
-		return -3 
+		return -3
 	#
 	# Reynolds Number
 	Re = infile.read(wdsz)
@@ -81,7 +81,7 @@ def readdns(fname):
 		m[i] = struct.unpack(emode+realtype,m[i])[0]
 	#
 	# end-of-line
-	eol = infile.read(8)	
+	eol = infile.read(8)
 	#
 	# box size
 	lr1 = infile.read(3*4)
@@ -239,3 +239,125 @@ def readdns(fname):
 	#
 	# output
 	return data
+
+
+#==============================================================================
+def readplane(fname):
+	"""
+	    readplane(fname)
+	    A function for reading binary data from the SIMSON's pxyst binary format
+	
+	    input variable:
+	    fname : file name
+	"""
+	#
+	try:
+		infile = open(fname, 'rb')
+	except IOError as e:
+		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		return -1
+	#
+	#---------------------------------------------------------------------------
+	# READ HEADER
+	#---------------------------------------------------------------------------
+	wdsz = 8
+	realtype = 'd'
+	#
+	# identify endian encoding (and number passive scalar)
+	etagb = infile.read(4)
+	etagL = struct.unpack('<i', etagb)[0]
+	etagB = struct.unpack('>i', etagb)[0]
+	# etagL=1000 for some reason (see rrr.m)
+	if (etagL <= 1000):
+		# print('Reading little-endian file\n')
+		endian = 'little'
+		emode = '<'
+		ndim = int(etagL/4)
+	else:
+		# print('Reading big-endian file\n')
+		endian = 'big'
+		emode = '>'
+		ndim = int(etagB/4)
+	#
+	nt=1
+	nn = np.zeros(ndim)
+	for i in range(ndim):
+		nnn = infile.read(4)
+		nn[i] = struct.unpack(emode+'i',nnn)[0]
+		nt = int(nt*nn[i])
+	#
+	# end-of-line
+	eol = infile.read(4)
+	#
+	if (ndim==1):
+		print('reading file %s (%s endian): %d' %(fname,endian,nn[0]))
+		x = np.zeros(nn[0])
+	elif (ndim==2):
+		print('reading file %s (%s endian): %d x %d' %(fname,endian,nn[0],nn[1]))
+		x = np.zeros((2,nn[0],nn[1]))
+	elif (ndim==3):
+		print('reading file %s (%s endian): %d x %d x %d' %(fname,endian,nn[0],nn[1],nn[2]))
+		x = np.zeros((3,nn[0],nn[1],nn[2]))
+	else:
+		print('ERROR: more than three dimensions')
+		return -3
+	#
+	#---------------------------------------------------------------------------
+	# READ COORDINATES
+	#---------------------------------------------------------------------------
+	if (ndim==1):
+		# TODO untested
+		print('WARNING: reading 1D files was not tested')
+		eol = infile.read(4)
+		nt1 = struct.unpack(emode+'i',eol)[0]/8
+		dum = infile.read(nt1*wdsz)
+		x   = struct.unpack(emode+nt1*realtype,dum)
+		#
+		# end-of-line
+		eol = infile.read(4)
+	elif (ndim==2):
+		for i in range(ndim):
+			eol = infile.read(4)
+			dum = infile.read(nt*wdsz)
+			xx  = struct.unpack(emode+nt*realtype,dum)
+			x[i,:,:] = np.reshape(xx, (nn[0],nn[1]),'F')
+			#
+			# end-of-line
+			eol = infile.read(4)
+	elif (ndim==3):
+		# TODO untested
+		print('WARNING: reading 3D files was not tested')
+		for i in range(ndim):
+			eol = infile.read(4)
+			nt3 = struct.unpack(emode+'i',eol)[0]/8
+			dum = infile.read(nt3*wdsz)
+			xx  = struct.unpack(emode+nt3*realtype,dum)
+			x[i,:,:,:] = np.reshape(xx, (nn[0],nn[1],nn[2]),'F')
+			#
+			# end-of-line
+			eol = infile.read(4)
+	#
+	#---------------------------------------------------------------------------
+	# READ DATA
+	#---------------------------------------------------------------------------
+	eol = infile.read(4)
+	dum = infile.read(nt*wdsz)
+	dd  = struct.unpack(emode+nt*realtype,dum)
+	if (ndim==1):
+		# TODO untested
+		d = np.reshape(dd, (nn[0]),'F')
+	elif (ndim==2):
+		d = np.reshape(dd, (nn[0],nn[1]),'F')
+	elif (ndim==3):
+		# TODO untested
+		d = np.reshape(dd, (nn[0],nn[1],nn[2]),'F')
+	#
+	#---------------------------------------------------------------------------
+	# CLOSE FILE 
+	#---------------------------------------------------------------------------
+	#
+	# close file
+	infile.close()
+	#
+	# output
+	return x, d, nn, ndim

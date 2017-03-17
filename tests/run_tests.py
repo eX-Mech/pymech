@@ -28,6 +28,21 @@ def test_nek_scripts():
 	assert field.wdsz   == 4
 	assert (field.time - 0.2) < 1e-3
 
+
+	fname = './tests/nek/2D_section_R360.rea'
+
+	# test .rea reading
+	#
+	ts = time.time()
+	field = ns.readrea(fname)
+	te = time.time()
+
+	assert field.lr1  == [2, 2, 1]
+	assert field.ndim == 2
+	assert field.nel  == 1248
+	assert (field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
+
+
 #------------------------------------------------------------------------------
 # test simson scripts
 #

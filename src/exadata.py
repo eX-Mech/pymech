@@ -36,7 +36,7 @@ class elem:
 	def __init__(self, var, lr1):
 		#                    x,y,z   lz      ly      lx
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
-		#                     one per edge
+		#                    one per edge
 		self.curv = np.zeros((12, 1))
 		#                    u,v,w   lz      ly      lx
 		self.vel  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
@@ -46,6 +46,8 @@ class elem:
 		self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]))
       #                    s_i     lz      ly      lx     
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
+		#                    list of 8 parameters, one per face
+		self.bcs  = np.zeros((6), dtype='a1, i4, i4, f8, f8, f8, f8, f8')
 
 #==============================================================================
 class exadata:
@@ -56,6 +58,7 @@ class exadata:
 	def __init__(self, ndim, nel, lr1, var):
 		self.ndim   = ndim
 		self.nel    = nel
+		self.ncurv  = []
 		self.var    = var
 		self.lr1    = lr1
 		self.time   = []

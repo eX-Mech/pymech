@@ -267,7 +267,8 @@ def writenek(fname, data):
 		data.time, data.istep, fid, nf, vars)
 	#
 	# write header
-	outfile.write(header.ljust(132))
+	header = header.ljust(132)
+	outfile.write(header.encode('utf-8'))
 	#
 	# write tag (to specify endianness)
 	etagb = struct.pack(emode+'f', 6.54321)

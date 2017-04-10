@@ -28,7 +28,34 @@ def test_nek_scripts():
 	assert field.wdsz   == 4
 	assert (field.time - 0.2) < 1e-3
 
-
+	fnamew = './test_0.f00001'
+	
+	# test file writing
+	#
+	ts = time.time()
+	status = ns.writenek(fnamew, field)
+	te = time.time()
+	
+	assert status == 0
+	
+	ts = time.time()
+	fieldw = ns.readnek(fnamew)
+	te = time.time()
+	
+	assert field.endian == fieldw.endian
+	assert field.istep  == fieldw.istep
+	assert field.lr1    == fieldw.lr1
+	assert field.ndim   == fieldw.ndim
+	assert field.nel    == fieldw.nel
+	assert field.var    == fieldw.var
+	assert field.wdsz   == fieldw.wdsz
+	assert (field.time - fieldw.time) < 1e-3
+	assert field.lims.pos.all()  == fieldw.lims.pos.all()
+	assert field.lims.vel.all()  == fieldw.lims.vel.all()
+	assert field.lims.pres.all() == fieldw.lims.pres.all()
+	assert field.lims.scal.all() == fieldw.lims.scal.all()
+	
+	
 	fname = './tests/nek/2D_section_R360.rea'
 
 	# test .rea reading

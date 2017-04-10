@@ -285,12 +285,9 @@ def writenek(fname, data):
 	# compute total number of points per element
 	npel = data.lr1[0] * data.lr1[1] * data.lr1[2]
 	#
-	# initialize writing buffer
-	fo = range(npel)
-	#
 	# write geometry
 	for iel in elmap:
-		for ip in range(npel): fo[ip] = 0
+		fo = np.zeros(npel)
 		for idim in range(data.var[0]): # if var[0] == 0, geometry is not written
 			ip = 0
 			for iz in range(data.lr1[2]):
@@ -301,7 +298,7 @@ def writenek(fname, data):
 	#
 	# write velocity
 	for iel in elmap:
-		for ip in range(npel): fo[ip] = 0
+		fo = np.zeros(npel)
 		for idim in range(data.var[1]): # if var[1] == 0, velocity is not written
 			ip = 0
 			for iz in range(data.lr1[2]):
@@ -312,7 +309,7 @@ def writenek(fname, data):
 	#
 	# write pressure
 	for iel in elmap:
-		for ip in range(npel): fo[ip] = 0
+		fo = np.zeros(npel)
 		for ivar in range(data.var[2]): # if var[2] == 0, pressure is not written
 			ip = 0
 			for iz in range(data.lr1[2]):
@@ -323,7 +320,7 @@ def writenek(fname, data):
 	#
 	# write temperature
 	for iel in elmap:
-		for ip in range(npel): fo[ip] = 0
+		fo = np.zeros(npel)
 		for ivar in range(data.var[3]): # if var[3] == 0, temperature is not written
 			ip = 0
 			for iz in range(data.lr1[2]):
@@ -334,7 +331,7 @@ def writenek(fname, data):
 	#
 	# write scalars
 	for iel in elmap:
-		for ip in range(npel): fo[ip] = 0
+		fo = np.zeros(npel)
 		for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
 			ip = 0
 			for iz in range(data.lr1[2]):

@@ -87,7 +87,7 @@ def readnek(fname):
 		elif (v == 'T'):
 			var[3] = 1
 		elif (v == 'S'):
-			var[4] = 1 # TODO: need to know how this works
+			var[4] = 0 # TODO: need to know how this works
 	#
 	# compute number of scalar fields
 	nfields = sum(var)

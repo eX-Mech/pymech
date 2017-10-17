@@ -164,8 +164,7 @@ def readdns(fname):
 	nppl = lr1[0]*lr1[2]
 	#
 	# reading buffer in fourier space
-	fou =    np.zeros((lr1[2],lr1[1],lr1[0]/2+1)) + \
-	      1j*np.zeros((lr1[2],lr1[1],lr1[0]/2+1))
+	fou = np.zeros((lr1[2],lr1[1],lr1[0]/2+1)) + 1j*np.zeros((lr1[2],lr1[1],lr1[0]/2+1))
 	#
 	# initialize data structure
 	data = exdat.exadata(ndim, 1, lr1, var)

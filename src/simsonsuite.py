@@ -196,12 +196,12 @@ def readdns(fname):
 			if (iz <= lr1[2]/2):
 				izf = iz
 			else:
-				izf = lr1[2]/2 * 3 - (iz+1)
+				izf = lr1[2]//2 * 3 - (iz+1)
 			for iy in range(lr1[1]):
 				fi = infile.read(lr1[0]*wdsz)
 				fi = list(struct.unpack(emode+lr1[0]*realtype, fi))
 				ip = 0
-				for ix in range(int(lr1[0]/2)):
+				for ix in range(int(lr1[0]//2)):
 					fou[izf,iy,ix] = (fi[ip] + 1j*fi[ip+1]) * nppl * (-1)**idim
 					ip += 2
 				# end-of-line
@@ -216,12 +216,12 @@ def readdns(fname):
 			if (iz <= lr1[2]/2):
 				izf = iz
 			else:
-				izf = lr1[2]/2 * 3 - (iz+1)
+				izf = lr1[2]//2 * 3 - (iz+1)
 			for iy in range(lr1[1]):
 				fi = infile.read(lr1[0]*wdsz)
 				fi = list(struct.unpack(emode+lr1[0]*realtype, fi))
 				ip = 0
-				for ix in range(int(lr1[0]/2)):
+				for ix in range(int(lr1[0]//2)):
 					fou[izf,iy,ix] = (fi[ip] + 1j*fi[ip+1]) * nppl
 					ip += 2
 				# end-of-line

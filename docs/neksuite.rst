@@ -14,7 +14,9 @@ This function reads the binary ``.f%05d`` files that *Nek5000* uses to store
 output fields.
 
 The only input needed by this function is:
+
 - ``fname``: a string containing the name of the file;
+
 readnek() is clever enough to figure out the rest.
 The output is a single ``exadata`` (:doc:`exadata.py`) structure containing all
 the information that was stored in the file.
@@ -26,9 +28,11 @@ uses to store output fields. It is therefore possible to open this file with
 *VisIt* or *Paraview*.
 
 The inputs needed by this function are:
+
 - ``fname``: a string containing the name of the file;
 - ``data``: a single ``exadata`` (:doc:`exadata.py`) structure containing the
   data to be written to file.
+
 writenek() produces no output.
 
 readrea
@@ -38,7 +42,9 @@ simulation parameters and mesh (when a ``.re2`` file is absent).
 **ONLY the mesh is read** all parameters are disregarded.
 
 The only input needed by this function is:
+
 - ``fname``: a string containing the name of the file;
+
 readrea() is clever enough to figure out the rest.
 The output is a single ``exadata`` (:doc:`exadata.py`) structure containing the
 mesh that was stored in the file.
@@ -51,9 +57,11 @@ uses to store simulation parameters and mesh.
 to sensible defaults.
 
 The inputs needed by this function are:
+
 - ``fname``: a string containing the name of the file;
 - ``data``: a single ``exadata`` (:doc:`exadata.py`) structure containing the
   mesh to be written to file.
+
 writerea() produces no output.
 
 

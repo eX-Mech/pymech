@@ -39,7 +39,7 @@ readrea
 -------
 This function reads an ASCII ``.rea`` file that *Nek5000* uses to store
 simulation parameters and mesh (when a ``.re2`` file is absent).
-**ONLY the mesh is read** all parameters are disregarded.
+**ONLY the mesh is actually read**, all parameters are disregarded.
 
 The only input needed by this function is:
 
@@ -53,7 +53,7 @@ writerea
 --------
 This function writes an ASCII ``.rea`` file in the same format that *Nek5000*
 uses to store simulation parameters and mesh.
-**ONLY the mesh is actually written** all simulation parameters are initialised
+**ONLY the mesh is actually written**, all simulation parameters are initialised
 to sensible defaults.
 
 The inputs needed by this function are:
@@ -64,31 +64,27 @@ The inputs needed by this function are:
 
 writerea() produces no output.
 
+-------------------------------------------------------------------------------
 
-=======================
 Contents of neksuite.py
 =======================
 
-readnek()
----------
+**readnek()**
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 16-207
 
-writenek()
-----------
+**writenek()**
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 211-348
 
-readrea()
-----------
+**readrea()**
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 352-512
 
-writerea()
-----------
+**writerea()**
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 516-770

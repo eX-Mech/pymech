@@ -1,3 +1,4 @@
+:: _doc-index:
 ====================
 pymech documentation
 ====================
@@ -12,9 +13,9 @@ This is the documentation for pymech_, a Python suite of routines for *Nek5000* 
 
 Pymech can be used for reading, editing and writing *Nek5000* and *Simson* output files.
 
-The data structure is defined by the ``exadata`` class, found in exadata.py_.
-The functions for manipulating *Nek5000* files are in neksuite.py_, while the
-functions for *Simson* are, of course, in simsonsuite.py_.
+The data structure is defined by the ``exadata`` class, found in :doc:`exadata.py`.
+The functions for manipulating *Nek5000* files are in :doc:`neksuite.py`, while the
+functions for *Simson* are, of course, in :doc:`simsonsuite.py`.
 
 
 -------------------------------------------------------------------------------
@@ -42,6 +43,3 @@ Contents:
 .. External links:
 
 .. _pymech: https://github.com/jcanton/pymech
-.. _exadata.py: exadata.rst
-.. _neksuite.py: neksuite.rst
-.. _simsonsuite.py: simsonsuite.rst

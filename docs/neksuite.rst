@@ -1,3 +1,4 @@
+:: _neksuite.py:
 ===========
 neksuite.py
 ===========
@@ -15,8 +16,8 @@ output fields.
 The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 readnek() is clever enough to figure out the rest.
-The output is a single exadata_ structure containing all the information that
-was stored in the file.
+The output is a single ``exadata`` (:doc:`exadata.py`) structure containing all
+the information that was stored in the file.
 
 writenek
 --------
@@ -26,8 +27,8 @@ uses to store output fields. It is therefore possible to open this file with
 
 The inputs needed by this function are:
 - ``fname``: a string containing the name of the file;
-- ``data``: a single exadata_ structure containing the data to be written to
-  file.
+- ``data``: a single ``exadata`` (:doc:`exadata.py`) structure containing the
+  data to be written to file.
 writenek() produces no output.
 
 readrea
@@ -39,8 +40,8 @@ simulation parameters and mesh (when a ``.re2`` file is absent).
 The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 readrea() is clever enough to figure out the rest.
-The output is a single exadata_ structure containing the mesh that was stored
-in the file.
+The output is a single ``exadata`` (:doc:`exadata.py`) structure containing the
+mesh that was stored in the file.
 
 writerea
 --------
@@ -51,9 +52,9 @@ to sensible defaults.
 
 The inputs needed by this function are:
 - ``fname``: a string containing the name of the file;
-- ``data``: a single exadata_ structure containing the mesh to be written to
-  file.
-writenek() produces no output.
+- ``data``: a single ``exadata`` (:doc:`exadata.py`) structure containing the
+  mesh to be written to file.
+writerea() produces no output.
 
 
 =======================
@@ -83,8 +84,3 @@ writerea()
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 516-770
-
-
-.. External links:
-
-.. _exadata: exadata.rst

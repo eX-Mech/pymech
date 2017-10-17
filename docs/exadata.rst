@@ -3,7 +3,7 @@
 exadata.py
 ==========
 
-This Python module contains the classes for the data structures used by
+This module contains the classes for the data structures used by
 :ref:`neksuite` and :ref:`simsonsuite`.
 The :ref:`exadata-contents` are reported at the bottom of this page.
 
@@ -40,11 +40,26 @@ The element by element data is stored in:
 datalims
 --------
 
+This class contains the extrema of all quantities stored in the mesh.
+
 
 .. _elem:
 
 elem
 ----
+
+This class contains data for one element organised as follows:
+
+========   ===============   ====================================================
+``pos``    array of floats   x,y,z coordinates of each grid point
+``curv``   array of floats   radius of curvature of the element edges (*Nek5000*)
+``vel``    array of floats   u,v,w velocity at each grid point
+``pres``   array of floats   pressure at each grid point
+``temp``   array of floats   temperature at each grid point
+``scal``   array of floats   passive scalars at each grid point
+``bcs``    array of floats   list of boundary condition parameters (*Nek5000*)
+========   ===============   ====================================================
+
 
 -------------------------------------------------------------------------------
 

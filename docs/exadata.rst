@@ -34,21 +34,12 @@ The element by element data is stored in:
 ==========   ============================   ===============================================
 
 
-
-.. _datalims:
-
-datalims
---------
-
-This class contains the extrema of all quantities stored in the mesh.
-
-
 .. _elem:
 
 elem
 ----
 
-This class contains data for one element organised as follows:
+This class contains the data for one exahedral element organised as follows:
 
 ========   ===============   ====================================================
 ``pos``    array of floats   x,y,z coordinates of each grid point
@@ -59,6 +50,23 @@ This class contains data for one element organised as follows:
 ``scal``   array of floats   passive scalars at each grid point
 ``bcs``    array of floats   list of boundary condition parameters (*Nek5000*)
 ========   ===============   ====================================================
+
+
+.. _datalims:
+
+datalims
+--------
+
+This class contains the extrema of all quantities stored in the mesh.
+
+========   ===============   ====================================================
+``pos``    array of floats   max and min of x,y,z coordinates
+``vel``    array of floats   max and min of u,v,w velocity
+``pres``   array of floats   max and min of pressure
+``temp``   array of floats   max and min of temperature
+``scal``   array of floats   max and min of passive scalars
+========   ===============   ====================================================
+
 
 
 -------------------------------------------------------------------------------
@@ -73,3 +81,15 @@ Contents of exadata.py
 .. literalinclude:: ../src/exadata.py
    :language: python
    :lines: 53-69
+
+**elem**
+
+.. literalinclude:: ../src/exadata.py
+   :language: python
+   :lines: 31-50
+
+**datalims**
+
+.. literalinclude:: ../src/exadata.py
+   :language: python
+   :lines: 13-28

@@ -12,9 +12,9 @@ This is the documentation for pymech_, a Python suite of routines for *Nek5000* 
 
 Pymech can be used for reading, editing and writing *Nek5000* and *Simson* output files.
 
-The data structure is defined by the ``exadata`` class, found in :ref:`exadata.py`.
-The functions for manipulating *Nek5000* files are in :ref:`neksuite.py`, while the
-functions for *Simson* are, of course, in :ref:`simsonsuite.py`.
+The data structure is defined by the ``exadata`` class, found in :ref:`exadata`.
+The functions for manipulating *Nek5000* files are in :ref:`neksuite`, while the
+functions for *Simson* are, of course, in :ref:`simsonsuite`.
 
 
 -------------------------------------------------------------------------------

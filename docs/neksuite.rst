@@ -1,10 +1,12 @@
+:: _neksuite:
+
 ===========
 neksuite.py
 ===========
 
 This Python module contains the functions used to interact with *Nek5000*
 files.
-The :ref:`Contents of neksuite.py`_ are reported at the bottom of this page.
+The :ref:`neksuite-contents` are reported at the bottom of this page.
 
 
 readnek
@@ -17,8 +19,9 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readnek() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:ref:`exadata.py`) structure containing all
+The output is a single ``exadata`` (:ref:`exadata`) structure containing all
 the information that was stored in the file.
+
 
 writenek
 --------
@@ -29,10 +32,11 @@ uses to store output fields. It is therefore possible to open this file with
 The inputs needed by this function are:
 
 - ``fname``: a string containing the name of the file;
-- ``data``: a single ``exadata`` (:ref:`exadata.py`) structure containing the
+- ``data``: a single ``exadata`` (:ref:`exadata`) structure containing the
   data to be written to file.
 
 writenek() produces no output.
+
 
 readrea
 -------
@@ -45,8 +49,9 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readrea() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:ref:`exadata.py`) structure containing the
+The output is a single ``exadata`` (:ref:`exadata`) structure containing the
 mesh that was stored in the file.
+
 
 writerea
 --------
@@ -58,12 +63,15 @@ to sensible defaults.
 The inputs needed by this function are:
 
 - ``fname``: a string containing the name of the file;
-- ``data``: a single ``exadata`` (:ref:`exadata.py`) structure containing the
+- ``data``: a single ``exadata`` (:ref:`exadata`) structure containing the
   mesh to be written to file.
 
 writerea() produces no output.
 
+
 -------------------------------------------------------------------------------
+
+:: _neksuite-contents:
 
 Contents of neksuite.py
 -----------------------

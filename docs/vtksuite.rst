@@ -1,4 +1,4 @@
-===========
+.. _vtksuite:
 vtksuite.py
 ===========
 
@@ -9,6 +9,7 @@ for reference and possible future work.
 
 -------------------------------------------------------------------------------
 
+.. _vtksuite-contents:
 Contents of vtksuite.py
 -----------------------
 

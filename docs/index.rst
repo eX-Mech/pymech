@@ -1,4 +1,4 @@
-====================
+.. _documentation-index:
 pymech documentation
 ====================
 

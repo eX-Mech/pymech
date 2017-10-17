@@ -1,4 +1,4 @@
-
+.. _simsonsuite:
 simsonsuite.py
 ==============
 

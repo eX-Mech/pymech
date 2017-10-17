@@ -1,6 +1,4 @@
-:: _neksuite:
-
-===========
+.. _neksuite:
 neksuite.py
 ===========
 
@@ -71,8 +69,7 @@ writerea() produces no output.
 
 -------------------------------------------------------------------------------
 
-:: _neksuite-contents:
-
+.. _neksuite-contents:
 Contents of neksuite.py
 -----------------------
 

@@ -1,4 +1,3 @@
-:: _exadata.py:
 ==========
 exadata.py
 ==========

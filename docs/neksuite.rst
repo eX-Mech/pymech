@@ -1,11 +1,10 @@
-:: _neksuite.py:
 ===========
 neksuite.py
 ===========
 
 This Python module contains the functions used to interact with *Nek5000*
 files.
-The `Contents of neksuite.py`_ are reported at the bottom of this page.
+The :ref:`Contents of neksuite.py`_ are reported at the bottom of this page.
 
 
 readnek
@@ -18,7 +17,7 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readnek() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:doc:`exadata.py`) structure containing all
+The output is a single ``exadata`` (:ref:`exadata.py`) structure containing all
 the information that was stored in the file.
 
 writenek
@@ -30,7 +29,7 @@ uses to store output fields. It is therefore possible to open this file with
 The inputs needed by this function are:
 
 - ``fname``: a string containing the name of the file;
-- ``data``: a single ``exadata`` (:doc:`exadata.py`) structure containing the
+- ``data``: a single ``exadata`` (:ref:`exadata.py`) structure containing the
   data to be written to file.
 
 writenek() produces no output.
@@ -46,7 +45,7 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readrea() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:doc:`exadata.py`) structure containing the
+The output is a single ``exadata`` (:ref:`exadata.py`) structure containing the
 mesh that was stored in the file.
 
 writerea
@@ -59,7 +58,7 @@ to sensible defaults.
 The inputs needed by this function are:
 
 - ``fname``: a string containing the name of the file;
-- ``data``: a single ``exadata`` (:doc:`exadata.py`) structure containing the
+- ``data``: a single ``exadata`` (:ref:`exadata.py`) structure containing the
   mesh to be written to file.
 
 writerea() produces no output.
@@ -67,24 +66,28 @@ writerea() produces no output.
 -------------------------------------------------------------------------------
 
 Contents of neksuite.py
-=======================
+-----------------------
 
 **readnek()**
+
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 16-207
 
 **writenek()**
+
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 211-348
 
 **readrea()**
+
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 352-512
 
 **writerea()**
+
 .. literalinclude:: ../src/neksuite.py
    :language: python
    :lines: 516-770

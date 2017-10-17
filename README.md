@@ -4,7 +4,9 @@
 
 # pymech
 
-Python scripts for nek5000 and simson
+A Python suite of routines for *Nek5000* and *Simson*.
 
 by Jacopo Canton and Nicolò Fabbiane (in alphabetical order)<br>
-January, 2016
+October, 2017
+
+Read the full documentation at [Pymech doc](http://pymech.readthedocs.io).

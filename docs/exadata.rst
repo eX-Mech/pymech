@@ -1,4 +1,5 @@
 .. _exadata:
+
 exadata.py
 ==========
 
@@ -35,17 +36,20 @@ The element by element data is stored in:
 
 
 .. _datalims:
+
 datalims
 --------
 
 
 .. _elem:
+
 elem
 ----
 
 -------------------------------------------------------------------------------
 
 .. _exadata-contents:
+
 Contents of exadata.py
 -----------------------
 

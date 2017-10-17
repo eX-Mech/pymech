@@ -1,4 +1,5 @@
 .. _neksuite:
+
 neksuite.py
 ===========
 
@@ -9,7 +10,7 @@ The :ref:`neksuite-contents` are reported at the bottom of this page.
 readnek
 -------
 This function reads the binary ``.f%05d`` files that *Nek5000* uses to store
-output fields.
+output flow fields.
 
 The only input needed by this function is:
 
@@ -23,7 +24,7 @@ the information that was stored in the file.
 writenek
 --------
 This function writes a binary ``.f%05d`` file in the same format that *Nek5000*
-uses to store output fields. It is therefore possible to open this file with
+uses to store output flow fields. It is therefore possible to open this file with
 *VisIt* or *Paraview*.
 
 The inputs needed by this function are:
@@ -69,6 +70,7 @@ writerea() produces no output.
 -------------------------------------------------------------------------------
 
 .. _neksuite-contents:
+
 Contents of neksuite.py
 -----------------------
 

@@ -78,40 +78,24 @@ def test_writerea():
 	fieldw = ns.readrea(fnamew)
 
 	assert field.endian == fieldw.endian
-	assert field.istep  == fieldw.istep
 	assert field.lr1    == fieldw.lr1
 	assert field.ndim   == fieldw.ndim
 	assert field.nel    == fieldw.nel
-	assert field.var    == fieldw.var
 	assert field.wdsz   == fieldw.wdsz
-	assert (field.time - fieldw.time) < 1e-3
-	assert field.lims.pos.all()  == fieldw.lims.pos.all()
-	assert field.lims.vel.all()  == fieldw.lims.vel.all()
-	assert field.lims.pres.all() == fieldw.lims.pres.all()
-	assert field.lims.scal.all() == fieldw.lims.scal.all()
+	assert (field.elem[0].pos[0][0][0][0] - fieldw.elem[0].pos[0][0][0][0]) < 1e-3
 
 
 
 #------------------------------------------------------------------------------
 # test simson scripts
 #
-def test_simson_scripts():
+def test_readdns():
 	import sys
 	sys.path.append('./src/')
 	import simsonsuite as ss
-	#import numpy as np
-	#import scipy.interpolate as spi
-	#import matplotlib.pyplot as plt
-	#from mayavi import mlab
-	import time
 
 	fname = './tests/simson/channel3D_t10000v.u'
-
-	# test file reading
-	#
-	ts = time.time()
 	field = ss.readdns(fname)
-	te = time.time()
 
 	assert field.endian == 'little'
 	assert field.istep  == []
@@ -121,3 +105,12 @@ def test_simson_scripts():
 	assert field.var    == [3, 3, 0, 0, 0]
 	assert field.wdsz   == 8
 	assert (field.time - 10000.439742009798) < 1e-3
+
+
+#def test_readplane():
+#	import sys
+#	sys.path.append('./src/')
+#	import simsonsuite as ss
+#
+#	fname = './tests/simson/channel3D_t10000v.u'
+#	field = ss.readdns(fname)

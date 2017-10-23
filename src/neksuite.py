@@ -768,3 +768,9 @@ def writerea(fname, data):
 	outfile.write('        0 Volume  Objects\n')
 	outfile.write('        0 Edge    Objects\n')
 	outfile.write('        0 Point   Objects\n')
+	#
+	# close file
+	infile.close()
+	#
+	# output
+	return 0

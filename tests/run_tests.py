@@ -1,23 +1,13 @@
 #------------------------------------------------------------------------------
 # test nek scripts
 #
-def test_nek_scripts():
+def test_readnek():
 	import sys
 	sys.path.append('./src/')
 	import neksuite as ns
-	#import numpy as np
-	#import scipy.interpolate as spi
-	#import matplotlib.pyplot as plt
-	#from mayavi import mlab
-	import time
 
 	fname = './tests/nek/channel3D_0.f00001'
-
-	# test file reading
-	#
-	ts = time.time()
 	field = ns.readnek(fname)
-	te = time.time()
 
 	assert field.endian == 'little'
 	assert field.istep  == 10
@@ -27,20 +17,22 @@ def test_nek_scripts():
 	assert field.var    == [3, 3, 1, 0, 0]
 	assert field.wdsz   == 4
 	assert (field.time - 0.2) < 1e-3
+	
+
+def test_writenek():
+	import sys
+	sys.path.append('./src/')
+	import neksuite as ns
+
+	fname = './tests/nek/channel3D_0.f00001'
+	field = ns.readnek(fname)
 
 	fnamew = './test_0.f00001'
-	
-	# test file writing
-	#
-	ts = time.time()
 	status = ns.writenek(fnamew, field)
-	te = time.time()
 	
 	assert status == 0
 	
-	ts = time.time()
 	fieldw = ns.readnek(fnamew)
-	te = time.time()
 	
 	assert field.endian == fieldw.endian
 	assert field.istep  == fieldw.istep
@@ -56,18 +48,48 @@ def test_nek_scripts():
 	assert field.lims.scal.all() == fieldw.lims.scal.all()
 	
 	
-	fname = './tests/nek/2D_section_R360.rea'
+def test_readrea():
+	import sys
+	sys.path.append('./src/')
+	import neksuite as ns
 
-	# test .rea reading
-	#
-	ts = time.time()
+	fname = './tests/nek/2D_section_R360.rea'
 	field = ns.readrea(fname)
-	te = time.time()
 
 	assert field.lr1  == [2, 2, 1]
 	assert field.ndim == 2
 	assert field.nel  == 1248
 	assert (field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
+
+
+def test_writerea():
+	import sys
+	sys.path.append('./src/')
+	import neksuite as ns
+
+	fname = './tests/nek/2D_section_R360.rea'
+	field = ns.readrea(fname)
+
+	fnamew = 'test.rea'
+	status = ns.writerea(fnamew, field)
+
+	assert status == 0
+
+	fieldw = ns.readrea(fnamew)
+
+	assert field.endian == fieldw.endian
+	assert field.istep  == fieldw.istep
+	assert field.lr1    == fieldw.lr1
+	assert field.ndim   == fieldw.ndim
+	assert field.nel    == fieldw.nel
+	assert field.var    == fieldw.var
+	assert field.wdsz   == fieldw.wdsz
+	assert (field.time - fieldw.time) < 1e-3
+	assert field.lims.pos.all()  == fieldw.lims.pos.all()
+	assert field.lims.vel.all()  == fieldw.lims.vel.all()
+	assert field.lims.pres.all() == fieldw.lims.pres.all()
+	assert field.lims.scal.all() == fieldw.lims.scal.all()
+
 
 
 #------------------------------------------------------------------------------

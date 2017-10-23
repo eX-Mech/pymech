@@ -245,7 +245,7 @@ def readdns(fname):
 def readplane(fname):
 	"""
 	    readplane(fname)
-	    A function for reading binary data from the SIMSON's pxyst binary format
+	    A function for reading binary data from SIMSON's (pxyst) plane files
 	
 	    input variable:
 	    fname : file name
@@ -280,11 +280,12 @@ def readplane(fname):
 		ndim = int(etagB/4)
 	#
 	nt=1
-	nn = np.zeros(ndim)
+	#nn = np.zeros(ndim)
+	nn = []
 	for i in range(ndim):
 		nnn = infile.read(4)
-		nn[i] = struct.unpack(emode+'i',nnn)[0]
-		nt = int(nt*nn[i])
+		nn.append( int(struct.unpack(emode+'i',nnn)[0]) )
+		nt = nt*nn[i]
 	#
 	# end-of-line
 	eol = infile.read(4)

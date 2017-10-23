@@ -107,10 +107,29 @@ def test_readdns():
 	assert (field.time - 10000.439742009798) < 1e-3
 
 
-#def test_readplane():
-#	import sys
-#	sys.path.append('./src/')
-#	import simsonsuite as ss
+def test_readplane():
+	import sys
+	sys.path.append('./src/')
+	import simsonsuite as ss
+
+	fname = './tests/simson/u.plane'
+	x, d, nn, ndim = ss.readplane(fname)
+
+	assert (x[0][1][0] - 0.06875) < 1e-3
+	assert (d[0][1]    - 0.0034688727137604305) < 1e-3
+	assert nn[0] == 97.
+	assert nn[1] == 97.
+	assert ndim  == 2
+
+#==============================================================================
+# run tests
 #
-#	fname = './tests/simson/channel3D_t10000v.u'
-#	field = ss.readdns(fname)
+if __name__ == "__main__":
+
+	test_readnek()
+	test_writenek()
+	test_readrea()
+	test_writerea()
+
+	test_readdns()
+	test_readplane()

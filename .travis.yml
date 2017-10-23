@@ -15,23 +15,16 @@ addons:
     - python-vtk
 
 install:
-   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
-     then pip install pytest-cov python-coveralls;
-     else pip install pytest;
-     fi
+   - pip install -U pip
+   - pip install pytest pytest-pep8 pytest-cov python-coveralls
      #- pip install mayavi
      #- pip install pep8
 
 script:
-   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
-     then py.test -vv ./tests/run_tests.py --cov ./src;
-     else py.test -vv ./tests/run_tests.py;
-     fi
+   - py.test tests/run_tests.py --cov src
 
 after_success:
-   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
-     then coveralls;
-     fi
+   - coveralls
 
 notifications:
    email: false

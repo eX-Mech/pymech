@@ -23,7 +23,6 @@ install:
      #- pip install pep8
 
 script:
-   #- pep8 ./tests/run_tests.py
    - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]];
      then py.test -vv ./tests/run_tests.py --cov ./src;
      else py.test -vv ./tests/run_tests.py;

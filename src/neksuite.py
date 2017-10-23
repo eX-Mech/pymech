@@ -770,7 +770,7 @@ def writerea(fname, data):
 	outfile.write('        0 Point   Objects\n')
 	#
 	# close file
-	infile.close()
+	outfile.close()
 	#
 	# output
 	return 0

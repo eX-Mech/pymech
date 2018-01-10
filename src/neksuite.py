@@ -341,6 +341,23 @@ def writenek(fname, data):
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
 	#
+	# write max and min of every field in every element (forced to single precision)
+	if (data.ndim==3):
+		#
+		for iel in elmap:
+			for idim in range(data.var[0]):
+				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].pos[idim, :,:,:])))
+				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].pos[idim, :,:,:])))
+			for idim in range(data.var[1]):
+				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].vel[idim, :,:,:])))
+				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].vel[idim, :,:,:])))
+			for idim in range(data.var[2]):
+				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].pres[idim, :,:,:])))
+				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].pres[idim, :,:,:])))
+			for idim in range(data.var[3]):
+				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].temp[idim, :,:,:])))
+				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].temp[idim, :,:,:])))
+
 	# close file
 	outfile.close()
 	#

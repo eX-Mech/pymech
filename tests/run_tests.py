@@ -59,7 +59,9 @@ def test_readrea():
 	assert field.lr1  == [2, 2, 1]
 	assert field.ndim == 2
 	assert field.nel  == 1248
-	assert (field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
+	assert abs(field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
+	assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
+	assert field.elem[887].ccurv[1] == 'C'
 
 
 def test_writerea():

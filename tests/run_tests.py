@@ -85,6 +85,8 @@ def test_writerea():
 	assert field.nel    == fieldw.nel
 	assert field.wdsz   == fieldw.wdsz
 	assert (field.elem[0].pos[0][0][0][0] - fieldw.elem[0].pos[0][0][0][0]) < 1e-3
+	assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
+	assert field.elem[887].ccurv[1] == 'C'
 
 
 

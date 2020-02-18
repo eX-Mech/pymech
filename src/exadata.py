@@ -37,7 +37,9 @@ class elem:
 		#                    x,y,z   lz      ly      lx
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
 		#                    one per edge
-		self.curv = np.zeros((12, 1))
+		self.curv = np.zeros((12, 5))
+		# curvature type
+		self.ccurv = ['' for i in range(12)]
 		#                    u,v,w   lz      ly      lx
 		self.vel  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
       #                    p       lz      ly      lx     
@@ -47,7 +49,7 @@ class elem:
       #                    s_i     lz      ly      lx     
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
-		self.bcs  = np.zeros((6), dtype='a1, i4, i4, f8, f8, f8, f8, f8')
+		self.bcs  = np.zeros((6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
 
 #==============================================================================
 class exadata:

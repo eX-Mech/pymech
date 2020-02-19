@@ -49,8 +49,8 @@ class elem:
       #                    s_i     lz      ly      lx     
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
-		self.bcs  = np.zeros((6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
-
+		#self.bcs  = np.zeros((6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
+		self.bcs  = 6*[[''] + 2*[0] + 5*[0.]]
 
 #==============================================================================
 class exadata:

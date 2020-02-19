@@ -504,15 +504,6 @@ def readrea(fname):
 				data.elem[iel].bcs[iface][5] = float(line[38:52])
 				data.elem[iel].bcs[iface][6] = float(line[52:66])
 				data.elem[iel].bcs[iface][7] = float(line[66:80])
-			elif (nel < 1e5):
-				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = int(line[4:10])
-				data.elem[iel].bcs[iface][2] = iface + 1
-				data.elem[iel].bcs[iface][3] = float(line[10:24])
-				data.elem[iel].bcs[iface][4] = float(line[24:38])
-				data.elem[iel].bcs[iface][5] = float(line[38:52])
-				data.elem[iel].bcs[iface][6] = float(line[52:66])
-				data.elem[iel].bcs[iface][7] = float(line[66:80])
 			elif (nel < 1e6):
 				data.elem[iel].bcs[iface][0] = line[1:3].strip()
 				data.elem[iel].bcs[iface][1] = int(line[4:10])
@@ -756,9 +747,6 @@ def writerea(fname, data):
 			if (data.nel < 1e3):
 				outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
 					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][2], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
-			elif (data.nel < 1e5):
-				outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
-					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
 			elif (data.nel < 1e6):
 				outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
 					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))

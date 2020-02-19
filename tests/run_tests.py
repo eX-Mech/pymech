@@ -62,6 +62,11 @@ def test_readrea():
 	assert abs(field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
 	assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
 	assert field.elem[887].ccurv[1] == 'C'
+	
+	fname = './tests/nek/m3j_bf_test.rea'
+	field = ns.readrea(fname)
+	assert field.elem[790].ccurv[0] == 'm'
+	assert abs(field.elem[790].curv[0][1] + 0.05258981) < 1e-7
 
 
 def test_writerea():
@@ -88,6 +93,18 @@ def test_writerea():
 	assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
 	assert field.elem[887].ccurv[1] == 'C'
 
+	fname = './tests/nek/m3j_bf_test.rea'
+	fnamew = 'test.rea'
+	
+	field = ns.readrea(fname)
+	status = ns.writerea(fnamew, field)
+
+	assert status == 0
+
+	fieldw = ns.readrea(fnamew)
+	
+	assert fieldw.elem[790].ccurv[0] == 'm'
+	assert abs(fieldw.elem[790].curv[0][1] + 0.05258981) < 1e-7
 
 
 #------------------------------------------------------------------------------

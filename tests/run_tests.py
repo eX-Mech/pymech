@@ -67,6 +67,13 @@ def test_readrea():
 	field = ns.readrea(fname)
 	assert field.elem[790].ccurv[0] == 'm'
 	assert abs(field.elem[790].curv[0][1] + 0.05258981) < 1e-7
+	assert field.elem[0].bcs[0][0] == 'W'
+	assert field.elem[0].bcs[1][0] == 'o'
+	assert field.elem[0].bcs[2][0] == 'E'
+	assert field.elem[0].bcs[2][1] == 1
+	assert field.elem[0].bcs[2][2] == 3
+	assert int(field.elem[0].bcs[2][3]) == 2
+	assert int(field.elem[0].bcs[2][4]) == 1
 
 
 def test_writerea():
@@ -105,6 +112,13 @@ def test_writerea():
 	
 	assert fieldw.elem[790].ccurv[0] == 'm'
 	assert abs(fieldw.elem[790].curv[0][1] + 0.05258981) < 1e-7
+	assert fieldw.elem[0].bcs[0][0] == 'W'
+	assert fieldw.elem[0].bcs[1][0] == 'o'
+	assert fieldw.elem[0].bcs[2][0] == 'E'
+	assert fieldw.elem[0].bcs[2][1] == 1
+	assert fieldw.elem[0].bcs[2][2] == 3
+	assert int(fieldw.elem[0].bcs[2][3]) == 2
+	assert int(fieldw.elem[0].bcs[2][4]) == 1
 
 
 #------------------------------------------------------------------------------

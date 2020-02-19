@@ -50,7 +50,7 @@ class elem:
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
 		#self.bcs  = np.zeros((6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
-		self.bcs  = 6*[[''] + 2*[0] + 5*[0.]]
+		self.bcs  = [([''] + [0 for i in range(2)] + [0. for i in range(5)]) for j in range(6)]
 
 #==============================================================================
 class exadata:

@@ -506,7 +506,7 @@ def readrea(fname):
 				data.elem[iel].bcs[iface][7] = float(line[66:80])
 			elif (nel < 1e6):
 				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = int(line[4:10])
+				data.elem[iel].bcs[iface][1] = iel
 				data.elem[iel].bcs[iface][2] = iface + 1
 				data.elem[iel].bcs[iface][3] = float(line[10:24])
 				data.elem[iel].bcs[iface][4] = float(line[24:38])

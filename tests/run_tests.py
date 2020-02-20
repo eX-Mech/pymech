@@ -2,9 +2,7 @@
 # test nek scripts
 #
 def test_readnek():
-	import sys
-	sys.path.append('./src/')
-	import neksuite as ns
+	import pymech.neksuite as ns
 
 	fname = './tests/nek/channel3D_0.f00001'
 	field = ns.readnek(fname)
@@ -20,9 +18,7 @@ def test_readnek():
 	
 
 def test_writenek():
-	import sys
-	sys.path.append('./src/')
-	import neksuite as ns
+	import pymech.neksuite as ns
 
 	fname = './tests/nek/channel3D_0.f00001'
 	field = ns.readnek(fname)
@@ -49,9 +45,7 @@ def test_writenek():
 	
 	
 def test_readrea():
-	import sys
-	sys.path.append('./src/')
-	import neksuite as ns
+	import pymech.neksuite as ns
 
 	fname = './tests/nek/2D_section_R360.rea'
 	field = ns.readrea(fname)
@@ -77,9 +71,7 @@ def test_readrea():
 
 
 def test_writerea():
-	import sys
-	sys.path.append('./src/')
-	import neksuite as ns
+	import pymech.neksuite as ns
 
 	fname = './tests/nek/2D_section_R360.rea'
 	field = ns.readrea(fname)
@@ -125,9 +117,7 @@ def test_writerea():
 # test simson scripts
 #
 def test_readdns():
-	import sys
-	sys.path.append('./src/')
-	import simsonsuite as ss
+	import pymech.simsonsuite as ss
 
 	fname = './tests/simson/channel3D_t10000v.u'
 	field = ss.readdns(fname)
@@ -143,9 +133,7 @@ def test_readdns():
 
 
 def test_readplane():
-	import sys
-	sys.path.append('./src/')
-	import simsonsuite as ss
+	import pymech.simsonsuite as ss
 
 	fname = './tests/simson/u.plane'
 	x, d, nn, ndim = ss.readplane(fname)

@@ -115,7 +115,7 @@ def readnek(fname):
 	#---------------------------------------------------------------------------
 	#
 	# initialize data structure
-	data = exdat.exadata(ndim, nel, lr1, var)
+	data = exdat.exadata(ndim, nel, lr1, var, 0)
 	data.time   = time
 	data.istep  = istep
 	data.wdsz   = wdsz
@@ -382,6 +382,20 @@ def readrea(fname):
 		#return -1
 	#
 	#---------------------------------------------------------------------------
+	# count the number of boundary conditions
+	# (it's too dangerous to infer it from the header)
+	#---------------------------------------------------------------------------
+	#
+	nbc = 0
+	for line in infile:
+		line_split = line.split()
+		if len(line_split) >= 3:
+			if line_split[2] == 'BOUNDARY' and line_split[1] != 'NO':
+				nbc = nbc + 1
+	
+	infile.seek(0)
+	#
+	#---------------------------------------------------------------------------
 	# READ HEADER (2 lines) + ndim + number of parameters
 	#---------------------------------------------------------------------------
 	#
@@ -442,7 +456,7 @@ def readrea(fname):
 	npscal = int(param[22])
 	var[4] = npscal
 	#
-	data = exdat.exadata(ndim, nel, lr1, var)
+	data = exdat.exadata(ndim, nel, lr1, var, nbc)
 	#
 	# read geometry
 	data.lims.pos[:,0] =  float('inf')
@@ -501,13 +515,7 @@ def readrea(fname):
 	#
 	infile.readline()  # ***** BOUNDARY CONDITIONS *****
 	line = infile.readline()
-	# We don't know in advance how many boundary conditions are defined.
-	# Do like in Nek5000/tools/reatore2/reatore2.f:
-	# either there is a line like "  ***** X BOUNDARY CONDITIONS *****",
-	# or "  ***** NO X BOUNDARY CONDITIONS *****".
-	# We keep reading boundary conditions until we find the word "NO".
-	ibc = 0
-	while line.split()[2] == 'BOUNDARY' and line.split()[2] != 'NO':
+	for ibc in range(nbc):
 		for iel in range(nel):
 			for iface in range(nface):
 				line = infile.readline()
@@ -760,17 +768,18 @@ def writerea(fname, data):
 	# boundary conditions data
 	outfile.write('  ***** BOUNDARY CONDITIONS *****\n')
 	outfile.write('  ***** FLUID BOUNDARY CONDITIONS *****\n')
-	for iel in range(data.nel):
-		for iface in range(2*data.ndim):
-			if (data.nel < 1e3):
-				outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
-					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][2], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
-			elif (data.nel < 1e6):
-				outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
-					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
-			else:
-				outfile.write(' {0:2s} {1:11d}{2:1d}{3:18.11e}{4:18.11e}{5:18.11e}{6:18.11e}{7:18.11e}\n'.format(
-					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][2], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
+	for ibc in range(data.nbc):
+		for iel in range(data.nel):
+			for iface in range(2*data.ndim):
+				if (data.nel < 1e3):
+					outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
+						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][2], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
+				elif (data.nel < 1e6):
+					outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
+						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
+				else:
+					outfile.write(' {0:2s} {1:11d}{2:1d}{3:18.11e}{4:18.11e}{5:18.11e}{6:18.11e}{7:18.11e}\n'.format(
+						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][2], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
 
 	outfile.write('  ***** NO THERMAL BOUNDARY CONDITIONS *****\n')
 	outfile.write('    0 PRESOLVE/RESTART OPTIONS  *****\n')

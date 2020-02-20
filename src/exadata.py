@@ -33,7 +33,7 @@ class elem:
 	    elem
 	    A class containing one nek element/SIMSON flow field
 	"""
-	def __init__(self, var, lr1):
+	def __init__(self, var, lr1, nbcs):
 		#                    x,y,z   lz      ly      lx
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
 		#                    one per edge
@@ -50,7 +50,6 @@ class elem:
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
 		#                    one column for velocity, one for temperature, and one for each scalar
-		nbcs = min(var[1], 1) + var[3] + var[4]
 		self.bcs  = np.zeros((6, nbcs), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
 
 
@@ -60,10 +59,11 @@ class exadata:
 	    data
 	    A class containing data for reading/writing binary simulation files
 	"""
-	def __init__(self, ndim, nel, lr1, var):
+	def __init__(self, ndim, nel, lr1, var, nbc=0):
 		self.ndim   = ndim
 		self.nel    = nel
 		self.ncurv  = []
+		self.nbc    = nbc
 		self.var    = var
 		self.lr1    = lr1
 		self.time   = []
@@ -71,4 +71,4 @@ class exadata:
 		self.wdsz   = []
 		self.endian = []
 		self.lims   = datalims(var)
-		self.elem   = [elem(var, lr1) for i in range(nel)]
+		self.elem   = [elem(var, lr1, nbc) for i in range(nel)]

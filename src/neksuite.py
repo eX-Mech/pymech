@@ -461,15 +461,30 @@ def readrea(fname):
 		if (nel < 1e3):
 			iedge = int(line[0:3])-1
 			iel   = int(line[3:6])-1
-			data.elem[iel].curv[iedge] = float(line[6:16])
+			data.elem[iel].curv[iedge][0] = float(line[6:20])
+			data.elem[iel].curv[iedge][1] = float(line[20:34])
+			data.elem[iel].curv[iedge][2] = float(line[34:48])
+			data.elem[iel].curv[iedge][3] = float(line[48:62])
+			data.elem[iel].curv[iedge][4] = float(line[62:76])
+			data.elem[iel].ccurv[iedge]   = line[76:79].split()[0]
 		elif (nel < 1e6):
 			iedge = int(line[0:2])-1
 			iel   = int(line[2:8])-1
-			data.elem[iel].curv[iedge] = float(line[8:18])
+			data.elem[iel].curv[iedge][0] = float(line[8:22])
+			data.elem[iel].curv[iedge][1] = float(line[22:36])
+			data.elem[iel].curv[iedge][2] = float(line[36:50])
+			data.elem[iel].curv[iedge][3] = float(line[50:64])
+			data.elem[iel].curv[iedge][4] = float(line[64:78])
+			data.elem[iel].ccurv[iedge]   = line[78:81].split()[0]
 		else:
 			iedge = int(line[0:2])-1
 			iel   = int(line[2:12])-1
-			data.elem[iel].curv[iedge] = float(line[12:22])
+			data.elem[iel].curv[iedge][0] = float(line[12:26])
+			data.elem[iel].curv[iedge][1] = float(line[26:40])
+			data.elem[iel].curv[iedge][2] = float(line[40:54])
+			data.elem[iel].curv[iedge][3] = float(line[54:68])
+			data.elem[iel].curv[iedge][4] = float(line[68:82])
+			data.elem[iel].ccurv[iedge]   = line[82:85].split()[0]
 	#
 	#---------------------------------------------------------------------------
 	# BOUNDARY CONDITIONS
@@ -489,18 +504,9 @@ def readrea(fname):
 				data.elem[iel].bcs[iface][5] = float(line[38:52])
 				data.elem[iel].bcs[iface][6] = float(line[52:66])
 				data.elem[iel].bcs[iface][7] = float(line[66:80])
-			elif (nel < 1e5):
-				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = int(line[4:10])
-				data.elem[iel].bcs[iface][2] = iface + 1
-				data.elem[iel].bcs[iface][3] = float(line[10:24])
-				data.elem[iel].bcs[iface][4] = float(line[24:38])
-				data.elem[iel].bcs[iface][5] = float(line[38:52])
-				data.elem[iel].bcs[iface][6] = float(line[52:66])
-				data.elem[iel].bcs[iface][7] = float(line[66:80])
 			elif (nel < 1e6):
 				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = int(line[4:10])
+				data.elem[iel].bcs[iface][1] = iel
 				data.elem[iel].bcs[iface][2] = iface + 1
 				data.elem[iel].bcs[iface][3] = float(line[10:24])
 				data.elem[iel].bcs[iface][4] = float(line[24:38])
@@ -717,21 +723,21 @@ def writerea(fname, data):
 		if (data.nel < 1e3):
 			#
 			for iedge in range(12):
-				if (data.elem[iel].curv[iedge] != 0.0):
-					outfile.write('{0:3d}{1:3d}{2:10.5f}{3:14.5f}{4:14.5f}{5:14.5f}{6:14.5f}     C\n'.format(
-						iedge+1, iel+1, data.elem[iel].curv[iedge][0], 0.0, 0.0, 0.0, 0.0))
+				if (data.elem[iel].ccurv[iedge] != ''):
+					outfile.write('{0:3d}{1:3d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:>2s}\n'.format(
+						iedge+1, iel+1, data.elem[iel].curv[iedge][0], data.elem[iel].curv[iedge][1], data.elem[iel].curv[iedge][2], data.elem[iel].curv[iedge][3], data.elem[iel].curv[iedge][4], data.elem[iel].ccurv[iedge]))
 		elif (data.nel < 1e6):
 			#
 			for iedge in range(12):
-				if (data.elem[iel].curv[iedge] != 0.0):
-					outfile.write('{0:2d}{1:6d}{2:10.5f}{3:14.5f}{4:14.5f}{5:14.5f}{6:14.5f}     C\n'.format(
-						iedge+1, iel+1, data.elem[iel].curv[iedge][0], 0., 0., 0., 0.))
+				if (data.elem[iel].ccurv[iedge] != ''):
+					outfile.write('{0:2d}{1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:>2s}\n'.format(
+						iedge+1, iel+1, data.elem[iel].curv[iedge][0], data.elem[iel].curv[iedge][1], data.elem[iel].curv[iedge][2], data.elem[iel].curv[iedge][3], data.elem[iel].curv[iedge][4], data.elem[iel].ccurv[iedge]))
 		else:
 			#
 			for iedge in range(12):
-				if (data.elem[iel].curv[iedge] != 0.0):
-					outfile.write('{0:2d}{1:10d}{2:10.5f}{3:14.5f}{4:14.5f}{5:14.5f}{6:14.5f}     C\n'.format(
-						iedge+1, iel+1, data.elem[iel].curv[iedge][0], 0.0, 0.0, 0.0, 0.0))
+				if (data.elem[iel].ccurv[iedge] != ''):
+					outfile.write('{0:2d}{1:10d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:>2s}\n'.format(
+						iedge+1, iel+1, data.elem[iel].curv[iedge][0], data.elem[iel].curv[iedge][1], data.elem[iel].curv[iedge][2], data.elem[iel].curv[iedge][3], data.elem[iel].curv[iedge][4], data.elem[iel].ccurv[iedge]))
 	#
 	# boundary conditions data
 	outfile.write('  ***** BOUNDARY CONDITIONS *****\n')
@@ -741,9 +747,6 @@ def writerea(fname, data):
 			if (data.nel < 1e3):
 				outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
 					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][2], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
-			elif (data.nel < 1e5):
-				outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
-					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))
 			elif (data.nel < 1e6):
 				outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
 					data.elem[iel].bcs[iface][0], data.elem[iel].bcs[iface][1], data.elem[iel].bcs[iface][3], data.elem[iel].bcs[iface][4], data.elem[iel].bcs[iface][5], data.elem[iel].bcs[iface][6], data.elem[iel].bcs[iface][7]))

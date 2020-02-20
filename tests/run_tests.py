@@ -59,7 +59,21 @@ def test_readrea():
 	assert field.lr1  == [2, 2, 1]
 	assert field.ndim == 2
 	assert field.nel  == 1248
-	assert (field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
+	assert abs(field.elem[0].pos[0][0][0][0] - 0.048383219999999998 ) < 1e-3
+	assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
+	assert field.elem[887].ccurv[1] == 'C'
+	
+	fname = './tests/nek/m3j_bf_test.rea'
+	field = ns.readrea(fname)
+	assert field.elem[790].ccurv[0] == 'm'
+	assert abs(field.elem[790].curv[0][1] + 0.05258981) < 1e-7
+	assert field.elem[0].bcs[0][0] == 'W'
+	assert field.elem[0].bcs[1][0] == 'o'
+	assert field.elem[0].bcs[2][0] == 'E'
+	assert field.elem[0].bcs[2][1] == 1
+	assert field.elem[0].bcs[2][2] == 3
+	assert int(field.elem[0].bcs[2][3]) == 2
+	assert int(field.elem[0].bcs[2][4]) == 1
 
 
 def test_writerea():
@@ -83,7 +97,28 @@ def test_writerea():
 	assert field.nel    == fieldw.nel
 	assert field.wdsz   == fieldw.wdsz
 	assert (field.elem[0].pos[0][0][0][0] - fieldw.elem[0].pos[0][0][0][0]) < 1e-3
+	assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
+	assert field.elem[887].ccurv[1] == 'C'
 
+	fname = './tests/nek/m3j_bf_test.rea'
+	fnamew = 'test.rea'
+	
+	field = ns.readrea(fname)
+	status = ns.writerea(fnamew, field)
+
+	assert status == 0
+
+	fieldw = ns.readrea(fnamew)
+	
+	assert fieldw.elem[790].ccurv[0] == 'm'
+	assert abs(fieldw.elem[790].curv[0][1] + 0.05258981) < 1e-7
+	assert fieldw.elem[0].bcs[0][0] == 'W'
+	assert fieldw.elem[0].bcs[1][0] == 'o'
+	assert fieldw.elem[0].bcs[2][0] == 'E'
+	assert fieldw.elem[0].bcs[2][1] == 1
+	assert fieldw.elem[0].bcs[2][2] == 3
+	assert int(fieldw.elem[0].bcs[2][3]) == 2
+	assert int(fieldw.elem[0].bcs[2][4]) == 1
 
 
 #------------------------------------------------------------------------------

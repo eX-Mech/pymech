@@ -1,23 +1,17 @@
-language:
-   - python
-
+language: python
 python:
    - 3.6
    - 3.7
 
-addons:
-  apt:
-    packages:
-    - python-vtk
-
 install:
-   - pip install -U pip
-   - pip install pytest pytest-pep8 pytest-cov python-coveralls
-     #- pip install mayavi
-     #- pip install pep8
+    - pip install -e .
+
+before_script:
+    - pip install -r requirements.txt
 
 script:
-   - py.test tests/run_tests.py --cov src
+    - coverage run -m pytest tests/run_tests.py
+    #- py.test tests/run_tests.py
 
 after_success:
    - coveralls

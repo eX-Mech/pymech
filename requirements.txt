@@ -1,0 +1,5 @@
+numpy
+pytest
+pytest-pep8
+pytest-cov
+coveralls

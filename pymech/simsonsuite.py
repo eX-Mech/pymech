@@ -9,7 +9,7 @@
 #=============================================================================#
 import struct
 import numpy as np
-import exadata as exdat
+import pymech.exadata as exdat
 
 #==============================================================================
 def readdns(fname):

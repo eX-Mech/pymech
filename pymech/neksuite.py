@@ -760,6 +760,8 @@ def writerea(fname, data):
 	outfile.write('  ***** BOUNDARY CONDITIONS *****\n')
 	outfile.write('  ***** FLUID BOUNDARY CONDITIONS *****\n')
 	for ibc in range(data.nbc):
+		if ibc == 1:
+			outfile.write('  ***** THERMAL BOUNDARY CONDITIONS *****\n')
 		for iel in range(data.nel):
 			for iface in range(2*data.ndim):
 				if (data.nel < 1e3):
@@ -772,7 +774,8 @@ def writerea(fname, data):
 					outfile.write(' {0:2s} {1:11d}{2:1d}{3:18.11e}{4:18.11e}{5:18.11e}{6:18.11e}{7:18.11e}\n'.format(
 						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][2], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
 
-	outfile.write('  ***** NO THERMAL BOUNDARY CONDITIONS *****\n')
+	if data.nbc < 2:
+		outfile.write('  ***** NO THERMAL BOUNDARY CONDITIONS *****\n')
 	outfile.write('    0 PRESOLVE/RESTART OPTIONS  *****\n')
 	outfile.write('    7         INITIAL CONDITIONS *****\n')
 	outfile.write(' C Default\n')

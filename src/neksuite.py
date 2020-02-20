@@ -404,17 +404,20 @@ def readrea(fname):
 	# skip passive scalars
 	#---------------------------------------------------------------------------
 	#
-	npscal = int(infile.readline().split()[0])
-	for ipscal in range(npscal):
+	npscal_data = int(infile.readline().split()[0])
+	for ipscal in range(npscal_data):
 		infile.readline()
 	#
 	#---------------------------------------------------------------------------
-	# skip logical switches
+	# read logical switches
 	#---------------------------------------------------------------------------
 	#
 	nswitch = int(infile.readline().split()[0])
+	switches = np.zeros((nswitch,), dtype='bool')
 	for iswitch in range(nswitch):
-		infile.readline()
+		switches[iswitch] = infile.readline().split()[0] == 'T'
+	ifflow = switches[0]
+	ifheat = switches[1]
 	#
 	#---------------------------------------------------------------------------
 	# skip XFAC,YFAC,XZERO,YZERO
@@ -432,6 +435,12 @@ def readrea(fname):
 	# initialize data structure
 	lr1 = [2, 2, ndim-1]
 	var = [ndim, 0, 0, 0, 0]
+	if ifflow:
+		var[1] = ndim
+	if ifheat:
+		var[3] = 1
+	npscal = int(param[22])
+	var[4] = npscal
 	#
 	data = exdat.exadata(ndim, nel, lr1, var)
 	#
@@ -490,38 +499,47 @@ def readrea(fname):
 	# BOUNDARY CONDITIONS
 	#---------------------------------------------------------------------------
 	#
-	infile.readline()
-	infile.readline()
-	for iel in range(nel):
-		for iface in range(nface):
-			line = infile.readline()
-			if (nel < 1e3):
-				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = int(line[4:7])
-				data.elem[iel].bcs[iface][2] = int(line[7:10])
-				data.elem[iel].bcs[iface][3] = float(line[10:24])
-				data.elem[iel].bcs[iface][4] = float(line[24:38])
-				data.elem[iel].bcs[iface][5] = float(line[38:52])
-				data.elem[iel].bcs[iface][6] = float(line[52:66])
-				data.elem[iel].bcs[iface][7] = float(line[66:80])
-			elif (nel < 1e6):
-				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = iel
-				data.elem[iel].bcs[iface][2] = iface + 1
-				data.elem[iel].bcs[iface][3] = float(line[10:24])
-				data.elem[iel].bcs[iface][4] = float(line[24:38])
-				data.elem[iel].bcs[iface][5] = float(line[38:52])
-				data.elem[iel].bcs[iface][6] = float(line[52:66])
-				data.elem[iel].bcs[iface][7] = float(line[66:80])
-			else:
-				data.elem[iel].bcs[iface][0] = line[1:3].strip()
-				data.elem[iel].bcs[iface][1] = int(line[4:15])
-				data.elem[iel].bcs[iface][2] = int(line[15:16])
-				data.elem[iel].bcs[iface][3] = float(line[16:34])
-				data.elem[iel].bcs[iface][4] = float(line[34:52])
-				data.elem[iel].bcs[iface][5] = float(line[52:70])
-				data.elem[iel].bcs[iface][6] = float(line[70:88])
-				data.elem[iel].bcs[iface][7] = float(line[88:106])
+	infile.readline()  # ***** BOUNDARY CONDITIONS *****
+	line = infile.readline()
+	# We don't know in advance how many boundary conditions are defined.
+	# Do like in Nek5000/tools/reatore2/reatore2.f:
+	# either there is a line like "  ***** X BOUNDARY CONDITIONS *****",
+	# or "  ***** NO X BOUNDARY CONDITIONS *****".
+	# We keep reading boundary conditions until we find the word "NO".
+	ibc = 0
+	while line.split()[2] == 'BOUNDARY' and line.split()[2] != 'NO':
+		for iel in range(nel):
+			for iface in range(nface):
+				line = infile.readline()
+				if (nel < 1e3):
+					data.elem[iel].bcs[iface, ibc][0] = line[1:3].strip()
+					data.elem[iel].bcs[iface, ibc][1] = int(line[4:7])
+					data.elem[iel].bcs[iface, ibc][2] = int(line[7:10])
+					data.elem[iel].bcs[iface, ibc][3] = float(line[10:24])
+					data.elem[iel].bcs[iface, ibc][4] = float(line[24:38])
+					data.elem[iel].bcs[iface, ibc][5] = float(line[38:52])
+					data.elem[iel].bcs[iface, ibc][6] = float(line[52:66])
+					data.elem[iel].bcs[iface, ibc][7] = float(line[66:80])
+				elif (nel < 1e6):
+					data.elem[iel].bcs[iface, ibc][0] = line[1:3].strip()
+					data.elem[iel].bcs[iface, ibc][1] = iel
+					data.elem[iel].bcs[iface, ibc][2] = iface + 1
+					data.elem[iel].bcs[iface, ibc][3] = float(line[10:24])
+					data.elem[iel].bcs[iface, ibc][4] = float(line[24:38])
+					data.elem[iel].bcs[iface, ibc][5] = float(line[38:52])
+					data.elem[iel].bcs[iface, ibc][6] = float(line[52:66])
+					data.elem[iel].bcs[iface, ibc][7] = float(line[66:80])
+				else:
+					data.elem[iel].bcs[iface, ibc][0] = line[1:3].strip()
+					data.elem[iel].bcs[iface, ibc][1] = int(line[4:15])
+					data.elem[iel].bcs[iface, ibc][2] = int(line[15:16])
+					data.elem[iel].bcs[iface, ibc][3] = float(line[16:34])
+					data.elem[iel].bcs[iface, ibc][4] = float(line[34:52])
+					data.elem[iel].bcs[iface, ibc][5] = float(line[52:70])
+					data.elem[iel].bcs[iface, ibc][6] = float(line[70:88])
+					data.elem[iel].bcs[iface, ibc][7] = float(line[88:106])
+		line = infile.readline()
+		ibc = ibc + 1
 	#
 	#---------------------------------------------------------------------------
 	# FORGET ABOUT WHAT FOLLOWS

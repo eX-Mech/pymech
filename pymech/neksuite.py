@@ -11,6 +11,7 @@ import struct
 import numpy as np
 import pymech.exadata as exdat
 
+
 #==============================================================================
 def readnek(fname):
 	"""
@@ -422,15 +423,12 @@ def readrea(fname):
 		infile.readline()
 	#
 	#---------------------------------------------------------------------------
-	# read logical switches
+	# skip logical switches
 	#---------------------------------------------------------------------------
 	#
 	nswitch = int(infile.readline().split()[0])
-	switches = np.zeros((nswitch,), dtype='bool')
 	for iswitch in range(nswitch):
-		switches[iswitch] = infile.readline().split()[0] == 'T'
-	ifflow = switches[0]
-	ifheat = switches[1]
+		infile.readline()
 	#
 	#---------------------------------------------------------------------------
 	# skip XFAC,YFAC,XZERO,YZERO
@@ -448,12 +446,6 @@ def readrea(fname):
 	# initialize data structure
 	lr1 = [2, 2, ndim-1]
 	var = [ndim, 0, 0, 0, 0]
-	if ifflow:
-		var[1] = ndim
-	if ifheat:
-		var[3] = 1
-	npscal = int(param[22])
-	var[4] = npscal
 	#
 	data = exdat.exadata(ndim, nel, lr1, var, nbc)
 	#

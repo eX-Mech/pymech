@@ -389,7 +389,7 @@ def readrea(fname):
 	nbc = 0
 	for line in infile:
 		line_split = line.split()
-		if 'BOUNDARY' in line_split[2:-1] and not 'NO' in line_split:
+		if 'BOUNDARY' in line_split[2:] and not 'NO' in line_split:
 			nbc = nbc + 1
 	
 	infile.seek(0)
@@ -760,6 +760,8 @@ def writerea(fname, data):
 	for ibc in range(data.nbc):
 		if ibc == 1:
 			outfile.write('  ***** THERMAL BOUNDARY CONDITIONS *****\n')
+		elif ibc > 1:
+			outfile.write('  ***** PASSIVE SCALAR {:4d} BOUNDARY CONDITIONS *****\n'.format(ibc-1))
 		for iel in range(data.nel):
 			for iface in range(2*data.ndim):
 				if (data.nel < 1e3):

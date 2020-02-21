@@ -1,13 +1,21 @@
-from setuptools import setup
+import setuptools
 
-setup(
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
+
+setuptools.setup(
     name='pymech',
     version='1.1',
     author='Jacopo Canton & Nicolo Fabbiane',
     author_email='jacopo.canton@gmail.com',
-    summary='A Python suite of routines for Nek5000 and Simson.',
+    description='A Python suite of routines for Nek5000 and Simson.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://github.com/jcanton/pymech',
     packages=['pymech'],
-    license='Creative Commons',
-    long_description=open('README.md').read(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Operating System :: OS Independent",
+    ],
 )

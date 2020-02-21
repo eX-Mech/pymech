@@ -45,16 +45,16 @@ The output consists of:
 .. _simsonsuite-contents:
 
 Contents of simsonsuite.py
------------------------
+--------------------------
 
 **readdns()**
 
-.. literalinclude:: ../src/simsonsuite.py
+.. literalinclude:: ../pymech/simsonsuite.py
    :language: python
    :lines: 15-241
 
 **readplane()**
 
-.. literalinclude:: ../src/simsonsuite.py
+.. literalinclude:: ../pymech/simsonsuite.py
    :language: python
    :lines: 245-363

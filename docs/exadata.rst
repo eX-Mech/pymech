@@ -41,15 +41,16 @@ elem
 
 This class contains the data for one exahedral element organised as follows:
 
-========   ===============   ====================================================
-``pos``    array of floats   x,y,z coordinates of each grid point
-``curv``   array of floats   radius of curvature of the element edges (*Nek5000*)
-``vel``    array of floats   u,v,w velocity at each grid point
-``pres``   array of floats   pressure at each grid point
-``temp``   array of floats   temperature at each grid point
-``scal``   array of floats   passive scalars at each grid point
-``bcs``    array of floats   list of boundary condition parameters (*Nek5000*)
-========   ===============   ====================================================
+=========   ================   ====================================================
+``pos``     array of floats    x,y,z coordinates of each grid point
+``curv``    array of floats    radius of curvature of the element edges (*Nek5000*)
+``ccurv``   array of strings   defines the type of curvature
+``vel``     array of floats    u,v,w velocity at each grid point
+``pres``    array of floats    pressure at each grid point
+``temp``    array of floats    temperature at each grid point
+``scal``    array of floats    passive scalars at each grid point
+``bcs``     array of floats    list of boundary condition parameters (*Nek5000*)
+=========   ================   ====================================================
 
 
 .. _datalims:
@@ -78,18 +79,18 @@ Contents of exadata.py
 
 **exadata**
 
-.. literalinclude:: ../src/exadata.py
+.. literalinclude:: ../pymech/exadata.py
    :language: python
    :lines: 53-69
 
 **elem**
 
-.. literalinclude:: ../src/exadata.py
+.. literalinclude:: ../pymech/exadata.py
    :language: python
    :lines: 31-50
 
 **datalims**
 
-.. literalinclude:: ../src/exadata.py
+.. literalinclude:: ../pymech/exadata.py
    :language: python
    :lines: 13-28

@@ -3,9 +3,9 @@
 #                                                                             #
 #                                                                             #
 #                                                                             #
-# Authors: Jacopo Canton, Nicolo' Fabbiane                                    #
-# Contacts: jcanton(at)mech.kth.se, nicolo(at)mech.kth.se                     #
-# Last edit: 2016-01-28                                                       #
+# Authors: Jacopo Canton, Nicolo' Fabbiane, Guillaume Chauvat                 #
+# Contacts: jacopo.canton(at)gmail.com                                        #
+# Last edit: 2020-02-20                                                       #
 #=============================================================================#
 import numpy as np
 
@@ -38,15 +38,15 @@ class elem:
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
 		#                    one per edge
 		self.curv = np.zeros((12, 5))
-		# curvature type
+		#             curvature type
 		self.ccurv = ['' for i in range(12)]
 		#                    u,v,w   lz      ly      lx
 		self.vel  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
-      #                    p       lz      ly      lx     
+		#                    p       lz      ly      lx     
 		self.pres = np.zeros((var[2], lr1[2], lr1[1], lr1[0]))
-      #                    T       lz      ly      lx     
+		#                    T       lz      ly      lx     
 		self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]))
-      #                    s_i     lz      ly      lx     
+		#                    s_i     lz      ly      lx     
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
 		#                    one column for velocity, one for temperature, and one for each scalar

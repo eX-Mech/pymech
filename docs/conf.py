@@ -20,9 +20,10 @@
 project = 'pymech'
 copyright = '2020, Jacopo Canton, Nicolo Fabbiane and Guillaume Chauvat'
 author = 'Jacopo Canton, Nicolo Fabbiane and Guillaume Chauvat'
+master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1'
+release = '1.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +32,7 @@ release = '1.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+        'recommonmark'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

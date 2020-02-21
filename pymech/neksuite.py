@@ -389,9 +389,8 @@ def readrea(fname):
 	nbc = 0
 	for line in infile:
 		line_split = line.split()
-		if len(line_split) >= 3:
-			if line_split[2] == 'BOUNDARY' and line_split[1] != 'NO':
-				nbc = nbc + 1
+		if 'BOUNDARY' in line_split[2:-1] and not 'NO' in line_split:
+			nbc = nbc + 1
 	
 	infile.seek(0)
 	#
@@ -505,8 +504,8 @@ def readrea(fname):
 	#---------------------------------------------------------------------------
 	#
 	infile.readline()  # ***** BOUNDARY CONDITIONS *****
-	line = infile.readline()
 	for ibc in range(nbc):
+		infile.readline()  # ***** FLUID   BOUNDARY CONDITIONS ***** [or similar]
 		for iel in range(nel):
 			for iface in range(nface):
 				line = infile.readline()
@@ -537,7 +536,6 @@ def readrea(fname):
 					data.elem[iel].bcs[ibc, iface][5] = float(line[52:70])
 					data.elem[iel].bcs[ibc, iface][6] = float(line[70:88])
 					data.elem[iel].bcs[ibc, iface][7] = float(line[88:106])
-		line = infile.readline()
 		ibc = ibc + 1
 	#
 	#---------------------------------------------------------------------------

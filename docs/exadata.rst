@@ -79,18 +79,18 @@ Contents of exadata.py
 
 **exadata**
 
-.. literalinclude:: ../src/exadata.py
+.. literalinclude:: ../pymech/exadata.py
    :language: python
    :lines: 53-69
 
 **elem**
 
-.. literalinclude:: ../src/exadata.py
+.. literalinclude:: ../pymech/exadata.py
    :language: python
    :lines: 31-50
 
 **datalims**
 
-.. literalinclude:: ../src/exadata.py
+.. literalinclude:: ../pymech/exadata.py
    :language: python
    :lines: 13-28

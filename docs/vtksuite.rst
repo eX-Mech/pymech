@@ -15,6 +15,6 @@ Contents of vtksuite.py
 
 **whole file**
 
-.. literalinclude:: ../src/vtksuite.py
+.. literalinclude:: ../pymech/vtksuite.py
    :language: python
    :lines: 1-112

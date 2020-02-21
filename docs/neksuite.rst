@@ -76,24 +76,24 @@ Contents of neksuite.py
 
 **readnek()**
 
-.. literalinclude:: ../src/neksuite.py
+.. literalinclude:: ../pymech/neksuite.py
    :language: python
    :lines: 16-207
 
 **writenek()**
 
-.. literalinclude:: ../src/neksuite.py
+.. literalinclude:: ../pymech/neksuite.py
    :language: python
    :lines: 211-348
 
 **readrea()**
 
-.. literalinclude:: ../src/neksuite.py
+.. literalinclude:: ../pymech/neksuite.py
    :language: python
    :lines: 352-512
 
 **writerea()**
 
-.. literalinclude:: ../src/neksuite.py
+.. literalinclude:: ../pymech/neksuite.py
    :language: python
    :lines: 516-770

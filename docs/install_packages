@@ -1,9 +1,0 @@
-to install mayavi:
-
-add to ~/.bashrc:
-export PYTHONPATH="/scratch/jcanton/software/python/lib/python2.7/site-packages"
-PATH="/scratch/jcanton/software/python/bin:$PATH"
-
-
-run install
-easy_install --prefix=/scratch/jcanton/software/python "Mayavi[app]"

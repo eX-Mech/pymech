@@ -511,32 +511,32 @@ def readrea(fname):
 			for iface in range(nface):
 				line = infile.readline()
 				if (nel < 1e3):
-					data.elem[iel].bcs[iface, ibc][0] = line[1:3].strip()
-					data.elem[iel].bcs[iface, ibc][1] = int(line[4:7])
-					data.elem[iel].bcs[iface, ibc][2] = int(line[7:10])
-					data.elem[iel].bcs[iface, ibc][3] = float(line[10:24])
-					data.elem[iel].bcs[iface, ibc][4] = float(line[24:38])
-					data.elem[iel].bcs[iface, ibc][5] = float(line[38:52])
-					data.elem[iel].bcs[iface, ibc][6] = float(line[52:66])
-					data.elem[iel].bcs[iface, ibc][7] = float(line[66:80])
+					data.elem[iel].bcs[ibc, iface][0] = line[1:3].strip()
+					data.elem[iel].bcs[ibc, iface][1] = int(line[4:7])
+					data.elem[iel].bcs[ibc, iface][2] = int(line[7:10])
+					data.elem[iel].bcs[ibc, iface][3] = float(line[10:24])
+					data.elem[iel].bcs[ibc, iface][4] = float(line[24:38])
+					data.elem[iel].bcs[ibc, iface][5] = float(line[38:52])
+					data.elem[iel].bcs[ibc, iface][6] = float(line[52:66])
+					data.elem[iel].bcs[ibc, iface][7] = float(line[66:80])
 				elif (nel < 1e6):
-					data.elem[iel].bcs[iface, ibc][0] = line[1:3].strip()
-					data.elem[iel].bcs[iface, ibc][1] = iel
-					data.elem[iel].bcs[iface, ibc][2] = iface + 1
-					data.elem[iel].bcs[iface, ibc][3] = float(line[10:24])
-					data.elem[iel].bcs[iface, ibc][4] = float(line[24:38])
-					data.elem[iel].bcs[iface, ibc][5] = float(line[38:52])
-					data.elem[iel].bcs[iface, ibc][6] = float(line[52:66])
-					data.elem[iel].bcs[iface, ibc][7] = float(line[66:80])
+					data.elem[iel].bcs[ibc, iface][0] = line[1:3].strip()
+					data.elem[iel].bcs[ibc, iface][1] = iel
+					data.elem[iel].bcs[ibc, iface][2] = iface + 1
+					data.elem[iel].bcs[ibc, iface][3] = float(line[10:24])
+					data.elem[iel].bcs[ibc, iface][4] = float(line[24:38])
+					data.elem[iel].bcs[ibc, iface][5] = float(line[38:52])
+					data.elem[iel].bcs[ibc, iface][6] = float(line[52:66])
+					data.elem[iel].bcs[ibc, iface][7] = float(line[66:80])
 				else:
-					data.elem[iel].bcs[iface, ibc][0] = line[1:3].strip()
-					data.elem[iel].bcs[iface, ibc][1] = int(line[4:15])
-					data.elem[iel].bcs[iface, ibc][2] = int(line[15:16])
-					data.elem[iel].bcs[iface, ibc][3] = float(line[16:34])
-					data.elem[iel].bcs[iface, ibc][4] = float(line[34:52])
-					data.elem[iel].bcs[iface, ibc][5] = float(line[52:70])
-					data.elem[iel].bcs[iface, ibc][6] = float(line[70:88])
-					data.elem[iel].bcs[iface, ibc][7] = float(line[88:106])
+					data.elem[iel].bcs[ibc, iface][0] = line[1:3].strip()
+					data.elem[iel].bcs[ibc, iface][1] = int(line[4:15])
+					data.elem[iel].bcs[ibc, iface][2] = int(line[15:16])
+					data.elem[iel].bcs[ibc, iface][3] = float(line[16:34])
+					data.elem[iel].bcs[ibc, iface][4] = float(line[34:52])
+					data.elem[iel].bcs[ibc, iface][5] = float(line[52:70])
+					data.elem[iel].bcs[ibc, iface][6] = float(line[70:88])
+					data.elem[iel].bcs[ibc, iface][7] = float(line[88:106])
 		line = infile.readline()
 		ibc = ibc + 1
 	#
@@ -766,13 +766,13 @@ def writerea(fname, data):
 			for iface in range(2*data.ndim):
 				if (data.nel < 1e3):
 					outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
-						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][2], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
+						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][2], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))
 				elif (data.nel < 1e6):
 					outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
-						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
+						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))
 				else:
 					outfile.write(' {0:2s} {1:11d}{2:1d}{3:18.11e}{4:18.11e}{5:18.11e}{6:18.11e}{7:18.11e}\n'.format(
-						data.elem[iel].bcs[iface, ibc][0], data.elem[iel].bcs[iface, ibc][1], data.elem[iel].bcs[iface, ibc][2], data.elem[iel].bcs[iface, ibc][3], data.elem[iel].bcs[iface, ibc][4], data.elem[iel].bcs[iface, ibc][5], data.elem[iel].bcs[iface, ibc][6], data.elem[iel].bcs[iface, ibc][7]))
+						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][2], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))
 
 	if data.nbc < 2:
 		outfile.write('  ***** NO THERMAL BOUNDARY CONDITIONS *****\n')

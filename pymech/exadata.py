@@ -33,7 +33,7 @@ class elem:
 	    elem
 	    A class containing one nek element/SIMSON flow field
 	"""
-	def __init__(self, var, lr1, nbcs):
+	def __init__(self, var, lr1, nbc):
 		#                    x,y,z   lz      ly      lx
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
 		#                    one per edge
@@ -50,7 +50,7 @@ class elem:
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
 		#                    one column for velocity, one for temperature, and one for each scalar
-		self.bcs  = np.zeros((6, nbcs), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
+		self.bcs  = np.zeros((nbc, 6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
 
 
 #==============================================================================

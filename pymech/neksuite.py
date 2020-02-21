@@ -3,9 +3,9 @@
 #                                                                             #
 # A python module for reading and writing nek5000 files                       #
 #                                                                             #
-# Authors: Jacopo Canton, Nicolo' Fabbiane                                    #
-# Contacts: jcanton(at)mech.kth.se, nicolo(at)mech.kth.se                     #
-# Last edit: 2015-10-19                                                       #
+# Authors: Jacopo Canton, Nicolo' Fabbiane, Guillaume Chauvat                 #
+# Contacts: jacopo.canton(at)gmail.com                                        #
+# Last edit: 2020-02-20                                                       #
 #=============================================================================#
 import struct
 import numpy as np

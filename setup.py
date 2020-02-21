@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pymech',
-    version='1.1.1',
+    version='1.2.0',
     author='Jacopo Canton, Nicolo Fabbiane and Guillaume Chauvat',
     author_email='jacopo.canton@gmail.com',
     description='A Python suite of routines for Nek5000 and Simson.',

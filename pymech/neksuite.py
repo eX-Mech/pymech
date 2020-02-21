@@ -5,7 +5,7 @@
 #                                                                             #
 # Authors: Jacopo Canton, Nicolo' Fabbiane, Guillaume Chauvat                 #
 # Contacts: jacopo.canton(at)gmail.com                                        #
-# Last edit: 2020-02-20                                                       #
+# Last edit: 2020-02-21                                                       #
 #=============================================================================#
 import struct
 import numpy as np

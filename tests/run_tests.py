@@ -71,6 +71,9 @@ def test_readrea():
 	assert int(field.elem[799].bcs[1, 1][3]) == 790
 	assert field.elem[799].bcs[1, 2][0] == 't'
 	assert field.elem[799].bcs[1, 3][0] == 'I'
+	assert int(field.elem[799].bcs[2, 1][3]) == 790
+	assert field.elem[799].bcs[2, 2][0] == 'P'
+	assert field.elem[799].bcs[2, 3][0] == 'P'
 
 
 def test_writerea():
@@ -114,6 +117,12 @@ def test_writerea():
 	assert fieldw.elem[0].bcs[0, 2][2] == 3
 	assert int(fieldw.elem[0].bcs[0, 2][3]) == 2
 	assert int(fieldw.elem[0].bcs[0, 2][4]) == 1
+	assert int(field.elem[799].bcs[1, 1][3]) == 790
+	assert fieldw.elem[799].bcs[1, 2][0] == 't'
+	assert fieldw.elem[799].bcs[1, 3][0] == 'I'
+	assert int(fieldw.elem[799].bcs[2, 1][3]) == 790
+	assert fieldw.elem[799].bcs[2, 2][0] == 'P'
+	assert fieldw.elem[799].bcs[2, 3][0] == 'P'
 
 
 #------------------------------------------------------------------------------

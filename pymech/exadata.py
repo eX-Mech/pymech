@@ -72,3 +72,32 @@ class exadata:
 		self.endian = []
 		self.lims   = datalims(var)
 		self.elem   = [elem(var, lr1, nbc) for i in range(nel)]
+
+	def check_connectivity(self):
+		dim = self.ndim
+		err = False
+		for (iel, el) in enumerate(self.elem):
+			for ibc in range(self.nbc):
+				for iface in range(2*dim):
+					cbc = el.bcs[ibc, iface][0]
+					if cbc == 'E' or cbc == 'P':
+						connected_iel = int(el.bcs[ibc, iface][3])-1
+						connected_face = int(el.bcs[ibc, iface][4])-1
+						cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
+						iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3])-1
+						iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4])-1
+						if iel1 < 0 or iel1 >= self.nel:
+							err = True
+							print("face {:} of element {:} is connected to face {:} of the nonexistent element {:}".format(iface, iel, connected_face, connected_iel))
+						else:
+							if cbc1 != cbc:
+								err = True
+								print("mismatched boundary conditions: face {:} of element {:} with condition {:} is connected to face {:} of element {:} with condition {:}".format(iface+1, iel+1, cbc, connected_face+1, connected_iel+1, cbc1))
+							if iel1 != iel:
+								err = True
+								print("mismatched elements: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
+							if iface1 != iface:
+								err = True
+								print("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
+		return err
+

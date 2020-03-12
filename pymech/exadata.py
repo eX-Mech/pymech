@@ -99,5 +99,5 @@ class exadata:
 							if iface1 != iface:
 								err = True
 								print("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
-		return err
+		return not err
 

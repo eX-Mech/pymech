@@ -12,8 +12,8 @@ import numpy as np
 #==============================================================================
 class datalims:
 	"""
-	    datalims
-	    A class containing the extrema of all quantities stored in the mesh
+		datalims
+		A class containing the extrema of all quantities stored in the mesh
 	"""
 	def __init__(self, var):
 		#                    x,y,z   min,max
@@ -30,8 +30,8 @@ class datalims:
 #==============================================================================
 class elem:
 	"""
-	    elem
-	    A class containing one nek element/SIMSON flow field
+		elem
+		A class containing one nek element/SIMSON flow field
 	"""
 	def __init__(self, var, lr1, nbc):
 		#                    x,y,z   lz      ly      lx
@@ -42,11 +42,11 @@ class elem:
 		self.ccurv = ['' for i in range(12)]
 		#                    u,v,w   lz      ly      lx
 		self.vel  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
-		#                    p       lz      ly      lx     
+		#                    p       lz      ly      lx
 		self.pres = np.zeros((var[2], lr1[2], lr1[1], lr1[0]))
-		#                    T       lz      ly      lx     
+		#                    T       lz      ly      lx
 		self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]))
-		#                    s_i     lz      ly      lx     
+		#                    s_i     lz      ly      lx
 		self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
 		#                    list of 8 parameters, one per face
 		#                    one column for velocity, one for temperature, and one for each scalar
@@ -56,8 +56,8 @@ class elem:
 #==============================================================================
 class exadata:
 	"""
-	    data
-	    A class containing data for reading/writing binary simulation files
+		data
+		A class containing data for reading/writing binary simulation files
 	"""
 	def __init__(self, ndim, nel, lr1, var, nbc=0):
 		self.ndim   = ndim

@@ -15,11 +15,11 @@ import pymech.exadata as exdat
 #==============================================================================
 def readnek(fname):
 	"""
-	    readnek
-	    A function for reading binary data from the nek5000 binary format
+		readnek
+		A function for reading binary data from the nek5000 binary format
 
-	    input variable:
-	    fname : file name
+		input variable:
+		fname : file name
 	"""
 	#
 	try:
@@ -46,9 +46,11 @@ def readnek(fname):
 		return -2
 	#
 	# get polynomial order
-	lr1 = [int(header[2]), 
-	       int(header[3]),
-	       int(header[4])]
+	lr1 = [
+		int(header[2]),
+		int(header[3]),
+		int(header[4])
+	]
 	#
 	# compute total number of points per element
 	npel = lr1[0] * lr1[1] * lr1[2]
@@ -154,7 +156,7 @@ def readnek(fname):
 			data.lims.vel[idim,0] = min([data.lims.vel[idim,0]]+fi)
 			data.lims.vel[idim,1] = max([data.lims.vel[idim,1]]+fi)
 	#
-	# read pressure 
+	# read pressure
 	data.lims.pres[:,0] =  float('inf')
 	data.lims.pres[:,1] = -float('inf')
 	for iel in elmap:
@@ -210,12 +212,12 @@ def readnek(fname):
 #==============================================================================
 def writenek(fname, data):
 	"""
-	    writenek
-	    A function for writing binary data in the nek5000 binary format
+		writenek
+		A function for writing binary data in the nek5000 binary format
 
-	    input variable:
-	    fname : file name
-	    data : exadata data organised as readnek() output
+		input variable:
+		fname : file name
+		data : exadata data organised as readnek() output
 	"""
 	#
 	try:
@@ -292,7 +294,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pos[idim,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pos[idim,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -303,7 +305,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].vel[idim,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].vel[idim,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -314,7 +316,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pres[ivar,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pres[ivar,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -325,7 +327,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].temp[ivar,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].temp[ivar,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -336,7 +338,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].scal[ivar,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].scal[ivar,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -368,11 +370,11 @@ def writenek(fname, data):
 #==============================================================================
 def readrea(fname):
 	"""
-	    readrea
-	    A function for reading .rea files for nek5000
+		readrea
+		A function for reading .rea files for nek5000
 
-	    input variable:
-	    fname : file name
+		input variable:
+		fname : file name
 	"""
 	#
 	try:
@@ -391,7 +393,7 @@ def readrea(fname):
 		line_split = line.split()
 		if 'BOUNDARY' in line_split[2:] and not 'NO' in line_split:
 			nbc = nbc + 1
-	
+
 	infile.seek(0)
 	#
 	#---------------------------------------------------------------------------
@@ -540,7 +542,7 @@ def readrea(fname):
 	#
 	#---------------------------------------------------------------------------
 	# FORGET ABOUT WHAT FOLLOWS
-	#---------------------------------------------------------------------------	
+	#---------------------------------------------------------------------------
 	#
 	#
 	# close file
@@ -553,11 +555,11 @@ def readrea(fname):
 #==============================================================================
 def writerea(fname, data):
 	"""
-	    writerea
-	    A function for writing ascii .rea files for nek5000
+		writerea
+		A function for writing ascii .rea files for nek5000
 
-	    input variables:
-	    fname : file name
+		input variables:
+		fname : file name
 		 data : exadata data organised as in exadata.py
 	"""
 	#

@@ -1,3 +1,5 @@
+import math
+
 #------------------------------------------------------------------------------
 # test nek scripts
 #
@@ -155,6 +157,21 @@ def test_readplane():
 	assert nn[0] == 97.
 	assert nn[1] == 97.
 	assert ndim  == 2
+
+#------------------------------------------------------------------------------
+# test xarray dataset interface
+#
+def test_nekdataset():
+	import pymech.dataset as pd
+
+	fname = './tests/nek/channel3D_0.f00001'
+	ds = pd.open_dataset(fname)
+
+	assert tuple(ds.dims.values()) == (64, 64, 64)
+	assert math.isclose(ds.x.max(), 2 * math.pi, abs_tol=1e-6)
+	assert math.isclose(ds.y.max(), 1., abs_tol=1e-6)
+	assert math.isclose(ds.z.max(), math.pi, abs_tol=1e-6)
+	assert math.isclose(ds.time, 0.2, abs_tol=1e-6)
 
 #==============================================================================
 # run tests

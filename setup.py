@@ -13,6 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url='https://github.com/jcanton/pymech',
     packages=['pymech'],
+    install_requires=['xarray'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",

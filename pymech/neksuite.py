@@ -15,6 +15,7 @@ from pymech.log import logger
 
 
 #==============================================================================
+#  @profile
 def readnek(fname):
 	"""
 		readnek
@@ -131,49 +132,41 @@ def readnek(fname):
 	elif (emode == '>'):
 		data.endian = 'big'
 	#
+	#  @profile
+	def read_file_into_data(el, idim, name_var):
+		fi = infile.read(npel*wdsz)
+		fi = list(struct.unpack(emode+npel*realtype, fi))
+		ip = 0
+
+		data_var = getattr(el, name_var)
+		for iz in range(lr1[2]):
+			for iy in range(lr1[1]):
+				data_var[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
+				ip += lr1[0]
+	#
 	# read geometry
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for idim in range(var[0]): # if var[0] == 0, geometry is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].pos[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
+			read_file_into_data(el, idim, 'pos')
 	#
 	# read velocity
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for idim in range(var[1]): # if var[1] == 0, velocity is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].vel[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
+			read_file_into_data(el, idim, 'vel')
 	#
 	# read pressure
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for ivar in range(var[2]): # if var[2] == 0, pressure is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].pres[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
+			read_file_into_data(el, ivar, 'pres')
 	#
 	# read temperature
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for ivar in range(var[3]): # if var[3] == 0, temperature is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].temp[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
+			read_file_into_data(el, ivar, 'temp')
 	#
 	# read scalar fields
 	#
@@ -183,13 +176,8 @@ def readnek(fname):
 	#
 	for ivar in range(var[4]): # if var[4] == 0, scalars are not read
 		for iel in elmap:
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].scal[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
+			el = data.elem[iel-1]
+			read_file_into_data(el, ivar, 'scal')
 	#
 	#
 	# close file

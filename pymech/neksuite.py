@@ -132,8 +132,6 @@ def readnek(fname):
 		data.endian = 'big'
 	#
 	# read geometry
-	data.lims.pos[:,0] =  float('inf')
-	data.lims.pos[:,1] = -float('inf')
 	for iel in elmap:
 		for idim in range(var[0]): # if var[0] == 0, geometry is not read
 			fi = infile.read(npel*wdsz)
@@ -143,12 +141,8 @@ def readnek(fname):
 				for iy in range(lr1[1]):
 					data.elem[iel-1].pos[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
 					ip += lr1[0]
-			data.lims.pos[idim,0] = min([data.lims.pos[idim,0]]+fi)
-			data.lims.pos[idim,1] = max([data.lims.pos[idim,1]]+fi)
 	#
 	# read velocity
-	data.lims.vel[:,0] =  float('inf')
-	data.lims.vel[:,1] = -float('inf')
 	for iel in elmap:
 		for idim in range(var[1]): # if var[1] == 0, velocity is not read
 			fi = infile.read(npel*wdsz)
@@ -158,12 +152,8 @@ def readnek(fname):
 				for iy in range(lr1[1]):
 					data.elem[iel-1].vel[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
 					ip += lr1[0]
-			data.lims.vel[idim,0] = min([data.lims.vel[idim,0]]+fi)
-			data.lims.vel[idim,1] = max([data.lims.vel[idim,1]]+fi)
 	#
 	# read pressure
-	data.lims.pres[:,0] =  float('inf')
-	data.lims.pres[:,1] = -float('inf')
 	for iel in elmap:
 		for ivar in range(var[2]): # if var[2] == 0, pressure is not read
 			fi = infile.read(npel*wdsz)
@@ -173,12 +163,8 @@ def readnek(fname):
 				for iy in range(lr1[1]):
 					data.elem[iel-1].pres[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
 					ip += lr1[0]
-			data.lims.pres[ivar,0] = min([data.lims.pres[ivar,0]]+fi)
-			data.lims.pres[ivar,1] = max([data.lims.pres[ivar,1]]+fi)
 	#
 	# read temperature
-	data.lims.temp[:,0] =  float('inf')
-	data.lims.temp[:,1] = -float('inf')
 	for iel in elmap:
 		for ivar in range(var[3]): # if var[3] == 0, temperature is not read
 			fi = infile.read(npel*wdsz)
@@ -188,12 +174,8 @@ def readnek(fname):
 				for iy in range(lr1[1]):
 					data.elem[iel-1].temp[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
 					ip += lr1[0]
-			data.lims.temp[ivar,0] = min([data.lims.temp[ivar,0]]+fi)
-			data.lims.temp[ivar,1] = max([data.lims.temp[ivar,1]]+fi)
 	#
 	# read scalar fields
-	data.lims.scal[:,0] =  float('inf')
-	data.lims.scal[:,1] = -float('inf')
 	#
 	# NOTE: This is not a bug!
 	# Unlike other variables, scalars are in the outer loop and elements
@@ -208,8 +190,6 @@ def readnek(fname):
 				for iy in range(lr1[1]):
 					data.elem[iel-1].scal[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
 					ip += lr1[0]
-			data.lims.scal[ivar,0] = min([data.lims.scal[ivar,0]]+fi)
-			data.lims.scal[ivar,1] = max([data.lims.scal[ivar,1]]+fi)
 	#
 	#
 	# close file
@@ -469,8 +449,6 @@ def readrea(fname):
 	data = exdat.exadata(ndim, nel, lr1, var, nbc)
 	#
 	# read geometry
-	data.lims.pos[:,0] =  float('inf')
-	data.lims.pos[:,1] = -float('inf')
 	for iel in range(nel):
 		# skip element number and group
 		infile.readline()

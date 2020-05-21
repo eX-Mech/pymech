@@ -135,14 +135,22 @@ def readnek(fname):
 	#  @profile
 	def read_file_into_data(el, idim, name_var):
 		fi = infile.read(npel*wdsz)
-		fi = np.array(struct.unpack(emode+npel*realtype, fi), dtype=float)
-		ip = 0
 
+		# Slow to fast alternatives
+		# -------------------------
+		# fi = list(struct.unpack(emode+npel*realtype, fi))
+		# fi = np.array(struct.unpack(emode+npel*realtype, fi), dtype=float)
+		# fi = np.fromfile(infile, dtype=emode+realtype, count=npel)
+		fi = np.frombuffer(fi, dtype=emode+realtype, count=npel)
+
+		# ip = 0
 		data_var = getattr(el, name_var)
-		for iz in range(lr1[2]):
-			for iy in range(lr1[1]):
-				data_var[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
-				ip += lr1[0]
+		data_var[idim,...]= fi.reshape(lr1[::-1])
+
+		# for iz in range(lr1[2]):
+		#     for iy in range(lr1[1]):
+		#         data_var[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
+		#         ip += lr1[0]
 	#
 	# read geometry
 	for iel in elmap:

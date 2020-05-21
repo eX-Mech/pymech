@@ -58,7 +58,7 @@ def readnek(fname):
 	# compute total number of points per element
 	npel = lr1[0] * lr1[1] * lr1[2]
 	#
-	# get number of pysical dimensions
+	# get number of physical dimensions
 	ndim = 2 + (lr1[2]>1)
 	#
 	# get number of elements
@@ -93,13 +93,11 @@ def readnek(fname):
 		elif (v == 'T'):
 			var[3] = 1
 		elif (v == 'S'):
+			logger.warning("Reading scalar variables is an experimental feature")
 			# For example: variables = 'XS44'
 			index_s = variables.index('S')
 			nb_scalars = int(variables[index_s+1:])
 			var[4] = nb_scalars
-	#
-	# compute number of scalar fields
-	nfields = sum(var)
 	#
 	# identify endian encoding
 	etagb = infile.read(4)
@@ -196,8 +194,13 @@ def readnek(fname):
 	# read scalar fields
 	data.lims.scal[:,0] =  float('inf')
 	data.lims.scal[:,1] = -float('inf')
-	for iel in elmap:
-		for ivar in range(var[4]): # if var[4] == 0, scalars are not read
+	#
+	# NOTE: This is not a bug!
+	# Unlike other variables, scalars are in the outer loop and elements
+	# are in the inner loop
+	#
+	for ivar in range(var[4]): # if var[4] == 0, scalars are not read
+		for iel in elmap:
 			fi = infile.read(npel*wdsz)
 			fi = list(struct.unpack(emode+npel*realtype, fi))
 			ip = 0
@@ -248,8 +251,10 @@ def writenek(fname, data):
 	if (data.var[1] > 0): vars += 'U'
 	if (data.var[2] > 0): vars += 'P'
 	if (data.var[3] > 0): vars += 'T'
-	# TODO: check if header for scalars are written with zeros filled as S01
-	if (data.var[4] > 0): vars += 'S{:02d}'.format(data.var[4])
+	if (data.var[4] > 0):
+		logger.warning("Writing scalar variables is an experimental feature")
+		# TODO: check if header for scalars are written with zeros filled as S01
+		vars += 'S{:02d}'.format(data.var[4])
 	#
 	# get word size
 	if (data.wdsz == 4):
@@ -340,9 +345,14 @@ def writenek(fname, data):
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
 	# write scalars
-	for iel in elmap:
+	#
+	# NOTE: This is not a bug!
+	# Unlike other variables, scalars are in the outer loop and elements
+	# are in the inner loop
+	#
+	for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
 		fo = np.zeros(npel)
-		for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
+		for iel in elmap:
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):

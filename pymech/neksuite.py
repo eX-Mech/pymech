@@ -15,7 +15,6 @@ from pymech.log import logger
 
 
 #==============================================================================
-#  @profile
 def readnek(fname):
 	"""
 		readnek
@@ -132,25 +131,18 @@ def readnek(fname):
 	elif (emode == '>'):
 		data.endian = 'big'
 	#
-	#  @profile
-	def read_file_into_data(el, idim, name_var):
+	def read_file_into_data(elem, index_var, name_var):
+		"""Read binary file into an array attribute of ``data.elem``"""
 		fi = infile.read(npel*wdsz)
-
-		# Slow to fast alternatives
-		# -------------------------
-		# fi = list(struct.unpack(emode+npel*realtype, fi))
-		# fi = np.array(struct.unpack(emode+npel*realtype, fi), dtype=float)
-		# fi = np.fromfile(infile, dtype=emode+realtype, count=npel)
 		fi = np.frombuffer(fi, dtype=emode+realtype, count=npel)
 
-		# ip = 0
-		data_var = getattr(el, name_var)
-		data_var[idim,...]= fi.reshape(lr1[::-1])
+		# Fetch elem array, for example `data.elem.pos`
+		data_var = getattr(elem, name_var)
 
-		# for iz in range(lr1[2]):
-		#     for iy in range(lr1[1]):
-		#         data_var[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
-		#         ip += lr1[0]
+		# Replace elem array in-place with
+		# array read from file after reshaping as
+		elem_shape = lr1[::-1]  # lz, ly, lx
+		data_var[index_var, ...] = fi.reshape(elem_shape)
 	#
 	# read geometry
 	for iel in elmap:

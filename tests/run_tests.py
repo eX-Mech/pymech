@@ -1,4 +1,6 @@
 import math
+import numpy as np
+
 
 #------------------------------------------------------------------------------
 # test nek scripts
@@ -44,6 +46,32 @@ def test_writenek():
 	assert field.lims.vel.all()  == fieldw.lims.vel.all()
 	assert field.lims.pres.all() == fieldw.lims.pres.all()
 	assert field.lims.scal.all() == fieldw.lims.scal.all()
+
+
+def test_readnek_scalars():
+	import pymech.neksuite as ns
+
+	# 2D statistics file
+	fname = './tests/nek/stsabl0.f00001'
+	field = ns.readnek(fname)
+
+	ux_min, ux_max = field.lims.scal[0]
+	assert math.isclose(ux_max, 5.3, abs_tol=0.1)
+
+
+def test_writenek_scalars():
+	import pymech.neksuite as ns
+
+	fname = './tests/nek/stsabl0.f00001'
+	field = ns.readnek(fname)
+
+	fnamew = './test_sts_0.f00001'
+	status = ns.writenek(fnamew, field)
+
+	assert status == 0
+
+	fieldw = ns.readnek(fnamew)
+	np.testing.assert_array_equal(field.lims.scal, fieldw.lims.scal)
 
 
 def test_readrea():
@@ -180,8 +208,12 @@ if __name__ == "__main__":
 
 	test_readnek()
 	test_writenek()
+	test_readnek_scalars()
+	test_writenek_scalars()
 	test_readrea()
 	test_writerea()
 
 	test_readdns()
 	test_readplane()
+
+	test_nekdataset()

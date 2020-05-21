@@ -135,7 +135,7 @@ def readnek(fname):
 	#  @profile
 	def read_file_into_data(el, idim, name_var):
 		fi = infile.read(npel*wdsz)
-		fi = list(struct.unpack(emode+npel*realtype, fi))
+		fi = np.array(struct.unpack(emode+npel*realtype, fi), dtype=float)
 		ip = 0
 
 		data_var = getattr(el, name_var)

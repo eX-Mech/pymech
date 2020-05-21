@@ -36,8 +36,9 @@ def readnek(fname):
 	#
 	# read header
 	header = infile.read(132).split()
+	logger.debug('Header: {}'.format(b' '.join(header).decode('utf-8')))
 
-	# get word size
+	# get word size: single or double precision
 	wdsz = int(header[1])
 	if (wdsz == 4):
 		realtype = 'f'
@@ -78,10 +79,11 @@ def readnek(fname):
 	# get tot number of files
 	nf = int(header[10])
 	#
-	# get variables [XUPT]
-	vars = header[11].decode('utf-8')
+	# get variables [XUPTS[01-99]]
+	variables = header[11].decode('utf-8')
+	logger.debug("Variables: {}".format(variables))
 	var = [0 for i in range(5)]
-	for v in vars:
+	for v in variables:
 		if (v == 'X'):
 			var[0] = ndim
 		elif (v == 'U'):
@@ -91,7 +93,10 @@ def readnek(fname):
 		elif (v == 'T'):
 			var[3] = 1
 		elif (v == 'S'):
-			var[4] = 0 # TODO: need to know how this works
+			# For example: variables = 'XS44'
+			index_s = variables.index('S')
+			nb_scalars = int(variables[index_s+1:])
+			var[4] = nb_scalars
 	#
 	# compute number of scalar fields
 	nfields = sum(var)
@@ -243,7 +248,8 @@ def writenek(fname, data):
 	if (data.var[1] > 0): vars += 'U'
 	if (data.var[2] > 0): vars += 'P'
 	if (data.var[3] > 0): vars += 'T'
-	if (data.var[4] > 0): vars += 'S' # TODO: need to know how this works
+	# TODO: check if header for scalars are written with zeros filled as S01
+	if (data.var[4] > 0): vars += 'S{:02d}'.format(data.var[4])
 	#
 	# get word size
 	if (data.wdsz == 4):

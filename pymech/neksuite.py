@@ -11,6 +11,8 @@ import struct
 import numpy as np
 import pymech.exadata as exdat
 
+from pymech.log import logger
+
 
 #==============================================================================
 def readnek(fname):
@@ -25,7 +27,7 @@ def readnek(fname):
 	try:
 		infile = open(fname, 'rb')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -34,7 +36,7 @@ def readnek(fname):
 	#
 	# read header
 	header = infile.read(132).split()
-	#
+
 	# get word size
 	wdsz = int(header[1])
 	if (wdsz == 4):
@@ -42,7 +44,7 @@ def readnek(fname):
 	elif (wdsz == 8):
 		realtype = 'd'
 	else:
-		print('ERROR: could not interpret real type (wdsz = %i)' %(wdsz))
+		logger.error('Could not interpret real type (wdsz = %i)' % (wdsz))
 		return -2
 	#
 	# get polynomial order
@@ -99,13 +101,13 @@ def readnek(fname):
 	etagL = struct.unpack('<f', etagb)[0]; etagL = int(etagL*1e5)/1e5
 	etagB = struct.unpack('>f', etagb)[0]; etagB = int(etagB*1e5)/1e5
 	if (etagL == 6.54321):
-		# print('Reading little-endian file\n')
+		logger.debug('Reading little-endian file\n')
 		emode = '<'
 	elif (etagB == 6.54321):
-		# print('Reading big-endian file\n')
+		logger.debug('Reading big-endian file\n')
 		emode = '>'
 	else:
-		print('ERROR: could not interpret endianness')
+		logger.error('Could not interpret endianness')
 		return -3
 	#
 	# read element map for the file
@@ -223,7 +225,7 @@ def writenek(fname, data):
 	try:
 		outfile = open(fname, 'wb')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -249,18 +251,18 @@ def writenek(fname, data):
 	elif (data.wdsz == 8):
 		realtype = 'd'
 	else:
-		print('ERROR: could not interpret real type (wdsz = %i)' %(wdsz))
+		logger.error('Could not interpret real type (wdsz = %i)' % (data.wdsz))
 		return -2
 	#
 	# get endian
 	if (data.endian == 'little'):
-		# print('Writing little-endian file\n')
+		logger.debug('Writing little-endian file\n')
 		emode = '<'
 	elif (data.endian == 'big'):
-		# print('Writing big-endian file\n')
+		logger.debug('Writing big-endian file\n')
 		emode = '>'
 	else:
-		print('ERROR: could not interpret endianness')
+		logger.error('Could not interpret endianness')
 		return -3
 	#
 	# generate header
@@ -380,7 +382,7 @@ def readrea(fname):
 	try:
 		infile = open(fname, 'r')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		#return -1
 	#
 	#---------------------------------------------------------------------------
@@ -566,7 +568,7 @@ def writerea(fname, data):
 	try:
 		outfile = open(fname, 'w')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		#return -1
 	#
 	#---------------------------------------------------------------------------

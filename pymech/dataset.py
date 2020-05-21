@@ -37,12 +37,27 @@ class NekDataset:
 		"""Generate an xarray dataset from a single element."""
 		ax = self.axes
 
+		data_vars = {
+			"ux": (ax, elem.vel[0]),
+			"uy": (ax, elem.vel[1]),
+			"uz": (ax, elem.vel[2]),
+		}
+		if elem.pres.size:
+			data_vars["pressure"] = ax, elem.pres[0]
+
+		if elem.temp.size:
+			data_vars["temperature"] = ax, elem.temp[0]
+
+		if elem.scal.size:
+			data_vars.update(
+				{
+					"s{:02d}".format(iscalar + 1): (ax, elem.scal[iscalar])
+					for iscalar in range(elem.scal.shape[0])
+				}
+			)
+
 		ds = xr.Dataset(
-			data_vars={
-				"ux": (ax, elem.vel[0]),
-				"uy": (ax, elem.vel[1]),
-				"uz": (ax, elem.vel[2]),
-			},
+			data_vars=data_vars,
 			coords={
 				ax[2]: self.meshgrid_to_dim(elem.pos[0]),  # x
 				ax[1]: self.meshgrid_to_dim(elem.pos[1]),  # y
@@ -58,14 +73,6 @@ class NekDataset:
 			}
 		)
 
-		if elem.pres.size:
-			ds["pressure"] = ax, elem.pres[0]
-
-		if elem.temp.size:
-			ds["temperature"] = ax, elem.temp[0]
-
-		if elem.scal.size:
-			ds["scalar"] = ax, elem.scal[0]
 
 		return ds
 

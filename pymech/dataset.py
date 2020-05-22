@@ -6,32 +6,60 @@ import xarray as xr
 from .neksuite import readnek
 
 
-def open_dataset(path):
+def open_dataset(path, chunks=None, parallel=False):
 	"""Helper function for opening a file as an xarray dataset."""
 	path = Path(path)
 	if path.suffix.startswith('.f'):
-		_open = open_nek_dataset
+		_open = _open_nek_dataset
 	else:
 		raise NotImplementedError(
 			"Filetype: {} is not supported.".format(path.suffix)
 		)
 
-	return _open(path)
+	return _open(path, chunks, parallel)
 
 
 #  @profile
-def open_nek_dataset(path):
-	"""Interface for converting Nek field files into xarray datasets"""
+def _open_nek_dataset(path, chunks, parallel):
+	"""Interface for converting Nek field files into xarray datasets
+
+	If parallel
+	"""
+
 	field = readnek(path)
 	if isinstance(field, int):
 		raise IOError("Failed to load {}".format(path))
 
 	elements = field.elem
-	elem_stores = [_NekDataStore(elem) for elem in elements]
-	elem_dsets = [
-		xr.Dataset.load_store(store).set_coords(store.axes)
-		for store in elem_stores
-	]
+
+	if parallel:
+		import dask
+		import dask.bag as db
+
+		#
+		elements = db.from_sequence(elements, npartitions=4)
+
+		DataStore = dask.delayed(_NekDataStore)
+		create_dset = dask.delayed(_create_nek_dataset)
+		set_coords = dask.delayed(_set_nek_coords)
+
+		def tasks(elem):
+			return set_coords(create_dset(DataStore(elem)))
+
+		task_graph = elements.map(tasks)
+
+		#  dask.visualize(task_graph, filename="graph.svg")
+		elem_dsets = dask.compute(*task_graph)
+	else:
+		DataStore = _NekDataStore
+		create_dset = _create_nek_dataset
+		set_coords = _set_nek_coords
+
+		elem_dsets = [
+			set_coords(create_dset(DataStore(elem), chunks))
+			for elem in elements
+		]
+
 
 	# See: https://github.com/MITgcm/xmitgcm/pull/200
 	if xr.__version__ < '0.15.2':
@@ -42,6 +70,26 @@ def open_nek_dataset(path):
 	ds.coords.update({"time": field.time})
 
 	return ds
+
+
+def _create_nek_dataset(store, chunks=False):
+	ds = xr.Dataset.load_store(store)
+
+	if chunks:
+		from dask.base import tokenize
+
+		elem_id = id(store)
+		token = tokenize(chunks, elem_id)
+		name_prefix = "create_nek_dataset-%d" % token
+
+		return ds.chunk(chunks, name_prefix=name_prefix, token=token)
+	else:
+		return ds
+
+
+def _set_nek_coords(ds):
+	axes = ("z", "y", "x")
+	return ds.set_coords(axes)
 
 
 class _NekDataStore(xr.backends.common.AbstractDataStore):

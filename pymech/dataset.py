@@ -19,7 +19,6 @@ def open_dataset(path):
 	return _open(path)
 
 
-#  @profile
 def open_nek_dataset(path):
 	"""Interface for converting Nek field files into xarray datasets"""
 	field = readnek(path)
@@ -70,7 +69,6 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 		}
 		return attrs
 
-	#  @profile
 	def get_variables(self):
 		"""Generate an xarray dataset from a single element."""
 		ax = self.axes

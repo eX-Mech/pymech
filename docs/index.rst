@@ -33,10 +33,11 @@ Contents:
    simsonsuite.rst
    vtksuite.rst
    tests.rst
+   usage.ipynb
 
 
 .. Indices and tables
-   
+
    * :ref:`genindex`
    * :ref:`modindex`
    * :ref:`search`

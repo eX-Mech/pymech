@@ -33,6 +33,7 @@ release = '1.2'
 # ones.
 extensions = [
     'recommonmark',
+	'nbsphinx',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',

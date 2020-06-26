@@ -11,21 +11,23 @@ import struct
 import numpy as np
 import pymech.exadata as exdat
 
+from pymech.log import logger
+
 
 #==============================================================================
 def readnek(fname):
 	"""
-	    readnek
-	    A function for reading binary data from the nek5000 binary format
+		readnek
+		A function for reading binary data from the nek5000 binary format
 
-	    input variable:
-	    fname : file name
+		input variable:
+		fname : file name
 	"""
 	#
 	try:
 		infile = open(fname, 'rb')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -34,26 +36,29 @@ def readnek(fname):
 	#
 	# read header
 	header = infile.read(132).split()
-	#
-	# get word size
+	logger.debug('Header: {}'.format(b' '.join(header).decode('utf-8')))
+
+	# get word size: single or double precision
 	wdsz = int(header[1])
 	if (wdsz == 4):
 		realtype = 'f'
 	elif (wdsz == 8):
 		realtype = 'd'
 	else:
-		print('ERROR: could not interpret real type (wdsz = %i)' %(wdsz))
+		logger.error('Could not interpret real type (wdsz = %i)' % (wdsz))
 		return -2
 	#
 	# get polynomial order
-	lr1 = [int(header[2]), 
-	       int(header[3]),
-	       int(header[4])]
+	lr1 = [
+		int(header[2]),
+		int(header[3]),
+		int(header[4])
+	]
 	#
 	# compute total number of points per element
 	npel = lr1[0] * lr1[1] * lr1[2]
 	#
-	# get number of pysical dimensions
+	# get number of physical dimensions
 	ndim = 2 + (lr1[2]>1)
 	#
 	# get number of elements
@@ -74,10 +79,11 @@ def readnek(fname):
 	# get tot number of files
 	nf = int(header[10])
 	#
-	# get variables [XUPT]
-	vars = header[11].decode('utf-8')
+	# get variables [XUPTS[01-99]]
+	variables = header[11].decode('utf-8')
+	logger.debug("Variables: {}".format(variables))
 	var = [0 for i in range(5)]
-	for v in vars:
+	for v in variables:
 		if (v == 'X'):
 			var[0] = ndim
 		elif (v == 'U'):
@@ -87,23 +93,24 @@ def readnek(fname):
 		elif (v == 'T'):
 			var[3] = 1
 		elif (v == 'S'):
-			var[4] = 0 # TODO: need to know how this works
-	#
-	# compute number of scalar fields
-	nfields = sum(var)
+			logger.warning("Reading scalar variables is an experimental feature")
+			# For example: variables = 'XS44'
+			index_s = variables.index('S')
+			nb_scalars = int(variables[index_s+1:])
+			var[4] = nb_scalars
 	#
 	# identify endian encoding
 	etagb = infile.read(4)
 	etagL = struct.unpack('<f', etagb)[0]; etagL = int(etagL*1e5)/1e5
 	etagB = struct.unpack('>f', etagb)[0]; etagB = int(etagB*1e5)/1e5
 	if (etagL == 6.54321):
-		# print('Reading little-endian file\n')
+		logger.debug('Reading little-endian file\n')
 		emode = '<'
 	elif (etagB == 6.54321):
-		# print('Reading big-endian file\n')
+		logger.debug('Reading big-endian file\n')
 		emode = '>'
 	else:
-		print('ERROR: could not interpret endianness')
+		logger.error('Could not interpret endianness')
 		return -3
 	#
 	# read element map for the file
@@ -124,80 +131,53 @@ def readnek(fname):
 	elif (emode == '>'):
 		data.endian = 'big'
 	#
+	def read_file_into_data(elem, index_var, name_var):
+		"""Read binary file into an array attribute of ``data.elem``"""
+		fi = infile.read(npel*wdsz)
+		fi = np.frombuffer(fi, dtype=emode+realtype, count=npel)
+
+		# Fetch elem array, for example `data.elem.pos`
+		data_var = getattr(elem, name_var)
+
+		# Replace elem array in-place with
+		# array read from file after reshaping as
+		elem_shape = lr1[::-1]  # lz, ly, lx
+		data_var[index_var, ...] = fi.reshape(elem_shape)
+	#
 	# read geometry
-	data.lims.pos[:,0] =  float('inf')
-	data.lims.pos[:,1] = -float('inf')
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for idim in range(var[0]): # if var[0] == 0, geometry is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].pos[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
-			data.lims.pos[idim,0] = min([data.lims.pos[idim,0]]+fi)
-			data.lims.pos[idim,1] = max([data.lims.pos[idim,1]]+fi)
+			read_file_into_data(el, idim, 'pos')
 	#
 	# read velocity
-	data.lims.vel[:,0] =  float('inf')
-	data.lims.vel[:,1] = -float('inf')
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for idim in range(var[1]): # if var[1] == 0, velocity is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].vel[idim,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
-			data.lims.vel[idim,0] = min([data.lims.vel[idim,0]]+fi)
-			data.lims.vel[idim,1] = max([data.lims.vel[idim,1]]+fi)
+			read_file_into_data(el, idim, 'vel')
 	#
-	# read pressure 
-	data.lims.pres[:,0] =  float('inf')
-	data.lims.pres[:,1] = -float('inf')
+	# read pressure
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for ivar in range(var[2]): # if var[2] == 0, pressure is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].pres[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
-			data.lims.pres[ivar,0] = min([data.lims.pres[ivar,0]]+fi)
-			data.lims.pres[ivar,1] = max([data.lims.pres[ivar,1]]+fi)
+			read_file_into_data(el, ivar, 'pres')
 	#
 	# read temperature
-	data.lims.temp[:,0] =  float('inf')
-	data.lims.temp[:,1] = -float('inf')
 	for iel in elmap:
+		el = data.elem[iel-1]
 		for ivar in range(var[3]): # if var[3] == 0, temperature is not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].temp[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
-			data.lims.temp[ivar,0] = min([data.lims.temp[ivar,0]]+fi)
-			data.lims.temp[ivar,1] = max([data.lims.temp[ivar,1]]+fi)
+			read_file_into_data(el, ivar, 'temp')
 	#
 	# read scalar fields
-	data.lims.scal[:,0] =  float('inf')
-	data.lims.scal[:,1] = -float('inf')
-	for iel in elmap:
-		for ivar in range(var[4]): # if var[4] == 0, scalars are not read
-			fi = infile.read(npel*wdsz)
-			fi = list(struct.unpack(emode+npel*realtype, fi))
-			ip = 0
-			for iz in range(lr1[2]):
-				for iy in range(lr1[1]):
-					data.elem[iel-1].scal[ivar,iz,iy,:] = fi[ip:ip+lr1[0]]
-					ip += lr1[0]
-			data.lims.scal[ivar,0] = min([data.lims.scal[ivar,0]]+fi)
-			data.lims.scal[ivar,1] = max([data.lims.scal[ivar,1]]+fi)
+	#
+	# NOTE: This is not a bug!
+	# Unlike other variables, scalars are in the outer loop and elements
+	# are in the inner loop
+	#
+	for ivar in range(var[4]): # if var[4] == 0, scalars are not read
+		for iel in elmap:
+			el = data.elem[iel-1]
+			read_file_into_data(el, ivar, 'scal')
 	#
 	#
 	# close file
@@ -210,18 +190,18 @@ def readnek(fname):
 #==============================================================================
 def writenek(fname, data):
 	"""
-	    writenek
-	    A function for writing binary data in the nek5000 binary format
+		writenek
+		A function for writing binary data in the nek5000 binary format
 
-	    input variable:
-	    fname : file name
-	    data : exadata data organised as readnek() output
+		input variable:
+		fname : file name
+		data : exadata data organised as readnek() output
 	"""
 	#
 	try:
 		outfile = open(fname, 'wb')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -239,7 +219,10 @@ def writenek(fname, data):
 	if (data.var[1] > 0): vars += 'U'
 	if (data.var[2] > 0): vars += 'P'
 	if (data.var[3] > 0): vars += 'T'
-	if (data.var[4] > 0): vars += 'S' # TODO: need to know how this works
+	if (data.var[4] > 0):
+		logger.warning("Writing scalar variables is an experimental feature")
+		# TODO: check if header for scalars are written with zeros filled as S01
+		vars += 'S{:02d}'.format(data.var[4])
 	#
 	# get word size
 	if (data.wdsz == 4):
@@ -247,18 +230,18 @@ def writenek(fname, data):
 	elif (data.wdsz == 8):
 		realtype = 'd'
 	else:
-		print('ERROR: could not interpret real type (wdsz = %i)' %(wdsz))
+		logger.error('Could not interpret real type (wdsz = %i)' % (data.wdsz))
 		return -2
 	#
 	# get endian
 	if (data.endian == 'little'):
-		# print('Writing little-endian file\n')
+		logger.debug('Writing little-endian file\n')
 		emode = '<'
 	elif (data.endian == 'big'):
-		# print('Writing big-endian file\n')
+		logger.debug('Writing big-endian file\n')
 		emode = '>'
 	else:
-		print('ERROR: could not interpret endianness')
+		logger.error('Could not interpret endianness')
 		return -3
 	#
 	# generate header
@@ -292,7 +275,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pos[idim,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pos[idim,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -303,7 +286,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].vel[idim,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].vel[idim,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -314,7 +297,7 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pres[ivar,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pres[ivar,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -325,18 +308,23 @@ def writenek(fname, data):
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].temp[ivar,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].temp[ivar,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
 	# write scalars
-	for iel in elmap:
+	#
+	# NOTE: This is not a bug!
+	# Unlike other variables, scalars are in the outer loop and elements
+	# are in the inner loop
+	#
+	for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
 		fo = np.zeros(npel)
-		for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
+		for iel in elmap:
 			ip = 0
 			for iz in range(data.lr1[2]):
 				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].scal[ivar,iz,iy,:] 
+					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].scal[ivar,iz,iy,:]
 					ip += data.lr1[0]
 			outfile.write(struct.pack(emode+npel*realtype, *fo))
 	#
@@ -368,17 +356,17 @@ def writenek(fname, data):
 #==============================================================================
 def readrea(fname):
 	"""
-	    readrea
-	    A function for reading .rea files for nek5000
+		readrea
+		A function for reading .rea files for nek5000
 
-	    input variable:
-	    fname : file name
+		input variable:
+		fname : file name
 	"""
 	#
 	try:
 		infile = open(fname, 'r')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		#return -1
 	#
 	#---------------------------------------------------------------------------
@@ -391,7 +379,7 @@ def readrea(fname):
 		line_split = line.split()
 		if 'BOUNDARY' in line_split[2:] and not 'NO' in line_split:
 			nbc = nbc + 1
-	
+
 	infile.seek(0)
 	#
 	#---------------------------------------------------------------------------
@@ -449,8 +437,6 @@ def readrea(fname):
 	data = exdat.exadata(ndim, nel, lr1, var, nbc)
 	#
 	# read geometry
-	data.lims.pos[:,0] =  float('inf')
-	data.lims.pos[:,1] = -float('inf')
 	for iel in range(nel):
 		# skip element number and group
 		infile.readline()
@@ -540,7 +526,7 @@ def readrea(fname):
 	#
 	#---------------------------------------------------------------------------
 	# FORGET ABOUT WHAT FOLLOWS
-	#---------------------------------------------------------------------------	
+	#---------------------------------------------------------------------------
 	#
 	#
 	# close file
@@ -553,18 +539,18 @@ def readrea(fname):
 #==============================================================================
 def writerea(fname, data):
 	"""
-	    writerea
-	    A function for writing ascii .rea files for nek5000
+		writerea
+		A function for writing ascii .rea files for nek5000
 
-	    input variables:
-	    fname : file name
+		input variables:
+		fname : file name
 		 data : exadata data organised as in exadata.py
 	"""
 	#
 	try:
 		outfile = open(fname, 'w')
 	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
 		#return -1
 	#
 	#---------------------------------------------------------------------------

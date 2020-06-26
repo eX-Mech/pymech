@@ -10,6 +10,11 @@
 *.pyc
 .cache
 __pycache__
+*.egg-info
 
 # documentation (sphinx) stuff
 docs/_build
+
+# test related
+test.rea
+test*.f*

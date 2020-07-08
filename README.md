@@ -6,10 +6,11 @@
 
 A Python suite of routines for *Nek5000* and *Simson*.
 
-by Jacopo Canton, Nicolò Fabbiane and Guillaume Chauvat<br>
+by Jacopo Canton, Guillaume Chauvat, Nicolò Fabbiane and Ashwin Vishnu Mohanan<br>
 [@jcanton](https://github.com/jcanton)
-[@nfabbiane](https://github.com/nfabbiane)
 [@guillaumechauvat](https://github.com/guillaumechauvat)
+[@nfabbiane](https://github.com/nfabbiane)
+[@ashwinvis](https://github.com/ashwinvis)
 
 Install with `pip install pymech`
 

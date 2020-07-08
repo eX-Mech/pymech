@@ -2,12 +2,10 @@ language: python
 python:
    - 3.6
    - 3.7
+   - 3.8
 
 install:
-    - pip install -e .
-
-before_script:
-    - pip install -r requirements.txt
+    - pip install -e .[tests]
 
 script:
     - coverage run -m pytest tests/run_tests.py

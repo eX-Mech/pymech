@@ -12,19 +12,26 @@
 #
 import os
 import sys
+from datetime import date
 # sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
 
+_today = date.today()
+
 project = 'pymech'
-copyright = '2020, Jacopo Canton, Nicolo Fabbiane and Guillaume Chauvat'
-author = 'Jacopo Canton, Nicolo Fabbiane and Guillaume Chauvat'
+author = 'Jacopo Canton, Guillaume Chauvat, Nicolò Fabbiane and Ashwin Vishnu Mohanan'
+copyright = f"{_today.year}, {author}"
 master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = '1.2'
+release = '1.3.0'
 
+rst_prolog = f"""
+.. |author| replace:: {author}
+.. |today| replace:: {_today}
+"""
 
 # -- General configuration ---------------------------------------------------
 
@@ -66,7 +73,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # -- Other options -----------------------------------------------------------
 #  autosummary_generate = True

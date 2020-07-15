@@ -47,14 +47,4 @@ The output consists of:
 Contents of simsonsuite.py
 --------------------------
 
-**readdns()**
-
-.. literalinclude:: ../pymech/simsonsuite.py
-   :language: python
-   :lines: 15-241
-
-**readplane()**
-
-.. literalinclude:: ../pymech/simsonsuite.py
-   :language: python
-   :lines: 245-363
+.. automodule:: pymech.simsonsuite

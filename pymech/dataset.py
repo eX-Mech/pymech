@@ -1,4 +1,8 @@
-"""Interface for reading files as xarray datasets."""
+"""Interface for reading files as xarray_ datasets.
+
+.. _xarray: https://xarray.pydata.org
+
+"""
 from pathlib import Path
 from glob import glob
 
@@ -9,7 +13,17 @@ from .neksuite import readnek
 
 
 def open_dataset(path, **kwargs):
-	"""Helper function for opening a file as an xarray dataset."""
+	"""Helper function for opening a file as an xarray_ dataset.
+
+	Parameters
+	----------
+	path : str
+		Path to a field file (only Nek files are supported at the moment.)
+
+	kwargs : dict
+		Keyword arguments passed on to the compatible open function.
+
+	"""
 	path = Path(path)
 	if path.suffix.startswith('.f'):
 		_open = _open_nek_dataset
@@ -38,14 +52,16 @@ def open_mfdataset(
 	attrs_file=None,
 	**kwargs,
 ):
-	"""Helper function for opening multiple files as an xarray dataset.
-
+	"""Helper function for opening multiple files as an xarray_ dataset.
 	Adapted from upstream implementation_. See docs_ for usage.
-	To be removed when a backend entrypoint_ is implementated.
 
-	.. _implementation:: https://github.com/pydata/xarray/blob/484d1ce5ff8969b6ca6fa942b344379725f33b9c/xarray/backends/api.py#L726
-	.. _docs:: https://xarray.pydata.org/en/v0.15.1/generated/xarray.open_mfdataset.html
-	.. _entrypoint:: https://github.com/pydata/xarray/pull/3166
+	.. todo::
+
+		To be removed when a backend entrypoint_ is implementated.
+
+	.. _implementation: https://github.com/pydata/xarray/blob/484d1ce5ff8969b6ca6fa942b344379725f33b9c/xarray/backends/api.py#L726
+	.. _docs: https://xarray.pydata.org/en/v0.15.1/generated/xarray.open_mfdataset.html
+	.. _entrypoint: https://github.com/pydata/xarray/pull/3166
 
 	"""
 	if isinstance(paths, str):
@@ -125,7 +141,7 @@ def open_mfdataset(
 
 
 def _open_nek_dataset(path):
-	"""Interface for converting Nek field files into xarray datasets"""
+	"""Interface for converting Nek field files into xarray_ datasets."""
 	field = readnek(path)
 	if isinstance(field, int):
 		raise IOError("Failed to load {}".format(path))

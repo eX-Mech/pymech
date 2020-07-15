@@ -74,26 +74,10 @@ writerea() produces no output.
 Contents of neksuite.py
 -----------------------
 
-**readnek()**
+.. automodule:: pymech.neksuite
 
-.. literalinclude:: ../pymech/neksuite.py
-   :language: python
-   :lines: 16-207
+.. note::
 
-**writenek()**
+   See usage_ for more details.
 
-.. literalinclude:: ../pymech/neksuite.py
-   :language: python
-   :lines: 211-348
-
-**readrea()**
-
-.. literalinclude:: ../pymech/neksuite.py
-   :language: python
-   :lines: 352-512
-
-**writerea()**
-
-.. literalinclude:: ../pymech/neksuite.py
-   :language: python
-   :lines: 516-770
+.. _usage: usage.html#pymech.readnek

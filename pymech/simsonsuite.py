@@ -13,12 +13,12 @@ import pymech.exadata as exdat
 
 #==============================================================================
 def readdns(fname):
-	"""
-		readdns(fname)
-		A function for reading binary data from the SIMSON binary format
+	"""A function for reading binary data from the SIMSON binary format
 
-		input variable:
-		fname : file name
+	Parameters
+	----------
+	fname : str
+		file name
 	"""
 	#
 	try:
@@ -243,12 +243,12 @@ def readdns(fname):
 
 #==============================================================================
 def readplane(fname):
-	"""
-		readplane(fname)
-		A function for reading binary data from SIMSON's (pxyst) plane files
+	"""A function for reading binary data from SIMSON's (pxyst) plane files
 
-		input variable:
-		fname : file name
+	Parameters
+	----------
+	fname : str
+		file name
 	"""
 	#
 	try:

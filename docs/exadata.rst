@@ -77,20 +77,4 @@ This class contains the extrema of all quantities stored in the mesh.
 Contents of exadata.py
 -----------------------
 
-**exadata**
-
-.. literalinclude:: ../pymech/exadata.py
-   :language: python
-   :lines: 53-69
-
-**elem**
-
-.. literalinclude:: ../pymech/exadata.py
-   :language: python
-   :lines: 31-50
-
-**datalims**
-
-.. literalinclude:: ../pymech/exadata.py
-   :language: python
-   :lines: 13-28
+.. automodule:: pymech.exadata

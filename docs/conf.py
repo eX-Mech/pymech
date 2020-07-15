@@ -34,10 +34,13 @@ release = '1.2'
 extensions = [
     'recommonmark',
 	'nbsphinx',
+	'sphinx.ext.autodoc',
+    #  'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
+	'sphinx.ext.napoleon',  # Numpy-style docstrings
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
 ]
@@ -64,3 +67,12 @@ html_theme = 'default'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# -- Other options -----------------------------------------------------------
+#  autosummary_generate = True
+
+autodoc_default_options = {
+    "members": True,
+}
+
+autodoc_mock_imports = ["tvtk", "xarray"]

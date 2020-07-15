@@ -13,10 +13,8 @@ import numpy as np
 
 #==============================================================================
 class datalims:
-	"""
-		datalims
-		A class containing the extrema of all quantities stored in the mesh
-	"""
+	"""A class containing the extrema of all quantities stored in the mesh"""
+
 	def __init__(self, nb_var, elements):
 		#                    x,y,z   min,max
 		self.pos  = np.zeros((3     , 2))
@@ -71,10 +69,8 @@ class datalims:
 
 #==============================================================================
 class elem:
-	"""
-		elem
-		A class containing one nek element/SIMSON flow field
-	"""
+	"""A class containing one nek element/SIMSON flow field"""
+
 	def __init__(self, var, lr1, nbc):
 		#                    x,y,z   lz      ly      lx
 		self.pos  = np.zeros((3     , lr1[2], lr1[1], lr1[0]))
@@ -97,10 +93,8 @@ class elem:
 
 #==============================================================================
 class exadata:
-	"""
-		data
-		A class containing data for reading/writing binary simulation files
-	"""
+	"""A class containing data for reading/writing binary simulation files"""
+
 	def __init__(self, ndim, nel, lr1, var, nbc=0):
 		self.ndim   = ndim
 		self.nel    = nel

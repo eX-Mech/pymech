@@ -32,6 +32,7 @@ Contents:
    neksuite.rst
    simsonsuite.rst
    vtksuite.rst
+   dataset
    tests.rst
    usage.ipynb
 

@@ -16,12 +16,12 @@ from pymech.log import logger
 
 #==============================================================================
 def readnek(fname):
-	"""
-		readnek
-		A function for reading binary data from the nek5000 binary format
+	"""A function for reading binary data from the nek5000 binary format
 
-		input variable:
-		fname : file name
+	Parameters
+	----------
+	fname : str
+		file name
 	"""
 	#
 	try:
@@ -189,13 +189,14 @@ def readnek(fname):
 
 #==============================================================================
 def writenek(fname, data):
-	"""
-		writenek
-		A function for writing binary data in the nek5000 binary format
+	"""A function for writing binary data in the nek5000 binary format
 
-		input variable:
-		fname : file name
-		data : exadata data organised as readnek() output
+	Parameters
+	----------
+	fname : str
+		file name
+	data : exadata
+		data organised as readnek() output
 	"""
 	#
 	try:
@@ -355,12 +356,12 @@ def writenek(fname, data):
 
 #==============================================================================
 def readrea(fname):
-	"""
-		readrea
-		A function for reading .rea files for nek5000
+	"""A function for reading .rea files for nek5000
 
-		input variable:
-		fname : file name
+	Parameters
+	----------
+	fname : str
+		file name
 	"""
 	#
 	try:
@@ -538,13 +539,14 @@ def readrea(fname):
 
 #==============================================================================
 def writerea(fname, data):
-	"""
-		writerea
-		A function for writing ascii .rea files for nek5000
+	"""A function for writing ascii .rea files for nek5000
 
-		input variables:
-		fname : file name
-		 data : exadata data organised as in exadata.py
+	Parameters
+	----------
+	fname : str
+		file name
+	data : exadata
+		data organised as in exadata.py
 	"""
 	#
 	try:

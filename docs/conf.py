@@ -13,7 +13,6 @@
 import os
 import sys
 from datetime import date
-from pymech import __version__
 try:
     from importlib import metadata
 except ImportError:

@@ -11,6 +11,8 @@
 .cache
 __pycache__
 *.egg-info
+pymech/_version.py
+dist/*
 
 # documentation (sphinx) stuff
 docs/_build

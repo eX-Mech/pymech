@@ -16,7 +16,7 @@ from datetime import date
 
 
 sys.path.insert(0, os.path.abspath('..'))
-
+from pymech import __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -28,7 +28,7 @@ copyright = f"{_today.year}, {author}"
 master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = '1.3.0'
+release = __version__
 
 rst_prolog = f"""
 .. |author| replace:: {author}

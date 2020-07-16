@@ -12,3 +12,4 @@ The pymech API
    log
 
 """
+from ._version import __version__

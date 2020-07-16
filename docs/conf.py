@@ -14,21 +14,27 @@ import os
 import sys
 from datetime import date
 from pymech import __version__
+try:
+    from importlib import metadata
+except ImportError:
+    # Running on pre-3.8 Python; use importlib-metadata package
+    import importlib_metadata as metadata
 
 
 sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
+project = 'pymech'
+_meta = metadata.metadata(project)
 _today = date.today()
 
-project = 'pymech'
-author = 'Jacopo Canton, Guillaume Chauvat, Nicolò Fabbiane and Ashwin Vishnu Mohanan'
+author = _meta.get('Author')
 copyright = f"{_today.year}, {author}"
 master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = __version__
+release = _meta.get('Version')
 
 rst_prolog = f"""
 .. |author| replace:: {author}

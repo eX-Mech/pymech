@@ -37,6 +37,8 @@ Contents:
    dataset
    tests.rst
    usage.ipynb
+   changelog.md
+
 
 
 .. Indices and tables

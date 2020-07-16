@@ -5,13 +5,15 @@ pymech documentation
 
 This is the documentation for pymech_, a Python suite of routines for *Nek5000* and *Simson*.
 
-:Authors: |author|
-
-:Version: |release|
-
-:Date: |today|
-
-:Installation: ``pip install pymech``
++--------------+------------------------------+
+| Authors      |  | |author|                  |
++--------------+------------------------------+
+| Version      |  |release|                   |
++--------------+------------------------------+
+| Date         |  |today|                     |
++--------------+------------------------------+
+| Installation |   ``pip install pymech``     |
++--------------+------------------------------+
 
 Pymech can be used for reading, editing and writing *Nek5000* and *Simson* output files.
 

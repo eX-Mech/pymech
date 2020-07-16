@@ -27,6 +27,11 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [1.3.0.post0] - 2020-07-16
+
+### Fixed
+- Packaging issue of sdist and wheel. Now uses `find_packages` instead of package name.
+
 ## [1.3.0] - 2020-07-16
 
 ### Added

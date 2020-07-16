@@ -50,6 +50,7 @@ Security in case of vulnerabilities.
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.0...HEAD
+[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.0.post0...HEAD
+[1.3.0.post0]: https://github.com/jcanton/pymech/compare/1.3.0...1.3.0.post0
 [1.3.0]: https://github.com/jcanton/pymech/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/jcanton/pymech/releases/tag/1.2.0

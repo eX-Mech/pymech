@@ -89,4 +89,4 @@ autodoc_default_options = {
     "members": True,
 }
 
-autodoc_mock_imports = ["tvtk", "xarray"]
+autodoc_mock_imports = ["tvtk", "xarray", "pymech._version"]

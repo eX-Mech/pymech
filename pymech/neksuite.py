@@ -259,8 +259,8 @@ def writenek(fname, data):
 	outfile.write(etagb)
 	#
 	# generate and write element map for the file
-	elmap = range(data.nel+1)[1:]
-	outfile.write(struct.pack(emode+nelf*'i', *elmap))
+	elmap = np.linspace(1, data.nel, data.nel, dtype=np.int32)
+	elmap.tofile(outfile)
 	#
 	#---------------------------------------------------------------------------
 	# WRITE DATA
@@ -269,49 +269,32 @@ def writenek(fname, data):
 	# compute total number of points per element
 	npel = data.lr1[0] * data.lr1[1] * data.lr1[2]
 	#
+	def write_ndarray_to_file(a):
+		if data.wdsz == 4:
+			np.float32(a).tofile(outfile)
+		else:
+			a.tofile(outfile)
+	#
 	# write geometry
 	for iel in elmap:
 		fo = np.zeros(npel)
 		for idim in range(data.var[0]): # if var[0] == 0, geometry is not written
-			ip = 0
-			for iz in range(data.lr1[2]):
-				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pos[idim,iz,iy,:]
-					ip += data.lr1[0]
-			outfile.write(struct.pack(emode+npel*realtype, *fo))
+			write_ndarray_to_file(data.elem[iel-1].pos[idim, :, :, :])
 	#
 	# write velocity
 	for iel in elmap:
-		fo = np.zeros(npel)
 		for idim in range(data.var[1]): # if var[1] == 0, velocity is not written
-			ip = 0
-			for iz in range(data.lr1[2]):
-				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].vel[idim,iz,iy,:]
-					ip += data.lr1[0]
-			outfile.write(struct.pack(emode+npel*realtype, *fo))
+			write_ndarray_to_file(data.elem[iel-1].vel[idim, :, :, :])
 	#
 	# write pressure
 	for iel in elmap:
-		fo = np.zeros(npel)
 		for ivar in range(data.var[2]): # if var[2] == 0, pressure is not written
-			ip = 0
-			for iz in range(data.lr1[2]):
-				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].pres[ivar,iz,iy,:]
-					ip += data.lr1[0]
-			outfile.write(struct.pack(emode+npel*realtype, *fo))
+			write_ndarray_to_file(data.elem[iel-1].pres[ivar, :, :, :])
 	#
 	# write temperature
 	for iel in elmap:
-		fo = np.zeros(npel)
 		for ivar in range(data.var[3]): # if var[3] == 0, temperature is not written
-			ip = 0
-			for iz in range(data.lr1[2]):
-				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].temp[ivar,iz,iy,:]
-					ip += data.lr1[0]
-			outfile.write(struct.pack(emode+npel*realtype, *fo))
+			write_ndarray_to_file(data.elem[iel-1].temp[ivar, :, :, :])
 	#
 	# write scalars
 	#
@@ -322,13 +305,7 @@ def writenek(fname, data):
 	for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
 		fo = np.zeros(npel)
 		for iel in elmap:
-			ip = 0
-			for iz in range(data.lr1[2]):
-				for iy in range(data.lr1[1]):
-					fo[ip:ip+data.lr1[0]] = data.elem[iel-1].scal[ivar,iz,iy,:]
-					ip += data.lr1[0]
-			outfile.write(struct.pack(emode+npel*realtype, *fo))
-	#
+			write_ndarray_to_file(data.elem[iel-1].scal[ivar, :, :, :])
 	#
 	# write max and min of every field in every element (forced to single precision)
 	if (data.ndim==3):

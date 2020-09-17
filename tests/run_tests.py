@@ -1,6 +1,6 @@
 import math
 import numpy as np
-
+import time
 
 #------------------------------------------------------------------------------
 # test nek scripts
@@ -25,10 +25,14 @@ def test_writenek():
 	import pymech.neksuite as ns
 
 	fname = './tests/nek/channel3D_0.f00001'
+	time0 = time.perf_counter()
 	field = ns.readnek(fname)
+	time1 = time.perf_counter()
 
 	fnamew = './test_0.f00001'
 	status = ns.writenek(fnamew, field)
+	time2 = time.perf_counter()
+	print('readnek: {:.6e} s; writenek: {:.6e} s'.format(time1-time0, time2-time1))
 
 	assert status == 0
 

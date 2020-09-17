@@ -277,7 +277,6 @@ def writenek(fname, data):
 	#
 	# write geometry
 	for iel in elmap:
-		fo = np.zeros(npel)
 		for idim in range(data.var[0]): # if var[0] == 0, geometry is not written
 			write_ndarray_to_file(data.elem[iel-1].pos[idim, :, :, :])
 	#
@@ -303,7 +302,6 @@ def writenek(fname, data):
 	# are in the inner loop
 	#
 	for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
-		fo = np.zeros(npel)
 		for iel in elmap:
 			write_ndarray_to_file(data.elem[iel-1].scal[ivar, :, :, :])
 	#

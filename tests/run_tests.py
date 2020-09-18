@@ -50,6 +50,9 @@ def test_writenek():
 	assert field.lims.vel.all()  == fieldw.lims.vel.all()
 	assert field.lims.pres.all() == fieldw.lims.pres.all()
 	assert field.lims.scal.all() == fieldw.lims.scal.all()
+	assert np.abs(field.elem[123].vel - fieldw.elem[123].vel).max() < 1e-9
+	assert np.abs(field.elem[-1].pos - fieldw.elem[-1].pos).max() < 1e-9
+	assert np.abs(field.elem[-1].pres - fieldw.elem[-1].pres).max() < 1e-9
 
 
 def test_readnek_scalars():

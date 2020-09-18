@@ -1,6 +1,10 @@
+import logging
 import math
-import numpy as np
 import time
+from numpy import testing as npt
+from pymech.log import logger
+
+logger.setLevel(logging.DEBUG)
 
 #------------------------------------------------------------------------------
 # test nek scripts
@@ -32,7 +36,7 @@ def test_writenek():
 	fnamew = './test_0.f00001'
 	status = ns.writenek(fnamew, field)
 	time2 = time.perf_counter()
-	print('readnek: {:.6e} s; writenek: {:.6e} s'.format(time1-time0, time2-time1))
+	logger.info('readnek: {:.6e} s; writenek: {:.6e} s'.format(time1-time0, time2-time1))
 
 	assert status == 0
 
@@ -46,14 +50,42 @@ def test_writenek():
 	assert field.var    == fieldw.var
 	assert field.wdsz   == fieldw.wdsz
 	assert (field.time - fieldw.time) < 1e-3
-	assert field.lims.pos.all()  == fieldw.lims.pos.all()
-	assert field.lims.vel.all()  == fieldw.lims.vel.all()
-	assert field.lims.pres.all() == fieldw.lims.pres.all()
-	assert field.lims.scal.all() == fieldw.lims.scal.all()
-	assert np.abs(field.elem[123].vel - fieldw.elem[123].vel).max() < 1e-9
-	assert np.abs(field.elem[-1].pos - fieldw.elem[-1].pos).max() < 1e-9
-	assert np.abs(field.elem[-1].pres - fieldw.elem[-1].pres).max() < 1e-9
+	npt.assert_array_equal(field.lims.pos, fieldw.lims.pos)
+	npt.assert_array_equal(field.lims.vel, fieldw.lims.vel)
+	npt.assert_array_equal(field.lims.pres, fieldw.lims.pres)
+	npt.assert_array_equal(field.lims.scal, fieldw.lims.scal)
 
+	for elem, elemw in zip(field.elem, fieldw.elem):
+		npt.assert_array_equal(elem.pos,  elemw.pos)
+		npt.assert_array_equal(elem.vel,  elemw.vel)
+		npt.assert_array_equal(elem.pres, elemw.pres)
+		npt.assert_array_equal(elem.scal, elemw.scal)
+
+
+def test_writenek_big_endian():
+	import pymech.neksuite as ns
+
+	fname = './tests/nek/channel3D_0.f00001'
+	field = ns.readnek(fname)
+
+	field.endian = "big"
+	fnamew = './test_0_big.f00001'
+	status = ns.writenek(fnamew, field)
+	assert status == 0
+
+	fieldw = ns.readnek(fnamew)
+	assert field.endian == fieldw.endian == "big"
+
+	npt.assert_array_equal(field.lims.pos, fieldw.lims.pos)
+	npt.assert_array_equal(field.lims.vel, fieldw.lims.vel)
+	npt.assert_array_equal(field.lims.pres, fieldw.lims.pres)
+	npt.assert_array_equal(field.lims.scal, fieldw.lims.scal)
+
+	for elem, elemw in zip(field.elem, fieldw.elem):
+		npt.assert_array_equal(elem.pos,  elemw.pos)
+		npt.assert_array_equal(elem.vel,  elemw.vel)
+		npt.assert_array_equal(elem.pres, elemw.pres)
+		npt.assert_array_equal(elem.scal, elemw.scal)
 
 def test_readnek_scalars():
 	import pymech.neksuite as ns
@@ -78,7 +110,7 @@ def test_writenek_scalars():
 	assert status == 0
 
 	fieldw = ns.readnek(fnamew)
-	np.testing.assert_array_equal(field.lims.scal, fieldw.lims.scal)
+	npt.assert_array_equal(field.lims.scal, fieldw.lims.scal)
 
 
 def test_readrea():
@@ -207,20 +239,3 @@ def test_nekdataset():
 	assert math.isclose(ds.y.max(), 1., abs_tol=1e-6)
 	assert math.isclose(ds.z.max(), math.pi, abs_tol=1e-6)
 	assert math.isclose(ds.time, 0.2, abs_tol=1e-6)
-
-#==============================================================================
-# run tests
-#
-if __name__ == "__main__":
-
-	test_readnek()
-	test_writenek()
-	test_readnek_scalars()
-	test_writenek_scalars()
-	test_readrea()
-	test_writerea()
-
-	test_readdns()
-	test_readplane()
-
-	test_nekdataset()

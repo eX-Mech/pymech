@@ -8,7 +8,7 @@ To test locally, set up a virtual environment and then::
   git clone https://github.com/jcanton/pymech
   cd pymech/
   pip install -e '.[tests]'
-  pytest tests/run_tests.py
+  pytest -s -v
 
 
 Continuous Integration

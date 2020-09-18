@@ -10,6 +10,7 @@
 import struct
 import numpy as np
 import pymech.exadata as exdat
+import sys
 
 from pymech.log import logger
 
@@ -227,9 +228,9 @@ def writenek(fname, data):
 	#
 	# get word size
 	if (data.wdsz == 4):
-		realtype = 'f'
+		logger.debug('Writing single-precision file')
 	elif (data.wdsz == 8):
-		realtype = 'd'
+		logger.debug('Writing double-precision file')
 	else:
 		logger.error('Could not interpret real type (wdsz = %i)' % (data.wdsz))
 		return -2
@@ -243,13 +244,33 @@ def writenek(fname, data):
 	header = header.ljust(132)
 	outfile.write(header.encode('utf-8'))
 	#
+	# decide endianness
+	byteswap = False
+	if data.endian == 'big':
+		if sys.byteorder == 'little':
+			byteswap = True
+		logger.debug('Writing big-endian file')
+	elif data.endian == 'little':
+		logger.debug('Writing little-endian file')
+		if sys.byteorder == 'big':
+			byteswap = True
+	else:
+		logger.debug('Unrecognized endianness, writing native {:s}-endian file'.format(sys.byteorder))
+	#
+	def correct_endianness(a):
+		''' Return the array with the requested endianness'''
+		if byteswap:
+			return a.byteswap()
+		else:
+			return a
+	#
 	# write tag (to specify endianness)
 	endianbytes = np.array([6.54321], dtype=np.float32)
-	endianbytes.tofile(outfile)
+	correct_endianness(endianbytes).tofile(outfile)
 	#
 	# generate and write element map for the file
 	elmap = np.linspace(1, data.nel, data.nel, dtype=np.int32)
-	elmap.tofile(outfile)
+	correct_endianness(elmap).tofile(outfile)
 	#
 	#---------------------------------------------------------------------------
 	# WRITE DATA
@@ -259,10 +280,11 @@ def writenek(fname, data):
 	npel = data.lr1[0] * data.lr1[1] * data.lr1[2]
 	#
 	def write_ndarray_to_file(a):
+		'''Write a data array to the output file in the requested precision and endianness'''
 		if data.wdsz == 4:
-			np.float32(a).tofile(outfile)
+			correct_endianness(a.astype(np.float32)).tofile(outfile)
 		else:
-			a.tofile(outfile)
+			correct_endianness(a).tofile(outfile)
 	#
 	# write geometry
 	for iel in elmap:
@@ -299,17 +321,17 @@ def writenek(fname, data):
 		#
 		for iel in elmap:
 			for idim in range(data.var[0]):
-				np.min(data.elem[iel-1].pos[idim, :,:,:]).tofile(outfile)
-				np.max(data.elem[iel-1].pos[idim, :,:,:]).tofile(outfile)
+				correct_endianness(np.min(data.elem[iel-1].pos[idim, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].pos[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 			for idim in range(data.var[1]):
-				np.min(data.elem[iel-1].vel[idim, :,:,:]).tofile(outfile)
-				np.max(data.elem[iel-1].vel[idim, :,:,:]).tofile(outfile)
+				correct_endianness(np.min(data.elem[iel-1].vel[idim, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].vel[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 			for idim in range(data.var[2]):
-				np.min(data.elem[iel-1].pres[idim, :,:,:]).tofile(outfile)
-				np.max(data.elem[iel-1].pres[idim, :,:,:]).tofile(outfile)
+				correct_endianness(np.min(data.elem[iel-1].pres[idim, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].pres[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 			for idim in range(data.var[3]):
-				np.min(data.elem[iel-1].temp[idim, :,:,:]).tofile(outfile)
-				np.max(data.elem[iel-1].temp[idim, :,:,:]).tofile(outfile)
+				correct_endianness(np.min(data.elem[iel-1].temp[idim, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].temp[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 
 	# close file
 	outfile.close()

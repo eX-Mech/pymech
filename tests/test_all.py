@@ -239,20 +239,3 @@ def test_nekdataset():
 	assert math.isclose(ds.y.max(), 1., abs_tol=1e-6)
 	assert math.isclose(ds.z.max(), math.pi, abs_tol=1e-6)
 	assert math.isclose(ds.time, 0.2, abs_tol=1e-6)
-
-#==============================================================================
-# run tests
-#
-if __name__ == "__main__":
-
-	test_readnek()
-	test_writenek()
-	test_readnek_scalars()
-	test_writenek_scalars()
-	test_readrea()
-	test_writerea()
-
-	test_readdns()
-	test_readplane()
-
-	test_nekdataset()

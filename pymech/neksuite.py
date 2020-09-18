@@ -234,17 +234,6 @@ def writenek(fname, data):
 		logger.error('Could not interpret real type (wdsz = %i)' % (data.wdsz))
 		return -2
 	#
-	# get endian
-	if (data.endian == 'little'):
-		logger.debug('Writing little-endian file\n')
-		emode = '<'
-	elif (data.endian == 'big'):
-		logger.debug('Writing big-endian file\n')
-		emode = '>'
-	else:
-		logger.error('Could not interpret endianness')
-		return -3
-	#
 	# generate header
 	header = '#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s\n' %(
 		data.wdsz, data.lr1[0], data.lr1[1], data.lr1[2], data.nel, nelf,
@@ -255,8 +244,8 @@ def writenek(fname, data):
 	outfile.write(header.encode('utf-8'))
 	#
 	# write tag (to specify endianness)
-	etagb = struct.pack(emode+'f', 6.54321)
-	outfile.write(etagb)
+	endianbytes = np.array([6.54321], dtype=np.float32)
+	endianbytes.tofile(outfile)
 	#
 	# generate and write element map for the file
 	elmap = np.linspace(1, data.nel, data.nel, dtype=np.int32)
@@ -310,17 +299,17 @@ def writenek(fname, data):
 		#
 		for iel in elmap:
 			for idim in range(data.var[0]):
-				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].pos[idim, :,:,:])))
-				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].pos[idim, :,:,:])))
+				np.min(data.elem[iel-1].pos[idim, :,:,:]).tofile(outfile)
+				np.max(data.elem[iel-1].pos[idim, :,:,:]).tofile(outfile)
 			for idim in range(data.var[1]):
-				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].vel[idim, :,:,:])))
-				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].vel[idim, :,:,:])))
+				np.min(data.elem[iel-1].vel[idim, :,:,:]).tofile(outfile)
+				np.max(data.elem[iel-1].vel[idim, :,:,:]).tofile(outfile)
 			for idim in range(data.var[2]):
-				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].pres[idim, :,:,:])))
-				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].pres[idim, :,:,:])))
+				np.min(data.elem[iel-1].pres[idim, :,:,:]).tofile(outfile)
+				np.max(data.elem[iel-1].pres[idim, :,:,:]).tofile(outfile)
 			for idim in range(data.var[3]):
-				outfile.write(struct.pack(emode+'f', np.min(data.elem[iel-1].temp[idim, :,:,:])))
-				outfile.write(struct.pack(emode+'f', np.max(data.elem[iel-1].temp[idim, :,:,:])))
+				np.min(data.elem[iel-1].temp[idim, :,:,:]).tofile(outfile)
+				np.max(data.elem[iel-1].temp[idim, :,:,:]).tofile(outfile)
 
 	# close file
 	outfile.close()

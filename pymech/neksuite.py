@@ -94,7 +94,6 @@ def readnek(fname):
 		elif (v == 'T'):
 			var[3] = 1
 		elif (v == 'S'):
-			logger.warning("Reading scalar variables is an experimental feature")
 			# For example: variables = 'XS44'
 			index_s = variables.index('S')
 			nb_scalars = int(variables[index_s+1:])
@@ -222,7 +221,6 @@ def writenek(fname, data):
 	if (data.var[2] > 0): vars += 'P'
 	if (data.var[3] > 0): vars += 'T'
 	if (data.var[4] > 0):
-		logger.warning("Writing scalar variables is an experimental feature")
 		# TODO: check if header for scalars are written with zeros filled as S01
 		vars += 'S{:02d}'.format(data.var[4])
 	#

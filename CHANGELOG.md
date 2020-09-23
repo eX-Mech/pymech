@@ -27,10 +27,19 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [1.3.2] - 2020-09-23
+
+### Fixed
+- `writenek` detects system endianness and byte-swaps arrays, if needed, before
+writing
+
+### Removed
+- Warnings while reading/writing scalars
+
 ## [1.3.1] - 2020-09-17
 
 ### Changed
-- use ndarray.tofile() for faster output 
+- use ndarray.tofile() for faster output
 
 ## [1.3.0.post0] - 2020-07-16
 
@@ -55,7 +64,8 @@ Security in case of vulnerabilities.
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.1...HEAD
+[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.2...HEAD
+[1.3.2]: https://github.com/jcanton/pymech/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/jcanton/pymech/compare/1.3.0.post0...1.3.1
 [1.3.0.post0]: https://github.com/jcanton/pymech/compare/1.3.0...1.3.0.post0
 [1.3.0]: https://github.com/jcanton/pymech/compare/1.2.0...1.3.0

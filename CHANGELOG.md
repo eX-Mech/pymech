@@ -27,6 +27,10 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+### Fixed
+- Various fixes -- including writing element map, correct order for min/max
+  metadata -- in `writenek`
+
 ## [1.3.2] - 2020-09-23
 
 ### Fixed

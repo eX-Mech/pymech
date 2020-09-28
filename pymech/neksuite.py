@@ -235,7 +235,7 @@ def writenek(fname, data):
 		return -2
 	#
 	# generate header
-	header = '#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s\n' %(
+	header = '#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s' %(
 		data.wdsz, data.lr1[0], data.lr1[1], data.lr1[2], data.nel, nelf,
 		data.time, data.istep, fid, nf, vars)
 	#

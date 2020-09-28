@@ -321,15 +321,22 @@ def writenek(fname, data):
 			for idim in range(data.var[0]):
 				correct_endianness(np.min(data.elem[iel-1].pos[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 				correct_endianness(np.max(data.elem[iel-1].pos[idim, :,:,:]).astype(np.float32)).tofile(outfile)
+		for iel in data.elmap:
 			for idim in range(data.var[1]):
 				correct_endianness(np.min(data.elem[iel-1].vel[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 				correct_endianness(np.max(data.elem[iel-1].vel[idim, :,:,:]).astype(np.float32)).tofile(outfile)
-			for idim in range(data.var[2]):
-				correct_endianness(np.min(data.elem[iel-1].pres[idim, :,:,:]).astype(np.float32)).tofile(outfile)
-				correct_endianness(np.max(data.elem[iel-1].pres[idim, :,:,:]).astype(np.float32)).tofile(outfile)
-			for idim in range(data.var[3]):
-				correct_endianness(np.min(data.elem[iel-1].temp[idim, :,:,:]).astype(np.float32)).tofile(outfile)
-				correct_endianness(np.max(data.elem[iel-1].temp[idim, :,:,:]).astype(np.float32)).tofile(outfile)
+		for iel in data.elmap:
+			for ivar in range(data.var[2]):
+				correct_endianness(np.min(data.elem[iel-1].pres[ivar, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].pres[ivar, :,:,:]).astype(np.float32)).tofile(outfile)
+		for iel in data.elmap:
+			for ivar in range(data.var[3]):
+				correct_endianness(np.min(data.elem[iel-1].temp[ivar, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].temp[ivar, :,:,:]).astype(np.float32)).tofile(outfile)
+		for iel in data.elmap:
+			for ivar in range(data.var[4]):
+				correct_endianness(np.min(data.elem[iel-1].scal[ivar, :,:,:]).astype(np.float32)).tofile(outfile)
+				correct_endianness(np.max(data.elem[iel-1].scal[ivar, :,:,:]).astype(np.float32)).tofile(outfile)
 
 	# close file
 	outfile.close()

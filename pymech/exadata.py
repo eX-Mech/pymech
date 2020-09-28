@@ -107,6 +107,7 @@ class exadata:
 		self.wdsz   = []
 		self.endian = []
 		self.elem   = [elem(var, lr1, nbc) for i in range(nel)]
+		self.elmap  = np.linspace(1, nel, nel, dtype=np.int32)
 
 	@property
 	def lims(self):

@@ -126,6 +126,7 @@ def readnek(fname):
 	data.time   = time
 	data.istep  = istep
 	data.wdsz   = wdsz
+	data.elmap  = np.array(elmap, dtype=np.int32)
 	if (emode == '<'):
 		data.endian = 'little'
 	elif (emode == '>'):
@@ -266,9 +267,8 @@ def writenek(fname, data):
 	endianbytes = np.array([6.54321], dtype=np.float32)
 	correct_endianness(endianbytes).tofile(outfile)
 	#
-	# generate and write element map for the file
-	elmap = np.linspace(1, data.nel, data.nel, dtype=np.int32)
-	correct_endianness(elmap).tofile(outfile)
+	# write element map for the file
+	correct_endianness(data.elmap).tofile(outfile)
 	#
 	#---------------------------------------------------------------------------
 	# WRITE DATA
@@ -285,22 +285,22 @@ def writenek(fname, data):
 			correct_endianness(a).tofile(outfile)
 	#
 	# write geometry
-	for iel in elmap:
+	for iel in data.elmap:
 		for idim in range(data.var[0]): # if var[0] == 0, geometry is not written
 			write_ndarray_to_file(data.elem[iel-1].pos[idim, :, :, :])
 	#
 	# write velocity
-	for iel in elmap:
+	for iel in data.elmap:
 		for idim in range(data.var[1]): # if var[1] == 0, velocity is not written
 			write_ndarray_to_file(data.elem[iel-1].vel[idim, :, :, :])
 	#
 	# write pressure
-	for iel in elmap:
+	for iel in data.elmap:
 		for ivar in range(data.var[2]): # if var[2] == 0, pressure is not written
 			write_ndarray_to_file(data.elem[iel-1].pres[ivar, :, :, :])
 	#
 	# write temperature
-	for iel in elmap:
+	for iel in data.elmap:
 		for ivar in range(data.var[3]): # if var[3] == 0, temperature is not written
 			write_ndarray_to_file(data.elem[iel-1].temp[ivar, :, :, :])
 	#
@@ -311,13 +311,13 @@ def writenek(fname, data):
 	# are in the inner loop
 	#
 	for ivar in range(data.var[4]): # if var[4] == 0, scalars are not written
-		for iel in elmap:
+		for iel in data.elmap:
 			write_ndarray_to_file(data.elem[iel-1].scal[ivar, :, :, :])
 	#
 	# write max and min of every field in every element (forced to single precision)
 	if (data.ndim==3):
 		#
-		for iel in elmap:
+		for iel in data.elmap:
 			for idim in range(data.var[0]):
 				correct_endianness(np.min(data.elem[iel-1].pos[idim, :,:,:]).astype(np.float32)).tofile(outfile)
 				correct_endianness(np.max(data.elem[iel-1].pos[idim, :,:,:]).astype(np.float32)).tofile(outfile)

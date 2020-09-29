@@ -201,20 +201,26 @@ def test_merge():
 	mesh = ns.readrea(fname)
 	mesh1 = copy.deepcopy(mesh)
 	mesh2 = copy.deepcopy(mesh)
+	mesh3 = copy.deepcopy(mesh)
 	# mesh and mesh1 will be connected along the 'v' and 'O' BCs
 	for el in mesh1.elem:
 		el.pos[0, ...] = el.pos[0, ...]+2
 	# mesh and mesh2 will be connected along 'P' BCs
 	for el in mesh2.elem:
+		el.pos[1, ...] = el.pos[1, ...]+2
+	for el in mesh3.elem:
 		el.pos[2, ...] = el.pos[2, ...]+2
 	n1 = mesh1.merge(mesh)
 	n2 = mesh2.merge(mesh)
+	n3 = mesh3.merge(mesh)
 	assert mesh.check_connectivity()
 	assert mesh1.check_connectivity()
 	assert mesh2.check_connectivity()
+	assert mesh3.check_connectivity()
 	assert mesh1.nel == 2*mesh.nel
 	assert n1 == 9
 	assert n2 == 9
+	assert n3 == 9
 
 #------------------------------------------------------------------------------
 # test simson scripts

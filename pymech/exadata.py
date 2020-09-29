@@ -122,10 +122,10 @@ class elem:
 			kx3, ky3, kz3 = -1,  0,  0
 			kx4, ky4, kz4 = -1, -1,  0
 		elif i == 5:
-			kx1, ky1, kz1 =  0,  0,  0
-			kx2, ky2, kz2 =  0, -1,  0
-			kx3, ky3, kz3 = -1,  0,  0
-			kx4, ky4, kz4 = -1, -1,  0
+			kx1, ky1, kz1 =  0,  0, -1
+			kx2, ky2, kz2 =  0, -1, -1
+			kx3, ky3, kz3 = -1,  0, -1
+			kx4, ky4, kz4 = -1, -1, -1
 		else:
 			logger.error('Invalid face number {} (must be between 0 and 5)'.format(i))
 		(x1, y1, z1) = self.pos[:, kz1, ky1, kx1]
@@ -244,3 +244,4 @@ class exadata:
 										self.elem[iel1].bcs[0, iface1][4] = iface +1
 										nchanges = nchanges+1
 		logger.info('merged {} pairs of faces'.format(nchanges))
+		return nchanges

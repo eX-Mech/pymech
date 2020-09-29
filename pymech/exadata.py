@@ -236,22 +236,26 @@ class exadata:
 									x1, y1, z1 =  self.elem[iel1].face_center(iface1)
 									dist2 = (x1-x0)**2 + (y1-y0)**2 + (z1-z0)**2
 									if dist2 <= tol**2:
-										# reconnect the periodic faces together
+										# reconnect the periodic faces together (assumes that all fields are periodic)
 										if bc == 'P' and bc1 == 'P':
 											iel_p    = int(self.elem[iel ].bcs[0, iface ][3])-1
 											iel_p1   = int(self.elem[iel1].bcs[0, iface1][3])-1
 											iface_p  = int(self.elem[iel ].bcs[0, iface ][4])-1
 											iface_p1 = int(self.elem[iel1].bcs[0, iface1][4])-1
-											self.elem[iel_p ].bcs[0, iface_p ][3] = iel_p1+1
-											self.elem[iel_p1].bcs[0, iface_p1][3] = iel_p +1
-											self.elem[iel_p ].bcs[0, iface_p ][4] = iface_p1+1
-											self.elem[iel_p1].bcs[0, iface_p1][4] = iface_p +1
-										self.elem[iel ].bcs[0, iface ][0] = 'E'
-										self.elem[iel1].bcs[0, iface1][0] = 'E'
-										self.elem[iel ].bcs[0, iface ][3] = iel1+1
-										self.elem[iel1].bcs[0, iface1][3] = iel +1
-										self.elem[iel ].bcs[0, iface ][4] = iface1+1
-										self.elem[iel1].bcs[0, iface1][4] = iface +1
+											for ibc in range(nbc):
+												self.elem[iel_p ].bcs[ibc, iface_p ][0] = 'P'
+												self.elem[iel_p1].bcs[ibc, iface_p1][0] = 'P'
+												self.elem[iel_p ].bcs[ibc, iface_p ][3] = iel_p1+1
+												self.elem[iel_p1].bcs[ibc, iface_p1][3] = iel_p +1
+												self.elem[iel_p ].bcs[ibc, iface_p ][4] = iface_p1+1
+												self.elem[iel_p1].bcs[ibc, iface_p1][4] = iface_p +1
+										for ibc in range(nbc):
+											self.elem[iel ].bcs[ibc, iface ][0] = 'E'
+											self.elem[iel1].bcs[ibc, iface1][0] = 'E'
+											self.elem[iel ].bcs[ibc, iface ][3] = iel1+1
+											self.elem[iel1].bcs[ibc, iface1][3] = iel +1
+											self.elem[iel ].bcs[ibc, iface ][4] = iface1+1
+											self.elem[iel1].bcs[ibc, iface1][4] = iface +1
 										nchanges = nchanges+1
-		logger.info('merged {} pairs of faces'.format(nchanges))
+		logger.debug('merged {} pairs of faces'.format(nchanges))
 		return nchanges

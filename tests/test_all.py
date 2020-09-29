@@ -193,6 +193,19 @@ def test_writerea():
 	assert fieldw.elem[799].bcs[2, 2][0] == 'P'
 	assert fieldw.elem[799].bcs[2, 3][0] == 'P'
 
+def test_merge():
+	import pymech.neksuite as ns
+	import copy
+
+	fname = './tests/nek/box3d.rea'
+	mesh = ns.readrea(fname)
+	mesh1 = copy.deepcopy(mesh)
+	for el in mesh1.elem:
+		el.pos[0, ...] = el.pos[0, ...]+2
+	mesh1.merge(mesh)
+	assert mesh.check_connectivity()
+	assert mesh1.check_connectivity()
+	assert mesh1.nel == 2*mesh.nel
 
 #------------------------------------------------------------------------------
 # test simson scripts

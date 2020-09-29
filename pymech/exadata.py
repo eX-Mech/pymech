@@ -172,17 +172,17 @@ class exadata:
 						iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4])-1
 						if iel1 < 0 or iel1 >= self.nel:
 							err = True
-							print("face {:} of element {:} is connected to face {:} of the nonexistent element {:}".format(iface, iel, connected_face, connected_iel))
+							logger.info("face {:} of element {:} is connected to face {:} of the nonexistent element {:}".format(iface, iel, connected_face, connected_iel))
 						else:
 							if cbc1 != cbc:
 								err = True
-								print("mismatched boundary conditions: face {:} of element {:} with condition {:} is connected to face {:} of element {:} with condition {:}".format(iface+1, iel+1, cbc, connected_face+1, connected_iel+1, cbc1))
+								logger.info("mismatched boundary conditions: face {:} of element {:} with condition {:} is connected to face {:} of element {:} with condition {:}".format(iface+1, iel+1, cbc, connected_face+1, connected_iel+1, cbc1))
 							if iel1 != iel:
 								err = True
-								print("mismatched elements: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
+								logger.info("mismatched elements: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
 							if iface1 != iface:
 								err = True
-								print("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
+								logger.info("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
 		return not err
 
 	def merge(self, other, tol=1e-9):

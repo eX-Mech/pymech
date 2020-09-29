@@ -9,6 +9,8 @@
 #=============================================================================#
 from functools import reduce
 import numpy as np
+import copy
+from pymech.log import logger
 
 
 #==============================================================================
@@ -91,6 +93,48 @@ class elem:
 		self.bcs  = np.zeros((nbc, 6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
 
 
+	def face_center(self, i):
+		"""Return the coordinates (x, y, z) of the center of the face number i"""
+		
+		if i == 0:
+			kx1, ky1, kz1 =  0,  0,  0
+			kx2, ky2, kz2 =  0,  0, -1
+			kx3, ky3, kz3 = -1,  0,  0
+			kx4, ky4, kz4 = -1,  0, -1
+		elif i == 1:
+			kx1, ky1, kz1 = -1,  0,  0
+			kx2, ky2, kz2 = -1,  0, -1
+			kx3, ky3, kz3 = -1, -1,  0
+			kx4, ky4, kz4 = -1, -1, -1
+		elif i == 2:
+			kx1, ky1, kz1 =  0, -1,  0
+			kx2, ky2, kz2 =  0, -1, -1
+			kx3, ky3, kz3 = -1, -1,  0
+			kx4, ky4, kz4 = -1, -1, -1
+		elif i == 3:
+			kx1, ky1, kz1 =  0,  0,  0
+			kx2, ky2, kz2 =  0,  0, -1
+			kx3, ky3, kz3 =  0, -1,  0
+			kx4, ky4, kz4 =  0, -1, -1
+		elif i == 4:
+			kx1, ky1, kz1 =  0,  0,  0
+			kx2, ky2, kz2 =  0, -1,  0
+			kx3, ky3, kz3 = -1,  0,  0
+			kx4, ky4, kz4 = -1, -1,  0
+		elif i == 5:
+			kx1, ky1, kz1 =  0,  0,  0
+			kx2, ky2, kz2 =  0, -1,  0
+			kx3, ky3, kz3 = -1,  0,  0
+			kx4, ky4, kz4 = -1, -1,  0
+		else:
+			logger.error('Invalid face number {} (must be between 0 and 5)'.format(i))
+		(x1, y1, z1) = self.pos[:, kz1, ky1, kx1]
+		(x2, y2, z2) = self.pos[:, kz2, ky2, kx2]
+		(x3, y3, z3) = self.pos[:, kz3, ky3, kx3]
+		(x4, y4, z4) = self.pos[:, kz4, ky4, kx4]
+		return (0.25*(x1+x2+x3+x4), 0.25*(y1+y2+y3+y4), 0.25*(z1+z2+z3+z4))
+
+
 #==============================================================================
 class exadata:
 	"""A class containing data for reading/writing binary simulation files"""
@@ -141,3 +185,62 @@ class exadata:
 								print("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
 		return not err
 
+	def merge(self, other, tol=1e-9):
+		""" merges another exadata into the current one and connects it """
+
+		# perform some consistency checks
+		if self.ndim != other.ndim:
+			logger.error('Cannot merge meshes of dimensions {} and {}!'.format(self.ndim, other.ndim))
+			return -1
+		if self.lr1[0] != other.lr1[0]:
+			logger.error('Cannot merge meshes of different polynomial orders ({} != {})'.format(self.lr1[0], other.lr1[0]))
+			return -2
+		
+		# add the new elements (in an inconsistent state if there are internal boundary conditions)
+		nel1 = self.nel
+		self.nel = self.nel + other.nel
+		self.elmap = np.concatenate((self.elmap, other.elmap+nel1))
+                # the deep copy is required here to avoid leaving the 'other' mesh in an inconsistent state by modifying its elements
+		self.elem = self.elem + copy.deepcopy(other.elem)
+
+		# check how many boundary condition fields we have
+		nbc = min(self.nbc, other.nbc)
+
+		# correct the boundary condition numbers:
+		# the index of the neighbours have changed
+		for iel in range(nel1, self.nel):
+			for ibc in range(other.nbc):
+				for iface in range(6):
+					bc = self.elem[iel].bcs[ibc, iface][0]
+					if bc == 'E' or bc == 'P':
+						neighbour = self.elem[iel].bcs[ibc, iface][3]
+						self.elem[iel].bcs[ibc, iface][3] = neighbour + nel1
+
+		# glue common faces together
+		# only look for the neighbour in the first BC field because it should be the same in all fields.
+		# FIXME: this will fail to correct periodic conditions if periodic domains are merged together.
+		nfaces = 2*self.ndim
+		nchanges = 0  # counter for the boundary conditions connected
+		if nbc > 0:
+			for iel in range(nel1, self.nel):
+				for iface in range(nfaces):
+					bc = self.elem[iel].bcs[0, iface][0]
+					if bc != 'E':
+						# boundary element, look if it can be connected to something
+						for iel1 in range(nel1):
+							for iface1 in range(nfaces):
+								bc1 = self.elem[iel1].bcs[0, iface1][0]
+								if bc1 != 'E':
+									# if the centers of the faces are close, connect them together
+									x0, y0, z0 =  self.elem[iel ].face_center(iface)
+									x1, y1, z1 =  self.elem[iel1].face_center(iface1)
+									dist2 = (x1-x0)**2 + (y1-y0)**2 + (z1-z0)**2
+									if dist2 <= tol**2:
+										self.elem[iel ].bcs[0, iface ][0] = 'E'
+										self.elem[iel1].bcs[0, iface1][0] = 'E'
+										self.elem[iel ].bcs[0, iface ][3] = iel1+1
+										self.elem[iel1].bcs[0, iface1][3] = iel +1
+										self.elem[iel ].bcs[0, iface ][4] = iface1+1
+										self.elem[iel1].bcs[0, iface1][4] = iface +1
+										nchanges = nchanges+1
+		logger.info('merged {} pairs of faces'.format(nchanges))

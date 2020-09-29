@@ -27,9 +27,14 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [1.3.3] - 2020-09-29
+
 ### Fixed
 - Various fixes -- including writing element map, correct order for min/max
   metadata -- in `writenek`
+
+### Added
+- Function `exadata.merge` to merge meshes together and build proper connectivity
 
 ## [1.3.2] - 2020-09-23
 
@@ -68,7 +73,8 @@ writing
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.2...HEAD
+[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.3...HEAD
+[1.3.3]: https://github.com/jcanton/pymech/compare/1.3.2...1.3.3
 [1.3.2]: https://github.com/jcanton/pymech/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/jcanton/pymech/compare/1.3.0.post0...1.3.1
 [1.3.0.post0]: https://github.com/jcanton/pymech/compare/1.3.0...1.3.0.post0

@@ -199,8 +199,9 @@ class exadata:
 		# add the new elements (in an inconsistent state if there are internal boundary conditions)
 		nel1 = self.nel
 		self.nel = self.nel + other.nel
+		self.ncurv = self.ncurv + other.ncurv
 		self.elmap = np.concatenate((self.elmap, other.elmap+nel1))
-                # the deep copy is required here to avoid leaving the 'other' mesh in an inconsistent state by modifying its elements
+		# the deep copy is required here to avoid leaving the 'other' mesh in an inconsistent state by modifying its elements
 		self.elem = self.elem + copy.deepcopy(other.elem)
 
 		# check how many boundary condition fields we have

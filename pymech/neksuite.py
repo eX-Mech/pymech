@@ -879,25 +879,36 @@ def readre2(fname):
 		logger.debug('curvature: {} {} {} {}'.format(iel, iface, cparams, ctype))
 	#
 	# read boundary conditions
+	# there can be more than one field, and we won't know until we'vre reached the end
 	nbcparam = 8
 	buf = infile.read(wdsz)
-	nbclines = int(np.frombuffer(buf)[0])
-	logger.debug('Found {} external boundary conditions'.format(nbclines))
-	buf = infile.read(wdsz*(nbcparam*nbclines))
-	for ibc in range(nbclines):
-		# interpret the data
-		bc = np.frombuffer(buf, dtype=emode+realtype, count=nbcparam, offset=ibc*nbcparam*wdsz)
-		iel = int(bc[0])-1
-		iface = int(bc[1])-1
-		bcparams = bc[2:7]
-		bctype = bc[7].tobytes().decode('utf-8')
-		ifield = ibc//(2*ndim*nel)
-		logger.debug('BC: {} {} {} {}'.format(bctype, iel, iface, bcparams))
-		# fill in the data structure
-		data.elem[iel].bcs[ifield, iface][0] = bctype
-		data.elem[iel].bcs[ifield, iface][1] = iel+1
-		data.elem[iel].bcs[ifield, iface][2] = iface+1
-		for ipar in range(5):
-			data.elem[iel].bcs[ifield, iface][3+ipar] = bcparams[ipar]
+	ifield = 0
+	while buf != b'':
+		# the data is initialized with one BC field, we might need to allocate another
+		if ifield > 0:
+			data.nbc = data.nbc+1
+			for el in data.elem:
+				empty_bcs = np.zeros(el.bcs[:1, :].shape, dtype=el.bcs.dtype)
+				el.bcs = np.concatenate((el.bcs, empty_bcs))
+		nbclines = int(np.frombuffer(buf)[0])
+		logger.debug('Found {} external boundary conditions for field {}'.format(nbclines, ifield))
+		buf = infile.read(wdsz*(nbcparam*nbclines))
+		for ibc in range(nbclines):
+			# interpret the data
+			bc = np.frombuffer(buf, dtype=emode+realtype, count=nbcparam, offset=ibc*nbcparam*wdsz)
+			iel = int(bc[0])-1
+			iface = int(bc[1])-1
+			bcparams = bc[2:7]
+			bctype = bc[7].tobytes().decode('utf-8')
+			logger.debug('BC: {} {} {} {}'.format(bctype, iel, iface, bcparams))
+			# fill in the data structure
+			data.elem[iel].bcs[ifield, iface][0] = bctype
+			data.elem[iel].bcs[ifield, iface][1] = iel+1
+			data.elem[iel].bcs[ifield, iface][2] = iface+1
+			for ipar in range(5):
+				data.elem[iel].bcs[ifield, iface][3+ipar] = bcparams[ipar]
+		ifield = ifield + 1
+		# try reading the number of conditions in the next field
+		buf = infile.read(wdsz)
 	infile.close()
 	return data

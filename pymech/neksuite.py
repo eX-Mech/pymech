@@ -794,3 +794,110 @@ def writerea(fname, data):
 	#
 	# output
 	return 0
+
+def readre2(fname):
+	"""A function for reading .re2 files for nek5000
+	
+	Parameters
+	----------
+	fname : str
+	file name
+	"""
+	#
+	try:
+		infile = open(fname, 'rb')
+	except IOError as e:
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		return -1
+	# the header for re2 files is 80 ASCII bytes, something like
+	# #v002    18669  2    18669 this is the hdr                                      %
+	header = infile.read(80).split()
+	nel = int(header[1])
+	ndim = int(header[2])
+	# always double precision
+	wdsz = 8
+	realtype = 'd'
+
+	# detect endianness
+	etagb = infile.read(4)
+	etagL = struct.unpack('<f', etagb)[0]; etagL = int(etagL*1e5)/1e5
+	etagB = struct.unpack('>f', etagb)[0]; etagB = int(etagB*1e5)/1e5
+	if (etagL == 6.54321):
+		logger.debug('Reading little-endian file\n')
+		emode = '<'
+	elif (etagB == 6.54321):
+		logger.debug('Reading big-endian file\n')
+		emode = '>'
+	else:
+		logger.error('Could not interpret endianness')
+		return -3
+	#
+	# there are no GLL points here, only quad/hex vertices
+	lr1 = [2, 2, ndim-1]
+	npel = 2**ndim
+	# the file only contains geometry
+	var = [ndim, 0, 0, 0, 0]
+	# allocate structure
+	data = exdat.exadata(ndim, nel, lr1, var, 1)
+	#
+	# read the whole geometry into a buffer
+	# for some reason each element is prefixed with 8 bytes of zeros, it's not clear to me why.
+	# This is the reason for the +1 here, then the first number is ignored.
+	buf = infile.read((ndim*npel+1)*wdsz*nel)
+	elem_shape = [ndim, ndim-1, 2, 2]  # nvar, lz, ly, lx
+	for (iel, el) in enumerate(data.elem):
+		fi = np.frombuffer(buf, dtype=emode+realtype, count=ndim*npel+1, offset=(ndim*npel+1)*wdsz*iel)
+
+		# Replace elem array in-place with
+		# array read from file after reshaping
+		el.pos[:ndim, ...] = fi[1:].reshape(elem_shape)
+	#
+	# read curved sides
+	# the number of curved sides is stored as a double,
+	# then each curved side is 64 bytes:
+	# iel iface p1 p2 p3 p4 p5 ctype
+	# where p1-5 are f64 parameters and ctype is the type of curvature in ASCII
+	ncparam = 8
+	buf = infile.read(wdsz)
+	ncurv = int(np.frombuffer(buf)[0])
+	logger.debug('Found {} curved sides'.format(ncurv))
+	data.ncurv = ncurv
+	buf = infile.read(wdsz*(ncparam*ncurv))
+	for icurv in range(ncurv):
+		# interpret the data
+		curv = np.frombuffer(buf, dtype=emode+realtype, count=ncparam, offset=icurv*ncparam*wdsz)
+		iel = int(curv[0])-1
+		iface = int(curv[1])-1
+		cparams = curv[2:7]
+		# select only the first byte, because it turns out the later bytes may contain garbage.
+		# typically, it's b'C\x00\x00\x00\x00\x00\x00\x00' or b'C\x00\x00\x00\x00\x00\xe0?'.
+		# AFAIK the curvature types are always one character long anyway.
+		ctype = curv[7].tobytes()[:1].decode('utf-8')
+		# fill in the data structure
+		data.elem[iel].curv[iface, :] = cparams
+		data.elem[iel].ccurv[iface] = ctype
+		logger.debug('curvature: {} {} {} {}'.format(iel, iface, cparams, ctype))
+	#
+	# read boundary conditions
+	nbcparam = 8
+	buf = infile.read(wdsz)
+	nbclines = int(np.frombuffer(buf)[0])
+	logger.debug('Found {} external boundary conditions'.format(nbclines))
+	buf = infile.read(wdsz*(nbcparam*nbclines))
+	for ibc in range(nbclines):
+		# interpret the data
+		bc = np.frombuffer(buf, dtype=emode+realtype, count=nbcparam, offset=ibc*nbcparam*wdsz)
+		iel = int(bc[0])-1
+		iface = int(bc[1])-1
+		bcparams = bc[2:7]
+		bctype = bc[7].tobytes().decode('utf-8')
+		ifield = ibc//(2*ndim*nel)
+		logger.debug('BC: {} {} {} {}'.format(bctype, iel, iface, bcparams))
+		# fill in the data structure
+		data.elem[iel].bcs[ifield, iface][0] = bctype
+		data.elem[iel].bcs[ifield, iface][1] = iel+1
+		data.elem[iel].bcs[ifield, iface][2] = iface+1
+		for ipar in range(5):
+			data.elem[iel].bcs[ifield, iface][3+ipar] = bcparams[ipar]
+	infile.close()
+	return data

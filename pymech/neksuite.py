@@ -909,7 +909,6 @@ def readre2(fname):
 				empty_bcs = np.zeros(el.bcs[:1, :].shape, dtype=el.bcs.dtype)
 				el.bcs = np.concatenate((el.bcs, empty_bcs))
 		nbclines = int(np.frombuffer(buf)[0])
-		print(buf)
 		logger.debug('Found {} external boundary conditions for field {}'.format(nbclines, ifield))
 		buf = infile.read(wdsz*(nbcparam*nbclines))
 		for ibc in range(nbclines):

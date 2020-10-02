@@ -185,8 +185,24 @@ class exadata:
 								logger.info("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
 		return not err
 
-	def merge(self, other, tol=1e-9):
-		""" merges another exadata into the current one and connects it """
+	def merge(self, other, tol=1e-9, ignore_empty=True):
+		"""
+		merges another exadata into the current one and connects it
+
+		parameters
+		----------
+		other: exadata
+		mesh to merge into self
+
+		tol: float
+		maximum distance at which points are considered identical
+
+		ignore_empty: bool
+		if True, the faces with an empty boundary condition ('') will be treated as internal faces and will not be merged.
+		This is useful if internal boundary conditions are not defined and will make the operation *much* faster,
+		but requires boundary conditions to be defined on the faces to be merged.
+
+		"""
 
 		# perform some consistency checks
 		if self.ndim != other.ndim:
@@ -226,12 +242,12 @@ class exadata:
 			for iel in range(nel1, self.nel):
 				for iface in range(nfaces):
 					bc = self.elem[iel].bcs[0, iface][0]
-					if bc != 'E':
+					if bc != 'E' and not (ignore_empty and bc == ''):
 						# boundary element, look if it can be connected to something
 						for iel1 in range(nel1):
 							for iface1 in range(nfaces):
 								bc1 = self.elem[iel1].bcs[0, iface1][0]
-								if bc1 != 'E':
+								if bc1 != 'E' and not (ignore_empty and bc1 == ''):
 									# if the centers of the faces are close, connect them together
 									x0, y0, z0 =  self.elem[iel ].face_center(iface)
 									x1, y1, z1 =  self.elem[iel1].face_center(iface1)

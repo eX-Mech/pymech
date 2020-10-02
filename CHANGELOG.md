@@ -27,6 +27,17 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+### Added
+- Functions `readre2` and `writere2` to read/write binary .re2 Nek5000 meshes
+
+### Fixed
+- indexing bug in the boundary conditions parameters in `readrea`
+
+### Changed
+- Ignore some invalid 'E' internal boundary conditions in `readrea`
+  since they are written this way by re2torea and ignored by Nek5000.
+
+
 ## [1.3.3] - 2020-09-29
 
 ### Fixed

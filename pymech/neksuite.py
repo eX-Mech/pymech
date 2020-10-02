@@ -514,6 +514,12 @@ def readrea(fname):
 					data.elem[iel].bcs[ibc, iface][5] = float(line[52:70])
 					data.elem[iel].bcs[ibc, iface][6] = float(line[70:88])
 					data.elem[iel].bcs[ibc, iface][7] = float(line[88:106])
+				# ignore some invalid internal 'E' conditions.
+				# They are typically written this way by re2torea and Nek5000 ignores them.
+				if data.elem[iel].bcs[ibc, iface][0] == 'E' and data.elem[iel].bcs[ibc, iface][3] == 0.:
+					data.elem[iel].bcs[ibc, iface][0] = ''
+					for j in range(1, 8):
+						data.elem[iel].bcs[ibc, iface][j] = 0
 		ibc = ibc + 1
 	#
 	#---------------------------------------------------------------------------
@@ -743,6 +749,12 @@ def writerea(fname, data):
 			outfile.write('  ***** PASSIVE SCALAR {:4d} BOUNDARY CONDITIONS *****\n'.format(ibc-1))
 		for iel in range(data.nel):
 			for iface in range(2*data.ndim):
+				# if no boundary condition is specified, write 'E' iel iface [...]
+				# this is the behaviour of re2torea.
+				if data.elem[iel].bcs[ibc, iface][0] == '':
+					data.elem[iel].bcs[ibc, iface][0] = 'E'
+					data.elem[iel].bcs[ibc, iface][1] = iel+1
+					data.elem[iel].bcs[ibc, iface][2] = iface+1
 				if (data.nel < 1e3):
 					outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
 						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][2], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))

@@ -825,9 +825,11 @@ def readre2(fname):
 	if (etagL == 6.54321):
 		logger.debug('Reading little-endian file\n')
 		emode = '<'
+		endian = 'little'
 	elif (etagB == 6.54321):
 		logger.debug('Reading big-endian file\n')
 		emode = '>'
+		endian = 'big'
 	else:
 		logger.error('Could not interpret endianness')
 		return -3
@@ -839,6 +841,10 @@ def readre2(fname):
 	var = [ndim, 0, 0, 0, 0]
 	# allocate structure
 	data = exdat.exadata(ndim, nel, lr1, var, 1)
+	#
+	# some metadata
+	data.wdsz = wdsz
+	data.endian = endian
 	#
 	# read the whole geometry into a buffer
 	# for some reason each element is prefixed with 8 bytes of zeros, it's not clear to me why.
@@ -867,16 +873,16 @@ def readre2(fname):
 		# interpret the data
 		curv = np.frombuffer(buf, dtype=emode+realtype, count=ncparam, offset=icurv*ncparam*wdsz)
 		iel = int(curv[0])-1
-		iface = int(curv[1])-1
+		iedge = int(curv[1])-1
 		cparams = curv[2:7]
 		# select only the first byte, because it turns out the later bytes may contain garbage.
 		# typically, it's b'C\x00\x00\x00\x00\x00\x00\x00' or b'C\x00\x00\x00\x00\x00\xe0?'.
 		# AFAIK the curvature types are always one character long anyway.
 		ctype = curv[7].tobytes()[:1].decode('utf-8')
 		# fill in the data structure
-		data.elem[iel].curv[iface, :] = cparams
-		data.elem[iel].ccurv[iface] = ctype
-		logger.debug('curvature: {} {} {} {}'.format(iel, iface, cparams, ctype))
+		data.elem[iel].curv[iedge, :] = cparams
+		data.elem[iel].ccurv[iedge] = ctype
+		logger.debug('curvature: {} {} {} {}'.format(iel, iedge, cparams, ctype))
 	#
 	# read boundary conditions
 	# there can be more than one field, and we won't know until we'vre reached the end
@@ -891,6 +897,7 @@ def readre2(fname):
 				empty_bcs = np.zeros(el.bcs[:1, :].shape, dtype=el.bcs.dtype)
 				el.bcs = np.concatenate((el.bcs, empty_bcs))
 		nbclines = int(np.frombuffer(buf)[0])
+		print(buf)
 		logger.debug('Found {} external boundary conditions for field {}'.format(nbclines, ifield))
 		buf = infile.read(wdsz*(nbcparam*nbclines))
 		for ibc in range(nbclines):
@@ -899,8 +906,8 @@ def readre2(fname):
 			iel = int(bc[0])-1
 			iface = int(bc[1])-1
 			bcparams = bc[2:7]
-			bctype = bc[7].tobytes().decode('utf-8')
-			logger.debug('BC: {} {} {} {}'.format(bctype, iel, iface, bcparams))
+			bctype = bc[7].tobytes().decode('utf-8').rstrip()  # remove trailing spaces
+			logger.debug('BC: {} {} {} {}'.format(bctype, iel+1, iface+1, bcparams))
 			# fill in the data structure
 			data.elem[iel].bcs[ifield, iface][0] = bctype
 			data.elem[iel].bcs[ifield, iface][1] = iel+1
@@ -912,3 +919,146 @@ def readre2(fname):
 		buf = infile.read(wdsz)
 	infile.close()
 	return data
+
+def writere2(fname, data):
+	"""A function for writing binary .re2 files for nek5000
+
+	Parameters
+	----------
+	fname : str
+		file name
+	data : exadata
+		data organised as in exadata.py
+	"""
+	#
+	#---------------------------------------------------------------------------
+	# CHECK INPUT DATA
+	#---------------------------------------------------------------------------
+	#
+	# We could extract the corners, but for now just return an error if lr1 is too large
+	if data.lr1 != [2, 2, data.ndim-1]:
+		logger.critical('wrong element dimensions for re2 file! {} != {}'.format(data.lr1, [2, 2, data.ndim-1]))
+		return -2
+	#
+	if data.var[0] != data.ndim:
+		logger.critical('wrong number of geometric variables for re2 file! expected {}, found {}'.format(data.ndim, data.var[0]))
+		return -3
+	#
+	# Open file
+	try:
+		outfile = open(fname, 'wb')
+	except IOError as e:
+		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		return -1
+	#
+	#---------------------------------------------------------------------------
+	# WRITE HEADER
+	#---------------------------------------------------------------------------
+	#
+	# always double precision
+	wdsz = 8
+	realtype = 'd'
+	nel = data.nel
+	ndim = data.ndim
+	header = '#v002{:9d}{:3d}{:9d} this is the hdr'.format(nel, ndim, nel)
+	header = header.ljust(80)
+	outfile.write(header.encode('utf-8'))
+	#
+	# decide endianness
+	byteswap = False
+	if data.endian == 'big':
+		if sys.byteorder == 'little':
+			byteswap = True
+		logger.debug('Writing big-endian file')
+	elif data.endian == 'little':
+		logger.debug('Writing little-endian file')
+		if sys.byteorder == 'big':
+			byteswap = True
+	else:
+		logger.debug('Unrecognized endianness, writing native {:s}-endian file'.format(sys.byteorder))
+	#
+	def correct_endianness(a):
+		''' Return the array with the requested endianness'''
+		if byteswap:
+			return a.byteswap()
+		else:
+			return a
+	#
+	# write tag (to specify endianness)
+	endianbytes = np.array([6.54321], dtype=np.float32)
+	correct_endianness(endianbytes).tofile(outfile)
+	#
+	#---------------------------------------------------------------------------
+	# WRITE DATA
+	#---------------------------------------------------------------------------
+	#
+	# compute total number of points per element
+	npel = data.lr1[0] * data.lr1[1] * data.lr1[2]
+	#
+	def write_data_to_file(a):
+		'''Write the geometry of an element to the output file in double precision'''
+		correct_endianness(a).tofile(outfile)
+	#
+	# write geometry (adding eight bytes of zeros before each element)
+	zero = np.array([0.])
+	for el in data.elem:
+		write_data_to_file(np.concatenate((zero, el.pos[:data.var[0], :, :, :].reshape((npel*ndim,)))))
+	#
+	# write curve sides data
+	# locate curved edges
+	curved_edges = []
+	for (iel, el) in enumerate(data.elem):
+		for iedge in range(12):
+			if el.ccurv[iedge] != '':
+				curved_edges.append((iel, iedge))
+	# write number of curved edges
+	ncurv = len(curved_edges)
+	if ncurv != data.ncurv:
+		logger.warning('wrong number of curved edges: expected {}, found {}'.format(data.ncurv, ncurv))
+	ncurvf = np.array([ncurv], dtype=np.float64)
+	write_data_to_file(ncurvf)
+	# format curve data
+	cdata = np.zeros((ncurv,), dtype='f8, f8, f8, f8, f8, f8, f8, S8')
+	for (cdat, (iel, iedge)) in zip(cdata, curved_edges):
+		el = data.elem[iel]
+		cdat[0] = iel+1
+		cdat[1] = iedge+1
+		# curve parameters
+		for j in range(5):
+			cdat[2+j] = el.curv[iedge, j]
+		# encode the string as a byte array padded with spaces
+		cdat[7] = el.ccurv[iedge].encode('utf-8')
+	# write to file
+	write_data_to_file(cdata)
+	#
+	# write boundary conditions for each field
+	for ifield in range(data.nbc):
+		# locate faces with boundary conditions
+		bc_faces = []
+		for (iel, el) in enumerate(data.elem):
+			for iface in range(2*ndim):
+				bctype = el.bcs[ifield, iface][0]
+				# internal boundary conditions are not written to .re2 files by reatore2
+				# and are apparently ignored by Nek5000 even in .rea files
+				if bctype != '' and bctype != 'E':
+					bc_faces.append((iel, iface))
+		nbcs = len(bc_faces)
+		nbcsf = np.array([nbcs], dtype=np.float64)
+		write_data_to_file(nbcsf)
+		# initialize and format data
+		bcdata = np.zeros((nbcs,), dtype='f8, f8, f8, f8, f8, f8, f8, S8')
+		for (bc, (iel, iface)) in zip(bcdata, bc_faces):
+			el = data.elem[iel]
+			bc[0] = iel+1
+			bc[1] = iface+1
+			for j in range(5):
+				bc[2+j] = el.bcs[ifield, iface][3+j]
+			# encode the string as a byte array padded with spaces
+			bc[7] = el.bcs[ifield, iface][0].encode('utf-8').ljust(8)
+		# write to file
+		write_data_to_file(bcdata)
+	#
+	# close file
+	outfile.close()
+	# rerurn
+	return 0

@@ -222,6 +222,43 @@ def test_merge():
 	assert n2 == 9
 	assert n3 == 9
 
+def test_re2():
+	import pymech.neksuite as ns
+
+	# Reuse a .rea file here, but write it to re2 and read it back.
+	# The data should be exactly the same except for the internal 'E'
+	# conditions that are not exported to .re2. This is on purpose (reatore2 behaves like this).
+	fin = './tests/nek/2D_section_R360.rea'
+	fout = './test_1.re2'
+	mesh = ns.readrea(fin)
+	status = ns.writere2(fout, mesh)
+
+	assert status == 0
+
+	meshw = ns.readre2(fout)
+
+	# remove the 'E' conditions from the .rea data
+	for el in mesh.elem:
+		for iface in range(4):
+			if el.bcs[0, iface][0] == 'E':
+				el.bcs[0, iface][0] = ''
+				for j in range(1, 8):
+					el.bcs[0, iface][j] = 0
+
+	assert meshw.ndim == mesh.ndim
+	assert meshw.nel == mesh.nel
+	assert meshw.ncurv == mesh.ncurv
+	assert meshw.nbc == mesh.nbc
+	assert meshw.var == mesh.var
+	assert meshw.lr1 == mesh.lr1
+	assert meshw.wdsz == 8
+	for (el, elw) in zip(mesh.elem, meshw.elem):
+		npt.assert_array_equal(elw.pos, el.pos)
+		npt.assert_array_equal(elw.bcs, el.bcs)
+		npt.assert_array_equal(elw.curv, el.curv)
+		npt.assert_array_equal(elw.ccurv, el.ccurv)
+
+
 #------------------------------------------------------------------------------
 # test simson scripts
 #

@@ -11,7 +11,7 @@ from pymech.log import logger
 def setup_module(module):
 	logger.setLevel(logging.DEBUG)
 
-	tmp = Path(tempfile.mkdtemp(suffix=f"pymech_tests"))
+	tmp = Path(tempfile.mkdtemp(suffix="pymech_tests"))
 	(tmp / "tests").symlink_to(Path(__file__).parent)
 	os.chdir(tmp)
 

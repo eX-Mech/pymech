@@ -1,10 +1,22 @@
+import os
 import logging
 import math
 import time
+import tempfile
+from pathlib import Path
 from numpy import testing as npt
 from pymech.log import logger
 
-logger.setLevel(logging.DEBUG)
+
+def setup_module(module):
+	logger.setLevel(logging.DEBUG)
+
+	tmp = Path(tempfile.mkdtemp(suffix=f"pymech_tests"))
+	(tmp / "tests").symlink_to(Path(__file__).parent)
+	os.chdir(tmp)
+
+	logger.info(f"Test directory: {tmp}")
+
 
 #------------------------------------------------------------------------------
 # test nek scripts

@@ -95,7 +95,7 @@ class elem:
 
 	def face_center(self, i):
 		"""Return the coordinates (x, y, z) of the center of the face number i"""
-		
+
 		if i == 0:
 			kx1, ky1, kz1 =  0,  0,  0
 			kx2, ky2, kz2 =  0,  0, -1
@@ -158,6 +158,10 @@ class exadata:
 		return datalims(self.var, self.elem)
 
 	def check_connectivity(self):
+		"""Check element connectivity, specifically for matching boundary
+		conditions and geometry. Errors are reported as logging messages.
+
+		"""
 		dim = self.ndim
 		err = False
 		for (iel, el) in enumerate(self.elem):
@@ -172,35 +176,47 @@ class exadata:
 						iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4])-1
 						if iel1 < 0 or iel1 >= self.nel:
 							err = True
-							logger.info("face {:} of element {:} is connected to face {:} of the nonexistent element {:}".format(iface, iel, connected_face, connected_iel))
+							logger.error(
+								"face {:} of element {:} is connected to face {:} of the nonexistent element {:}"
+								.format(iface, iel, connected_face, connected_iel)
+							)
 						else:
 							if cbc1 != cbc:
 								err = True
-								logger.info("mismatched boundary conditions: face {:} of element {:} with condition {:} is connected to face {:} of element {:} with condition {:}".format(iface+1, iel+1, cbc, connected_face+1, connected_iel+1, cbc1))
+								logger.error(
+									"mismatched boundary conditions: face {:} of element {:} with condition {:} is connected to face {:} of element {:} with condition {:}"
+									.format(iface+1, iel+1, cbc, connected_face+1, connected_iel+1, cbc1)
+								)
 							if iel1 != iel:
 								err = True
-								logger.info("mismatched elements: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
+								logger.error(
+									"mismatched elements: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}"
+									.format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1)
+								)
 							if iface1 != iface:
 								err = True
-								logger.info("mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1))
+								logger.error(
+									"mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}"
+									.format(iface+1, iel+1, connected_face+1, connected_iel+1, iface1+1, iel1+1)
+								)
 		return not err
 
 	def merge(self, other, tol=1e-9, ignore_empty=True):
 		"""
-		merges another exadata into the current one and connects it
+		Merges another exadata into the current one and connects it
 
-		parameters
+		Parameters
 		----------
 		other: exadata
-		mesh to merge into self
+			mesh to merge into self
 
 		tol: float
-		maximum distance at which points are considered identical
+			maximum distance at which points are considered identical
 
 		ignore_empty: bool
-		if True, the faces with an empty boundary condition ('') will be treated as internal faces and will not be merged.
-		This is useful if internal boundary conditions are not defined and will make the operation *much* faster,
-		but requires boundary conditions to be defined on the faces to be merged.
+			if True, the faces with an empty boundary condition ('') will be treated as internal faces and will not be merged.
+			This is useful if internal boundary conditions are not defined and will make the operation *much* faster,
+			but requires boundary conditions to be defined on the faces to be merged.
 
 		"""
 
@@ -211,7 +227,7 @@ class exadata:
 		if self.lr1[0] != other.lr1[0]:
 			logger.error('Cannot merge meshes of different polynomial orders ({} != {})'.format(self.lr1[0], other.lr1[0]))
 			return -2
-		
+
 		# add the new elements (in an inconsistent state if there are internal boundary conditions)
 		nel1 = self.nel
 		self.nel = self.nel + other.nel

@@ -132,13 +132,10 @@ def readnek(fname):
 	elif (emode == '>'):
 		data.endian = 'big'
 	#
-	def read_file_into_data(elem, index_var, name_var):
+	def read_file_into_data(data_var, index_var):
 		"""Read binary file into an array attribute of ``data.elem``"""
 		fi = infile.read(npel*wdsz)
 		fi = np.frombuffer(fi, dtype=emode+realtype, count=npel)
-
-		# Fetch elem array, for example `data.elem.pos`
-		data_var = getattr(elem, name_var)
 
 		# Replace elem array in-place with
 		# array read from file after reshaping as
@@ -149,25 +146,25 @@ def readnek(fname):
 	for iel in elmap:
 		el = data.elem[iel-1]
 		for idim in range(var[0]): # if var[0] == 0, geometry is not read
-			read_file_into_data(el, idim, 'pos')
+			read_file_into_data(el.pos, idim)
 	#
 	# read velocity
 	for iel in elmap:
 		el = data.elem[iel-1]
 		for idim in range(var[1]): # if var[1] == 0, velocity is not read
-			read_file_into_data(el, idim, 'vel')
+			read_file_into_data(el.vel, idim)
 	#
 	# read pressure
 	for iel in elmap:
 		el = data.elem[iel-1]
 		for ivar in range(var[2]): # if var[2] == 0, pressure is not read
-			read_file_into_data(el, ivar, 'pres')
+			read_file_into_data(el.pres, ivar)
 	#
 	# read temperature
 	for iel in elmap:
 		el = data.elem[iel-1]
 		for ivar in range(var[3]): # if var[3] == 0, temperature is not read
-			read_file_into_data(el, ivar, 'temp')
+			read_file_into_data(el.temp, ivar)
 	#
 	# read scalar fields
 	#
@@ -178,7 +175,7 @@ def readnek(fname):
 	for ivar in range(var[4]): # if var[4] == 0, scalars are not read
 		for iel in elmap:
 			el = data.elem[iel-1]
-			read_file_into_data(el, ivar, 'scal')
+			read_file_into_data(el.scal, ivar)
 	#
 	#
 	# close file
@@ -244,17 +241,15 @@ def writenek(fname, data):
 	outfile.write(header.encode('utf-8'))
 	#
 	# decide endianness
-	byteswap = False
-	if data.endian == 'big':
-		if sys.byteorder == 'little':
-			byteswap = True
-		logger.debug('Writing big-endian file')
-	elif data.endian == 'little':
-		logger.debug('Writing little-endian file')
-		if sys.byteorder == 'big':
-			byteswap = True
+	if data.endian in ('big', 'little'):
+		byteswap = data.endian != sys.byteorder
+		logger.debug(f'Writing {data.endian}-endian file')
 	else:
-		logger.debug('Unrecognized endianness, writing native {:s}-endian file'.format(sys.byteorder))
+		byteswap = False
+		logger.warning(
+			f'Unrecognized endianness {data.endian}, '
+			f'writing native {sys.byteorder}-endian file'
+		)
 	#
 	def correct_endianness(a):
 		''' Return the array with the requested endianness'''
@@ -807,13 +802,14 @@ def writerea(fname, data):
 	# output
 	return 0
 
+
 def readre2(fname):
 	"""A function for reading .re2 files for nek5000
-	
+
 	Parameters
 	----------
 	fname : str
-	file name
+		file name
 	"""
 	#
 	try:
@@ -937,6 +933,7 @@ def readre2(fname):
 	infile.close()
 	return data
 
+
 def writere2(fname, data):
 	"""A function for writing binary .re2 files for nek5000
 
@@ -982,17 +979,15 @@ def writere2(fname, data):
 	outfile.write(header.encode('utf-8'))
 	#
 	# decide endianness
-	byteswap = False
-	if data.endian == 'big':
-		if sys.byteorder == 'little':
-			byteswap = True
-		logger.debug('Writing big-endian file')
-	elif data.endian == 'little':
-		logger.debug('Writing little-endian file')
-		if sys.byteorder == 'big':
-			byteswap = True
+	if data.endian in ('big', 'little'):
+		byteswap = data.endian != sys.byteorder
+		logger.debug(f'Writing {data.endian}-endian file')
 	else:
-		logger.debug('Unrecognized endianness, writing native {:s}-endian file'.format(sys.byteorder))
+		byteswap = False
+		logger.warning(
+			f'Unrecognized endianness {data.endian}, '
+			f'writing native {sys.byteorder}-endian file'
+		)
 	#
 	def correct_endianness(a):
 		''' Return the array with the requested endianness'''

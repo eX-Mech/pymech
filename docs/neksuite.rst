@@ -20,7 +20,6 @@ readnek() is clever enough to figure out the rest.
 The output is a single ``exadata`` (:ref:`exadata`) structure containing all
 the information that was stored in the file.
 
-
 writenek
 --------
 This function writes a binary ``.f%05d`` file in the same format that *Nek5000*
@@ -66,6 +65,12 @@ The inputs needed by this function are:
 
 writerea() produces no output.
 
+readre2 and writere2
+--------------------
+
+These functions are analagous to ``readrea`` and ``writerea`` but works with
+the newer, binary ``.re2`` mesh files. *New in pymech 1.4.0.*
+
 
 -------------------------------------------------------------------------------
 
@@ -80,4 +85,4 @@ Contents of neksuite.py
 
    See usage_ for more details.
 
-.. _usage: usage.html#pymech.readnek
+.. _usage: usage.html#pymech.neksuite

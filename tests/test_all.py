@@ -234,28 +234,50 @@ def test_merge():
 	assert n2 == 9
 	assert n3 == 9
 
-def test_re2():
+def test_readre2():
 	import pymech.neksuite as ns
 
-	# Reuse a .rea file here, but write it to re2 and read it back.
-	# The data should be exactly the same except for the internal 'E'
-	# conditions that are not exported to .re2. This is on purpose (reatore2 behaves like this).
-	fin = './tests/nek/2D_section_R360.rea'
-	fout = './test_1.re2'
-	mesh = ns.readrea(fin)
-	status = ns.writere2(fout, mesh)
-
-	assert status == 0
-
-	meshw = ns.readre2(fout)
+	# The .re2 has been generated with reatore2 and contains the same data
+	# except for the internal boundary conditions.
+	# Assuming that `readrea` is correct, this checks id the .re2 file is read correctly too.
+	#
+	frea = './tests/nek/2D_section_R360.rea'
+	fre2 = './tests/nek/2D_section_R360.re2'
+	meshrea = ns.readrea(frea)
+	meshre2 = ns.readre2(fre2)
 
 	# remove the 'E' conditions from the .rea data
-	for el in mesh.elem:
+	for el in meshrea.elem:
 		for iface in range(4):
 			if el.bcs[0, iface][0] == 'E':
 				el.bcs[0, iface][0] = ''
 				for j in range(1, 8):
 					el.bcs[0, iface][j] = 0
+
+	assert meshre2.ndim == meshrea.ndim
+	assert meshre2.nel == meshrea.nel
+	assert meshre2.ncurv == meshrea.ncurv
+	assert meshre2.nbc == meshrea.nbc
+	assert meshre2.var == meshrea.var
+	assert meshre2.lr1 == meshrea.lr1
+	assert meshre2.wdsz == 8
+	for (el, elw) in zip(meshrea.elem, meshre2.elem):
+		npt.assert_allclose(elw.pos, el.pos)
+		npt.assert_array_equal(elw.bcs, el.bcs)
+		npt.assert_allclose(elw.curv, el.curv)
+		npt.assert_array_equal(elw.ccurv, el.ccurv)
+
+def test_writere2():
+	import pymech.neksuite as ns
+
+	fin = './tests/nek/2D_section_R360.re2'
+	fout = './test_1.re2'
+	mesh = ns.readre2(fin)
+	status = ns.writere2(fout, mesh)
+
+	assert status == 0
+
+	meshw = ns.readre2(fout)
 
 	assert meshw.ndim == mesh.ndim
 	assert meshw.nel == mesh.nel

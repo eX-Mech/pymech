@@ -896,7 +896,6 @@ def readre2(fname):
 		# fill in the data structure
 		data.elem[iel].curv[iedge, :] = cparams
 		data.elem[iel].ccurv[iedge] = ctype
-		logger.debug('curvature: {} {} {} {}'.format(iel, iedge, cparams, ctype))
 	#
 	# read boundary conditions
 	# there can be more than one field, and we won't know until we'vre reached the end
@@ -920,7 +919,6 @@ def readre2(fname):
 			iface = int(bc[1])-1
 			bcparams = bc[2:7]
 			bctype = bc[7].tobytes().decode('utf-8').rstrip()  # remove trailing spaces
-			logger.debug('BC: {} {} {} {}'.format(bctype, iel+1, iface+1, bcparams))
 			# fill in the data structure
 			data.elem[iel].bcs[ifield, iface][0] = bctype
 			data.elem[iel].bcs[ifield, iface][1] = iel+1

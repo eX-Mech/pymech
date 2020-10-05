@@ -267,11 +267,66 @@ def test_readre2():
 		npt.assert_allclose(elw.curv, el.curv)
 		npt.assert_array_equal(elw.ccurv, el.ccurv)
 
+def test_readre2_3d():
+	import pymech.neksuite as ns
+
+	# same test as test_readre2(), but with a 3D mesh.
+	
+	frea = './tests/nek/box3d.rea'
+	fre2 = './tests/nek/box3d.re2'
+	meshrea = ns.readrea(frea)
+	meshre2 = ns.readre2(fre2)
+	# remove the 'E' conditions from the .rea data
+	for el in meshrea.elem:
+		for iface in range(6):
+			if el.bcs[0, iface][0] == 'E':
+				el.bcs[0, iface][0] = ''
+				for j in range(1, 8):
+					el.bcs[0, iface][j] = 0
+
+	assert meshre2.ndim == meshrea.ndim
+	assert meshre2.nel == meshrea.nel
+	assert meshre2.ncurv == meshrea.ncurv
+	assert meshre2.nbc == meshrea.nbc
+	assert meshre2.var == meshrea.var
+	assert meshre2.lr1 == meshrea.lr1
+	assert meshre2.wdsz == 8
+	for (el, elw) in zip(meshrea.elem, meshre2.elem):
+		npt.assert_allclose(elw.pos, el.pos)
+		npt.assert_array_equal(elw.bcs, el.bcs)
+		npt.assert_allclose(elw.curv, el.curv)
+		npt.assert_array_equal(elw.ccurv, el.ccurv)
+
 def test_writere2():
 	import pymech.neksuite as ns
 
 	fin = './tests/nek/2D_section_R360.re2'
 	fout = './test_1.re2'
+	mesh = ns.readre2(fin)
+	status = ns.writere2(fout, mesh)
+
+	assert status == 0
+
+	meshw = ns.readre2(fout)
+
+	assert meshw.ndim == mesh.ndim
+	assert meshw.nel == mesh.nel
+	assert meshw.ncurv == mesh.ncurv
+	assert meshw.nbc == mesh.nbc
+	assert meshw.var == mesh.var
+	assert meshw.lr1 == mesh.lr1
+	assert meshw.wdsz == 8
+	for (el, elw) in zip(mesh.elem, meshw.elem):
+		npt.assert_array_equal(elw.pos, el.pos)
+		npt.assert_array_equal(elw.bcs, el.bcs)
+		npt.assert_array_equal(elw.curv, el.curv)
+		npt.assert_array_equal(elw.ccurv, el.ccurv)
+
+def test_writere2_3d():
+	import pymech.neksuite as ns
+
+	fin = './tests/nek/box3d.re2'
+	fout = './test_2.re2'
 	mesh = ns.readre2(fin)
 	status = ns.writere2(fout, mesh)
 

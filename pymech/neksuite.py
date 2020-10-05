@@ -861,16 +861,18 @@ def readre2(fname):
 	elem_shape = [ndim, ndim-1, 2, 2]  # nvar, lz, ly, lx
 	for (iel, el) in enumerate(data.elem):
 		fi = np.frombuffer(buf, dtype=emode+realtype, count=ndim*npel+1, offset=(ndim*npel+1)*wdsz*iel)
-		# the data is stored in the following order:
-		# x1, x2, x4, x3; y1, y2, y4, y3; z1, z2, z4, z3;
-		# x5, x6, x8, x7; y5, y6, y8, y7; z5, z6, z8, z7;
+		# the data is stored in the following order (2D|3D):
+		# x1, x2, x4, x3; | x5, x6, x8, x7;
+		# y1, y2, y4, y3; | y5, y6, y8, y7;
+		# ----------------
+		# z1, z2, z4, z3; z5, z6, z8, z7;
 		# where 1-8 is the ordering of the points in memory
-		for iz in range(ndim-1):  # this does only one iteration in 2D, and in 3D does one iteration for 1-4 and one for 5-8
-			for idim in range(ndim):  # x, y, [z]
-				el.pos[idim, iz, 0, 0] = fi[4*ndim*iz+4*idim+1]
-				el.pos[idim, iz, 0, 1] = fi[4*ndim*iz+4*idim+2]
-				el.pos[idim, iz, 1, 1] = fi[4*ndim*iz+4*idim+3]
-				el.pos[idim, iz, 1, 0] = fi[4*ndim*iz+4*idim+4]
+		for idim in range(ndim):  # x, y, [z]
+			for iz in range(ndim-1):  # this does only one iteration in 2D, and in 3D does one iteration for 1-4 and one for 5-8
+				el.pos[idim, iz, 0, 0] = fi[npel*idim+4*iz+1]
+				el.pos[idim, iz, 0, 1] = fi[npel*idim+4*iz+2]
+				el.pos[idim, iz, 1, 1] = fi[npel*idim+4*iz+3]
+				el.pos[idim, iz, 1, 0] = fi[npel*idim+4*iz+4]
 	#
 	# read curved sides
 	# the number of curved sides is stored as a double,
@@ -1012,16 +1014,18 @@ def writere2(fname, data):
 	# write geometry (adding eight bytes of zeros before each element)
 	xyz = np.zeros((npel*ndim+1,))  # array storing reordered geometry data (with a zero in the first position)
 	for el in data.elem:
-		# the data is stored in the following order:
-		# x1, x2, x4, x3; y1, y2, y4, y3; z1, z2, z4, z3;
-		# x5, x6, x8, x7; y5, y6, y8, y7; z5, z6, z8, z7;
+		# the data is stored in the following order (2D|3D):
+		# x1, x2, x4, x3; | x5, x6, x8, x7;
+		# y1, y2, y4, y3; | y5, y6, y8, y7;
+		# ----------------
+		# z1, z2, z4, z3; z5, z6, z8, z7;
 		# where 1-8 is the ordering of the points in memory
-		for iz in range(ndim-1):  # this does only one iteration in 2D, and in 3D does one iteration for 1-4 and one for 5-8
-			for idim in range(ndim):  # x, y, [z]
-				xyz[4*ndim*iz+4*idim+1] = el.pos[idim, iz, 0, 0]
-				xyz[4*ndim*iz+4*idim+2] = el.pos[idim, iz, 0, 1]
-				xyz[4*ndim*iz+4*idim+3] = el.pos[idim, iz, 1, 1]
-				xyz[4*ndim*iz+4*idim+4] = el.pos[idim, iz, 1, 0]
+		for idim in range(ndim):  # x, y, [z]
+			for iz in range(ndim-1):  # this does only one iteration in 2D, and in 3D does one iteration for 1-4 and one for 5-8
+				xyz[npel*idim+4*iz+1] = el.pos[idim, iz, 0, 0]
+				xyz[npel*idim+4*iz+2] = el.pos[idim, iz, 0, 1]
+				xyz[npel*idim+4*iz+3] = el.pos[idim, iz, 1, 1]
+				xyz[npel*idim+4*iz+4] = el.pos[idim, iz, 1, 0]
 		write_data_to_file(xyz)
 	#
 	# write curve sides data

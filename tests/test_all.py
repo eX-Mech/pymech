@@ -278,7 +278,7 @@ def test_readre2_3d():
 	meshre2 = ns.readre2(fre2)
 	# remove the 'E' conditions from the .rea data
 	for el in meshrea.elem:
-		for iface in range(4):
+		for iface in range(6):
 			if el.bcs[0, iface][0] == 'E':
 				el.bcs[0, iface][0] = ''
 				for j in range(1, 8):

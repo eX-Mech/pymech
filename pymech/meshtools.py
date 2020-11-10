@@ -47,7 +47,7 @@ def extrude(mesh, zmin, zmax, nz, bc1='P', bc2='P'):
     for k in range(nz-1):
         mesh3d.elem = mesh3d.elem + copy.deepcopy(mesh.elem)
 
-    # set the z locations
+    # set the z locations and curvature
     for k in range(nz):
         for i in range(nel2d):
             iel = i + nel2d*k
@@ -61,6 +61,18 @@ def extrude(mesh, zmin, zmax, nz, bc1='P', bc2='P'):
             z2 = zmin + (k+1)/nz*(zmax-zmin)
             mesh3d.elem[iel].pos[2, 0, :, :] = z1
             mesh3d.elem[iel].pos[2, 1, :, :] = z2
+
+            # extend curvature and correct it if necessary
+            for icurv in range(4):
+                curv_type = mesh3d.elem[iel].ccurv[icurv]
+                # a 2D element has 4 edges that can be curved, numbered 0-3;
+                # the extruded 3D element can have four more (on the other side), numbered 4-7
+                mesh3d.elem[iel].ccurv[icurv+4] = curv_type
+                mesh3d.elem[iel].curv[icurv+4] = mesh3d.elem[iel].curv[icurv]    # curvature params
+                if curv_type == 'm':
+                    # in this case the midpoint is given. (x, y) is correct but z should be set to the proper value.
+                    mesh3d.elem[iel].curv[icurv][2] = z1
+                    mesh3d.elem[iel].curv[icurv+4][2] = z2
 
     # fix the internal boundary conditions (even though it's probably useless)
     # the end boundary conditions will be overwritten later with the proper ones

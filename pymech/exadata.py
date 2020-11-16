@@ -127,7 +127,7 @@ class elem:
 			kx3, ky3, kz3 = -1,  0, -1
 			kx4, ky4, kz4 = -1, -1, -1
 		else:
-			logger.error('Invalid face number {} (must be between 0 and 5)'.format(i))
+			logger.error(f'Invalid face number {i} (must be between 0 and 5)')
 		(x1, y1, z1) = self.pos[:, kz1, ky1, kx1]
 		(x2, y2, z2) = self.pos[:, kz2, ky2, kx2]
 		(x3, y3, z3) = self.pos[:, kz3, ky3, kx3]
@@ -222,7 +222,7 @@ class exadata:
 
 		# perform some consistency checks
 		if self.ndim != other.ndim:
-			logger.error('Cannot merge meshes of dimensions {} and {}!'.format(self.ndim, other.ndim))
+			logger.error(f'Cannot merge meshes of dimensions {self.ndim} and {other.ndim}!')
 			return -1
 		if self.lr1[0] != other.lr1[0]:
 			logger.error('Cannot merge meshes of different polynomial orders ({} != {})'.format(self.lr1[0], other.lr1[0]))
@@ -290,5 +290,5 @@ class exadata:
 											self.elem[iel ].bcs[ibc, iface ][4] = iface1+1
 											self.elem[iel1].bcs[ibc, iface1][4] = iface +1
 										nchanges = nchanges+1
-		logger.debug('merged {} pairs of faces'.format(nchanges))
+		logger.debug(f'merged {nchanges} pairs of faces')
 		return nchanges

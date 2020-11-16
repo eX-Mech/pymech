@@ -27,8 +27,8 @@ def readnek(fname):
 	#
 	try:
 		infile = open(fname, 'rb')
-	except IOError as e:
-		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		logger.critical(f'I/O error ({e.errno}): {e.strerror}')
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -82,7 +82,7 @@ def readnek(fname):
 	#
 	# get variables [XUPTS[01-99]]
 	variables = header[11].decode('utf-8')
-	logger.debug("Variables: {}".format(variables))
+	logger.debug(f"Variables: {variables}")
 	var = [0 for i in range(5)]
 	for v in variables:
 		if (v == 'X'):
@@ -199,8 +199,8 @@ def writenek(fname, data):
 	#
 	try:
 		outfile = open(fname, 'wb')
-	except IOError as e:
-		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		logger.critical(f'I/O error ({e.errno}): {e.strerror}')
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -351,9 +351,9 @@ def readrea(fname):
 	"""
 	#
 	try:
-		infile = open(fname, 'r')
-	except IOError as e:
-		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+		infile = open(fname)
+	except OSError as e:
+		logger.critical(f'I/O error ({e.errno}): {e.strerror}')
 		#return -1
 	#
 	#---------------------------------------------------------------------------
@@ -543,8 +543,8 @@ def writerea(fname, data):
 	#
 	try:
 		outfile = open(fname, 'w')
-	except IOError as e:
-		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		logger.critical(f'I/O error ({e.errno}): {e.strerror}')
 		#return -1
 	#
 	#---------------------------------------------------------------------------
@@ -553,7 +553,7 @@ def writerea(fname, data):
 	#
 	outfile.write('****** PARAMETERS ******\n')
 	outfile.write('   2.6000     NEKTON VERSION\n')
-	outfile.write('   {0:1d} DIMENSIONAL RUN\n'.format(data.ndim))
+	outfile.write(f'   {data.ndim:1d} DIMENSIONAL RUN\n')
 	outfile.write('         118 PARAMETERS FOLLOW\n')
 	outfile.write('   1.00000     P001: DENSITY\n')
 	outfile.write('  -1000.00     P002: VISCOSITY\n')
@@ -696,42 +696,42 @@ def writerea(fname, data):
 	#
 	# vertex data
 	outfile.write('  ***** MESH DATA *****  6 lines are X,Y,Z;X,Y,Z. Columns corners 1-4;5-8\n')
-	outfile.write('  {0:10d} {1:1d} {2:10d} NEL,NDIM,NELV\n'.format(data.nel, data.ndim, data.nel))
+	outfile.write(f'  {data.nel:10d} {data.ndim:1d} {data.nel:10d} NEL,NDIM,NELV\n')
 	for iel in range(data.nel):
-		outfile.write('           ELEMENT {0:10d} [  1a]    GROUP 1\n'.format(iel+1))
+		outfile.write('           ELEMENT {:10d} [  1a]    GROUP 1\n'.format(iel+1))
 		if (data.ndim == 2):
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[0, 0, 0, 0], data.elem[iel].pos[0, 0, 0, -1], data.elem[iel].pos[0, 0, -1, -1], data.elem[iel].pos[0, 0, -1, 0]))
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[1, 0, 0, 0], data.elem[iel].pos[1, 0, 0, -1], data.elem[iel].pos[1, 0, -1, -1], data.elem[iel].pos[1, 0, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[0, 0, 0, 0], data.elem[iel].pos[0, 0, 0, -1], data.elem[iel].pos[0, 0, -1, -1], data.elem[iel].pos[0, 0, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[1, 0, 0, 0], data.elem[iel].pos[1, 0, 0, -1], data.elem[iel].pos[1, 0, -1, -1], data.elem[iel].pos[1, 0, -1, 0]))
 		elif (data.ndim == 3):
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[0, 0, 0, 0], data.elem[iel].pos[0, 0, 0, -1], data.elem[iel].pos[0, 0, -1, -1], data.elem[iel].pos[0, 0, -1, 0]))
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[1, 0, 0, 0], data.elem[iel].pos[1, 0, 0, -1], data.elem[iel].pos[1, 0, -1, -1], data.elem[iel].pos[1, 0, -1, 0]))
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[2, 0, 0, 0], data.elem[iel].pos[2, 0, 0, -1], data.elem[iel].pos[2, 0, -1, -1], data.elem[iel].pos[2, 0, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[0, 0, 0, 0], data.elem[iel].pos[0, 0, 0, -1], data.elem[iel].pos[0, 0, -1, -1], data.elem[iel].pos[0, 0, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[1, 0, 0, 0], data.elem[iel].pos[1, 0, 0, -1], data.elem[iel].pos[1, 0, -1, -1], data.elem[iel].pos[1, 0, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[2, 0, 0, 0], data.elem[iel].pos[2, 0, 0, -1], data.elem[iel].pos[2, 0, -1, -1], data.elem[iel].pos[2, 0, -1, 0]))
 			#
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[0, -1, 0, 0], data.elem[iel].pos[0, -1, 0, -1], data.elem[iel].pos[0, -1, -1, -1], data.elem[iel].pos[0, -1, -1, 0]))
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[1, -1, 0, 0], data.elem[iel].pos[1, -1, 0, -1], data.elem[iel].pos[1, -1, -1, -1], data.elem[iel].pos[1, -1, -1, 0]))
-			outfile.write('{0:14.6e}{1:14.6e}{2:14.6e}{3:14.6e}\n'.format(data.elem[iel].pos[2, -1, 0, 0], data.elem[iel].pos[2, -1, 0, -1], data.elem[iel].pos[2, -1, -1, -1], data.elem[iel].pos[2, -1, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[0, -1, 0, 0], data.elem[iel].pos[0, -1, 0, -1], data.elem[iel].pos[0, -1, -1, -1], data.elem[iel].pos[0, -1, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[1, -1, 0, 0], data.elem[iel].pos[1, -1, 0, -1], data.elem[iel].pos[1, -1, -1, -1], data.elem[iel].pos[1, -1, -1, 0]))
+			outfile.write('{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(data.elem[iel].pos[2, -1, 0, 0], data.elem[iel].pos[2, -1, 0, -1], data.elem[iel].pos[2, -1, -1, -1], data.elem[iel].pos[2, -1, -1, 0]))
 	#
 	# curved side data
 	outfile.write('  ***** CURVED SIDE DATA *****\n')
-	outfile.write('  {0:10d} Curved sides follow IEDGE,IEL,CURVE(I),I=1,5, CCURVE\n'.format(data.ncurv))
+	outfile.write(f'  {data.ncurv:10d} Curved sides follow IEDGE,IEL,CURVE(I),I=1,5, CCURVE\n')
 	for iel in range(data.nel):
 		if (data.nel < 1e3):
 			#
 			for iedge in range(12):
 				if (data.elem[iel].ccurv[iedge] != ''):
-					outfile.write('{0:3d}{1:3d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:>2s}\n'.format(
+					outfile.write('{:3d}{:3d}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:>2s}\n'.format(
 						iedge+1, iel+1, data.elem[iel].curv[iedge][0], data.elem[iel].curv[iedge][1], data.elem[iel].curv[iedge][2], data.elem[iel].curv[iedge][3], data.elem[iel].curv[iedge][4], data.elem[iel].ccurv[iedge]))
 		elif (data.nel < 1e6):
 			#
 			for iedge in range(12):
 				if (data.elem[iel].ccurv[iedge] != ''):
-					outfile.write('{0:2d}{1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:>2s}\n'.format(
+					outfile.write('{:2d}{:6d}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:>2s}\n'.format(
 						iedge+1, iel+1, data.elem[iel].curv[iedge][0], data.elem[iel].curv[iedge][1], data.elem[iel].curv[iedge][2], data.elem[iel].curv[iedge][3], data.elem[iel].curv[iedge][4], data.elem[iel].ccurv[iedge]))
 		else:
 			#
 			for iedge in range(12):
 				if (data.elem[iel].ccurv[iedge] != ''):
-					outfile.write('{0:2d}{1:10d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:>2s}\n'.format(
+					outfile.write('{:2d}{:10d}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:>2s}\n'.format(
 						iedge+1, iel+1, data.elem[iel].curv[iedge][0], data.elem[iel].curv[iedge][1], data.elem[iel].curv[iedge][2], data.elem[iel].curv[iedge][3], data.elem[iel].curv[iedge][4], data.elem[iel].ccurv[iedge]))
 	#
 	# boundary conditions data
@@ -751,13 +751,13 @@ def writerea(fname, data):
 					data.elem[iel].bcs[ibc, iface][1] = iel+1
 					data.elem[iel].bcs[ibc, iface][2] = iface+1
 				if (data.nel < 1e3):
-					outfile.write(' {0:2s} {1:3d}{2:3d}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}{7:14.6e}\n'.format(
+					outfile.write(' {:2s} {:3d}{:3d}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(
 						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][2], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))
 				elif (data.nel < 1e6):
-					outfile.write(' {0:2s} {1:6d}{2:14.6e}{3:14.6e}{4:14.6e}{5:14.6e}{6:14.6e}\n'.format(
+					outfile.write(' {:2s} {:6d}{:14.6e}{:14.6e}{:14.6e}{:14.6e}{:14.6e}\n'.format(
 						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))
 				else:
-					outfile.write(' {0:2s} {1:11d}{2:1d}{3:18.11e}{4:18.11e}{5:18.11e}{6:18.11e}{7:18.11e}\n'.format(
+					outfile.write(' {:2s} {:11d}{:1d}{:18.11e}{:18.11e}{:18.11e}{:18.11e}{:18.11e}\n'.format(
 						data.elem[iel].bcs[ibc, iface][0], data.elem[iel].bcs[ibc, iface][1], data.elem[iel].bcs[ibc, iface][2], data.elem[iel].bcs[ibc, iface][3], data.elem[iel].bcs[ibc, iface][4], data.elem[iel].bcs[ibc, iface][5], data.elem[iel].bcs[ibc, iface][6], data.elem[iel].bcs[ibc, iface][7]))
 
 	if data.nbc < 2:
@@ -814,8 +814,8 @@ def readre2(fname):
 	#
 	try:
 		infile = open(fname, 'rb')
-	except IOError as e:
-		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		logger.critical(f'I/O error ({e.errno}): {e.strerror}')
 		return -1
 	# the header for re2 files is 80 ASCII bytes, something like
 	# #v002    18669  2    18669 this is the hdr                                      %
@@ -882,7 +882,7 @@ def readre2(fname):
 	ncparam = 8
 	buf = infile.read(wdsz)
 	ncurv = int(np.frombuffer(buf)[0])
-	logger.debug('Found {} curved sides'.format(ncurv))
+	logger.debug(f'Found {ncurv} curved sides')
 	data.ncurv = ncurv
 	buf = infile.read(wdsz*(ncparam*ncurv))
 	for icurv in range(ncurv):
@@ -912,7 +912,7 @@ def readre2(fname):
 				empty_bcs = np.zeros(el.bcs[:1, :].shape, dtype=el.bcs.dtype)
 				el.bcs = np.concatenate((el.bcs, empty_bcs))
 		nbclines = int(np.frombuffer(buf)[0])
-		logger.debug('Found {} external boundary conditions for field {}'.format(nbclines, ifield))
+		logger.debug(f'Found {nbclines} external boundary conditions for field {ifield}')
 		buf = infile.read(wdsz*(nbcparam*nbclines))
 		for ibc in range(nbclines):
 			# interpret the data
@@ -961,8 +961,8 @@ def writere2(fname, data):
 	# Open file
 	try:
 		outfile = open(fname, 'wb')
-	except IOError as e:
-		logger.critical('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		logger.critical(f'I/O error ({e.errno}): {e.strerror}')
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -974,7 +974,7 @@ def writere2(fname, data):
 	realtype = 'd'
 	nel = data.nel
 	ndim = data.ndim
-	header = '#v002{:9d}{:3d}{:9d} this is the hdr'.format(nel, ndim, nel)
+	header = f'#v002{nel:9d}{ndim:3d}{nel:9d} this is the hdr'
 	header = header.ljust(80)
 	outfile.write(header.encode('utf-8'))
 	#
@@ -1038,7 +1038,7 @@ def writere2(fname, data):
 	# write number of curved edges
 	ncurv = len(curved_edges)
 	if ncurv != data.ncurv:
-		logger.warning('wrong number of curved edges: expected {}, found {}'.format(data.ncurv, ncurv))
+		logger.warning(f'wrong number of curved edges: expected {data.ncurv}, found {ncurv}')
 	ncurvf = np.array([ncurv], dtype=np.float64)
 	write_data_to_file(ncurvf)
 	# format curve data

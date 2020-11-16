@@ -29,7 +29,7 @@ def open_dataset(path, **kwargs):
 		_open = _open_nek_dataset
 	else:
 		raise NotImplementedError(
-			"Filetype: {} is not supported.".format(path.suffix)
+			f"Filetype: {path.suffix} is not supported."
 		)
 
 	return _open(path, **kwargs)
@@ -144,7 +144,7 @@ def _open_nek_dataset(path):
 	"""Interface for converting Nek field files into xarray_ datasets."""
 	field = readnek(path)
 	if isinstance(field, int):
-		raise IOError("Failed to load {}".format(path))
+		raise OSError(f"Failed to load {path}")
 
 	elements = field.elem
 	elem_stores = [_NekDataStore(elem) for elem in elements]

@@ -55,9 +55,9 @@ def exa2vtk(field, downsample):
 	if (field.var[1]!=0):
 		v  = np.zeros((nvert*nel,3))
 	if (field.var[2]==1):
-		p  = np.zeros((nvert*nel))
+		p  = np.zeros(nvert*nel)
 	if (field.var[3]==1):
-		T  = np.zeros((nvert*nel))
+		T  = np.zeros(nvert*nel)
 	if (field.var[4]!=0):
 		S  = np.zeros((nvert*nel,field.var[4]))
 	#

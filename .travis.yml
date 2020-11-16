@@ -5,11 +5,11 @@ python:
    - 3.8
 
 install:
+    - pip install coveralls
     - pip install -e .[tests]
 
 script:
-    - coverage run -m pytest -s -v
-    #- py.test tests/run_tests.py
+    - pytest -s -v --cov -n 4
 
 after_success:
    - coveralls

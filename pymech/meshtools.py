@@ -83,13 +83,21 @@ def extrude(mesh, zmin, zmax, nz, bc1='P', bc2='P'):
             el.bcs[ibc, 4][0] = 'E'
             el.bcs[ibc, 4][1] = iel+1
             el.bcs[ibc, 4][2] = 5
-            el.bcs[ibc, 4][3] = iel+nel2d+1
+            el.bcs[ibc, 4][3] = iel-nel2d+1
             el.bcs[ibc, 4][4] = 6
             el.bcs[ibc, 5][0] = 'E'
             el.bcs[ibc, 5][1] = iel+1
             el.bcs[ibc, 5][2] = 6
-            el.bcs[ibc, 5][3] = iel-nel2d+1
+            el.bcs[ibc, 5][3] = iel+nel2d+1
             el.bcs[ibc, 5][4] = 5
+            # update the conditions for side faces
+            for iface in range(4):
+                if el.bcs[ibc, iface][0] == 'E':
+                    # el.bcs[ibc, 0][1] ought to contain iel+1 once the mesh is valid
+                    # but for now it should be off by a factor of nel2d because it is a copy of an element in the first slice
+                    offset = iel-el.bcs[ibc, iface][1]+1
+                    el.bcs[ibc, iface][1] = iel+1
+                    el.bcs[ibc, iface][3] = el.bcs[ibc, iface][3]+offset
         
     # now fix the end boundary conditions
     # face 5 is at zmin and face 6 is at zmax (with Nek indexing, corresponding to 4 and 5 in Python)

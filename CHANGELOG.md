@@ -27,6 +27,8 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [1.4.0] - 2020-11-16
+
 ### Added
 - Functions `readre2` and `writere2` to read/write binary .re2 Nek5000 meshes
 
@@ -84,7 +86,8 @@ writing
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/jcanton/pymech/compare/1.3.3...HEAD
+[Unreleased]: https://github.com/jcanton/pymech/compare/1.4.0...HEAD
+[1.4.0]: https://github.com/jcanton/pymech/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/jcanton/pymech/compare/1.3.2...1.3.3
 [1.3.2]: https://github.com/jcanton/pymech/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/jcanton/pymech/compare/1.3.0.post0...1.3.1

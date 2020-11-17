@@ -38,7 +38,7 @@ Contents:
    tests.rst
    usage.ipynb
    changelog.md
-
+   release.rst
 
 
 .. Indices and tables

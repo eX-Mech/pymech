@@ -23,8 +23,8 @@ def readdns(fname):
 	#
 	try:
 		infile = open(fname, 'rb')
-	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		print(f'I/O error ({e.errno}): {e.strerror}')
 		return -1
 	#
 	#---------------------------------------------------------------------------
@@ -253,8 +253,8 @@ def readplane(fname):
 	#
 	try:
 		infile = open(fname, 'rb')
-	except IOError as e:
-		print('I/O error ({0}): {1}'.format(e.errno, e.strerror))
+	except OSError as e:
+		print(f'I/O error ({e.errno}): {e.strerror}')
 		return -1
 	#
 	#---------------------------------------------------------------------------

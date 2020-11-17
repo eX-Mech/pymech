@@ -42,6 +42,8 @@ def extrude(mesh, zmin, zmax, nz, bc1='P', bc2='P'):
     nbc = mesh.nbc
     mesh3d.nel = nel3d
     mesh3d.ndim = 3
+    # The curved sides will also be extruded, one on each side of each element along nz
+    mesh3d.ncurv = 2*nz*mesh.ncurv
 
     # add extra copies of all elements
     for k in range(nz-1):

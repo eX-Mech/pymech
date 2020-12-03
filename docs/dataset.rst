@@ -13,4 +13,4 @@ Contents of dataset.py
 
    See usage_ for more details.
 
-.. _usage: usage.html#pymech.dataset
+.. _usage: usage.html#pymech-dataset

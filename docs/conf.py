@@ -29,11 +29,12 @@ _meta = metadata.metadata(project)
 _today = date.today()
 
 author = _meta.get('Author')
-copyright = f"{_today.year}, {author}"
+copyright = f"{_today.year}" #", {author}"
 master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = _meta.get('Version')
+version = _meta.get('Version')
+release = '.'.join(version.split('.')[:3])
 
 rst_prolog = f"""
 .. |author| replace:: {author}
@@ -46,8 +47,7 @@ rst_prolog = f"""
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'recommonmark',
-	'nbsphinx',
+	'myst_nb',
 	'sphinx.ext.autodoc',
     #  'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
@@ -58,6 +58,13 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
 ]
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.ipynb': 'myst-nb',
+    '.myst': 'myst-nb',
+}
+jupyter_execute_notebooks = "off"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -75,7 +82,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_book_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

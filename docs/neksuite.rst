@@ -85,4 +85,4 @@ Contents of neksuite.py
 
    See usage_ for more details.
 
-.. _usage: usage.html#pymech.neksuite
+.. _usage: usage.html#pymech-neksuite

@@ -24,11 +24,9 @@ functions for *Simson* are, of course, in :ref:`simsonsuite`.
 
 -------------------------------------------------------------------------------
 
-Contents:
----------
-
 .. toctree::
    :maxdepth: 2
+   :caption: User Guide
 
    exadata.rst
    neksuite.rst
@@ -40,7 +38,12 @@ Contents:
    changelog.md
    release.rst
 
-
+.. .. autosummary::
+..    :toctree: _generated/
+..    :caption: Reference
+..
+..    pymech
+..
 .. Indices and tables
 
    * :ref:`genindex`

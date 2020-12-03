@@ -1,12 +1,4 @@
-#=============================================================================#
-# neksuite                                                                    #
-#                                                                             #
-# A python module for reading and writing nek5000 files                       #
-#                                                                             #
-# Authors: Jacopo Canton, Nicolo' Fabbiane, Guillaume Chauvat                 #
-# Contacts: jacopo.canton(at)gmail.com                                        #
-# Last edit: 2020-02-21                                                       #
-#=============================================================================#
+"""Module for reading and writing Nek5000 files"""
 import struct
 import numpy as np
 import pymech.exadata as exdat

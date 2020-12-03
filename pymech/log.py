@@ -1,9 +1,4 @@
-"""Logging
-==========
-
-Defines the pymech logger (variable :code:`logger`).
-
-"""
+"""Defines the pymech logger (variable :code:`logger`)."""
 
 import logging
 

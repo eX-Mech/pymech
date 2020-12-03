@@ -1,5 +1,4 @@
-"""
-The pymech API
+"""The pymech API
 
 .. autosummary::
    :toctree:

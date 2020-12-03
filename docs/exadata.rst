@@ -10,15 +10,15 @@ The :ref:`exadata-contents` are reported at the bottom of this page.
 exadata
 -------
 
-The main data class is ``exadata`` which is a structure for general and element
-by element information on data stored on exahedral element(s).
-The general information is constituted by:
+The main data class is :py:class:`pymech.exadata.exadata` which is a structure
+for general and element by element information on data stored on exahedral
+element(s).  The general information is constituted by:
 
 ==========   ============================   ===============================================
 ``ndim``     integer                        number of spatial dimensions of the data
-``nel``      integer                        number of elements included in ``exadata``
+``nel``      integer                        number of elements included in :py:class:`pymech.exadata.exadata`
 ``ncurv``    integer                        number of curved sides (used only by *Nek5000*)
-``var``      string                         variables included in ``exadata`` (e.g. 'XUPT')
+``var``      string                         variables included in :py:class:`pymech.exadata.exadata` (e.g. 'XUPT')
 ``lr1``      ``ndim``-array of integers     number of datapoints per element
 ``time``     float                          simulation time of the file
 ``istep``    integer                        simulation time step of the file

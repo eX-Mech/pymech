@@ -1,12 +1,4 @@
-#=============================================================================#
-# vtksuite                                                                    #
-#                                                                             #
-#                                                                             #
-#                                                                             #
-# Authors: Jacopo Canton, Nicolo' Fabbiane                                    #
-# Contacts: jcanton(at)mech.kth.se, nicolo(at)mech.kth.se                     #
-# Last edit: 2016-01-28                                                       #
-#=============================================================================#
+"""Module for converting exadata objects to vtk"""
 import numpy as np
 from tvtk.api import tvtk
 

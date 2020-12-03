@@ -1,12 +1,4 @@
-#=============================================================================#
-# exadata                                                                     #
-#                                                                             #
-#                                                                             #
-#                                                                             #
-# Authors: Jacopo Canton, Nicolo' Fabbiane, Guillaume Chauvat                 #
-# Contacts: jacopo.canton(at)gmail.com                                        #
-# Last edit: 2020-02-20                                                       #
-#=============================================================================#
+"""Data structures for pymech"""
 from functools import reduce
 import numpy as np
 import copy

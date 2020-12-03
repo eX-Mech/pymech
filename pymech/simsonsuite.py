@@ -1,12 +1,4 @@
-#=============================================================================#
-# simsonsuite                                                                 #
-#                                                                             #
-# A python module for reading and writing SIMSON files                        #
-#                                                                             #
-# Authors: Jacopo Canton, Nicolo' Fabbiane                                    #
-# Contacts: jcanton(at)mech.kth.se, nicolo(at)mech.kth.se                     #
-# Last edit: 2020-02-19                                                       #
-#=============================================================================#
+"""Module for reading and writing SIMSON files"""
 import struct
 import numpy as np
 import pymech.exadata as exdat

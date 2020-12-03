@@ -233,6 +233,13 @@ def test_merge():
 	assert n1 == 9
 	assert n2 == 9
 	assert n3 == 9
+	# check if the element/faces indices in the boundary conditions are right too, even if it may not matter
+	assert mesh1.nbc > 0
+	for ibc in range(mesh1.nbc):
+		for (iel, el) in enumerate(mesh1.elem):
+			for iface in range(6):
+				assert el.bcs[ibc, iface][1] == iel+1
+				assert el.bcs[ibc, iface][2] == iface+1
 
 def test_readre2():
 	import pymech.neksuite as ns

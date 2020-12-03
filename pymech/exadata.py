@@ -240,10 +240,11 @@ class exadata:
 		nbc = min(self.nbc, other.nbc)
 
 		# correct the boundary condition numbers:
-		# the index of the neighbours have changed
+		# the index of the elements and neighbours have changed
 		for iel in range(nel1, self.nel):
 			for ibc in range(other.nbc):
 				for iface in range(6):
+					self.elem[iel].bcs[ibc, iface][1] = iel+1
 					bc = self.elem[iel].bcs[ibc, iface][0]
 					if bc == 'E' or bc == 'P':
 						neighbour = self.elem[iel].bcs[ibc, iface][3]

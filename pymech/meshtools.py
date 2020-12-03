@@ -548,3 +548,4 @@ def extrude_split(mesh, z, n, bc1, bc2, Rlim, coord='', ble=0.0, bte=0.0):
             if el.ccurv[iedge] != '':
                 ncurv = ncurv+1
     mesh3d.ncurv = ncurv
+    return mesh3d

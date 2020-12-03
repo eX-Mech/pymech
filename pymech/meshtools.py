@@ -92,11 +92,11 @@ def extrude(mesh, zmin, zmax, nz, bc1='P', bc2='P'):
             el.bcs[ibc, 5][4] = 5
             # update the conditions for side faces
             for iface in range(4):
+                el.bcs[ibc, iface][1] = iel+1
                 if el.bcs[ibc, iface][0] == 'E':
                     # el.bcs[ibc, 0][1] ought to contain iel+1 once the mesh is valid
                     # but for now it should be off by a factor of nel2d because it is a copy of an element in the first slice
                     offset = iel-el.bcs[ibc, iface][1]+1
-                    el.bcs[ibc, iface][1] = iel+1
                     el.bcs[ibc, iface][3] = el.bcs[ibc, iface][3]+offset
         
     # now fix the end boundary conditions

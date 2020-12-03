@@ -13,7 +13,7 @@ __pycache__
 *.egg-info
 pymech/_version.py
 .eggs
-.pytest-cache
+.pytest_cache
 .coverage
 
 # documentation (sphinx) stuff

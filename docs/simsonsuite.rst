@@ -17,7 +17,7 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readdns() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:ref:`exadata`) structure, with just one
+The output is a single :py:class:`pymech.exadata.exadata` (:ref:`exadata`) structure, with just one
 element, containing all the information that was stored in the file.
 
 readplane

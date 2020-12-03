@@ -17,7 +17,7 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readnek() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:ref:`exadata`) structure containing all
+The output is a single :py:class:`pymech.exadata.exadata` (:ref:`exadata`) structure containing all
 the information that was stored in the file.
 
 writenek
@@ -29,7 +29,7 @@ uses to store output flow fields. It is therefore possible to open this file wit
 The inputs needed by this function are:
 
 - ``fname``: a string containing the name of the file;
-- ``data``: a single ``exadata`` (:ref:`exadata`) structure containing the
+- ``data``: a single :py:class:`pymech.exadata.exadata` (:ref:`exadata`) structure containing the
   data to be written to file.
 
 writenek() produces no output.
@@ -46,7 +46,7 @@ The only input needed by this function is:
 - ``fname``: a string containing the name of the file;
 
 readrea() is clever enough to figure out the rest.
-The output is a single ``exadata`` (:ref:`exadata`) structure containing the
+The output is a single :py:class:`pymech.exadata.exadata` (:ref:`exadata`) structure containing the
 mesh that was stored in the file.
 
 
@@ -60,7 +60,7 @@ to sensible defaults.
 The inputs needed by this function are:
 
 - ``fname``: a string containing the name of the file;
-- ``data``: a single ``exadata`` (:ref:`exadata`) structure containing the
+- ``data``: a single :py:class:`pymech.exadata.exadata` (:ref:`exadata`) structure containing the
   mesh to be written to file.
 
 writerea() produces no output.

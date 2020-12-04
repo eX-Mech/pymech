@@ -120,3 +120,115 @@ def extrude(mesh, zmin, zmax, nz, bc1='P', bc2='P'):
 
     # return the extruded mesh
     return mesh3d
+
+#=================================================================================
+
+def delete_internal_bcs(mesh):
+    """Deletes the internal boundary conditions 'E' in a Nek5000 mesh.
+    Those are present in .rea files but do not need to be valid, and are completely absent from .re2 files.
+    Returns the number of deleted conditions.
+    
+    Parameters
+    ----------
+    mesh : exadata
+           The mesh to modify in-place.
+    """
+
+    ndelete = 0
+    for ibc in range(mesh.nbc):
+        for el in mesh.elem:
+            for iface in range(6):
+                bc = el.bcs[ibc, iface]
+                if bc[0] == 'E':
+                    ndelete = ndelete+1
+                    bc[0] = ''
+                    for i in range(1, 8):
+                        bc[i] = 0
+    return ndelete
+
+#=================================================================================
+
+def generate_internal_bcs(mesh, tol=1e-3):
+    """Generates internal boundary conditions 'E' in a Nek5000 mesh based on geometric proximity of faces.
+    This will loop over all pairs of faces and connect them if their centres are closer than some specified relative tolerance.
+    This function returns the number of internal connections found.
+
+    Parameters
+    ----------
+    mesh : exadata
+           The mesh to modify in-place
+    
+    tol: float
+         the tolerance within which the centres of two faces are considered the same,
+         relative to the smallest edge of the elements
+    """
+
+    # First generate a length scale (squared) for each element, equal to the square of the smallest edge of tha element.
+    scales = np.zeros((mesh.nel,))
+    for (iel, (el, l2)) in enumerate(zip(mesh.elem, scales)):
+        # get coordinates of points
+        x1, y1, z1 = el.pos[:, 0, 0, 0]
+        x2, y2, z2 = el.pos[:, 0, 0, 1]
+        x3, y3, z3 = el.pos[:, 0, 1, 0]
+        x4, y4, z4 = el.pos[:, 0, 1, 1]
+        # compute squares of edges lengths
+        edges_l2 = np.zeros((12,))
+        edges_l2[0] = (x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2
+        edges_l2[1] = (x3-x2)**2 + (y3-y2)**2 + (z3-z2)**2
+        edges_l2[2] = (x4-x3)**2 + (y4-y3)**2 + (z4-z3)**2
+        edges_l2[3] = (x1-x4)**2 + (y1-y4)**2 + (z1-z4)**2
+        if mesh.ndim > 2:
+            # in 3D, do the same for the upper face, and also the side edges
+            x5, y5, z5 = el.pos[:, 1, 0, 0]
+            x6, y6, z6 = el.pos[:, 1, 0, 1]
+            x7, y7, z7 = el.pos[:, 1, 1, 0]
+            x8, y8, z8 = el.pos[:, 1, 1, 1]
+            edges_l2[4] = (x6-x5)**2 + (y6-y5)**2 + (z6-z5)**2
+            edges_l2[5] = (x7-x6)**2 + (y7-y6)**2 + (z7-z6)**2
+            edges_l2[6] = (x8-x7)**2 + (y8-y7)**2 + (z8-z7)**2
+            edges_l2[7] = (x5-x8)**2 + (y5-y8)**2 + (z5-z8)**2
+            edges_l2[8] = (x5-x1)**2 + (y5-y1)**2 + (z5-z1)**2
+            edges_l2[9] = (x6-x2)**2 + (y6-y2)**2 + (z6-z2)**2
+            edges_l2[10] = (x7-x3)**2 + (y7-y3)**2 + (z7-z3)**2
+            edges_l2[11] = (x8-x4)**2 + (y8-y4)**2 + (z8-z4)**2
+            l2 = edges_l2.min()
+        else:
+            l2 = edges_l2[:4].min()
+
+        # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.
+        if l2 <= 0.0:
+            logger.critical(f'Detected an edge with zero length in element {iel}!')
+            return -1
+    
+    # Now that we have the scales, we can compare the location of the faces for each pair of elements and connect them if they are close
+    nconnect = 0  # number of connections made
+    for iel in range(mesh.nel):
+        el = mesh.elem[iel]
+        l2 = scales[iel]
+        for other_iel in range(iel+1, mesh.nel):
+            other_el = mesh.elem[other_iel]
+            other_l2 = scales[other_iel]
+            max_d2 = tol**2*min(l2, other_l2)
+            for iface in range(2*mesh.ndim):
+                xf, yf, zf = el.face_center(iface)
+                for other_iface in range(2*mesh.ndim):
+                    other_xf, other_yf, other_zf = other_el.face_center(other_iface)
+                    dist2 = (other_xf-xf)**2 + (other_yf-yf)**2 + (other_zf-zf)**2 
+                    if dist2 <= max_d2:
+                        for ibc in range(mesh.nbc):
+                            # increment counter for diagnostics
+                            nconnect = nconnect+1
+                            # write the connectivity information in both directions
+                            el.bcs[ibc, iface][0] = 'E'
+                            el.bcs[ibc, iface][1] = iel+1
+                            el.bcs[ibc, iface][2] = iface+1
+                            el.bcs[ibc, iface][3] = other_iel+1
+                            el.bcs[ibc, iface][4] = other_iface+1
+                            other_el.bcs[ibc, other_iface][0] = 'E'
+                            other_el.bcs[ibc, other_iface][1] = other_iel+1
+                            other_el.bcs[ibc, other_iface][2] = other_iface+1
+                            other_el.bcs[ibc, other_iface][3] = iel+1
+                            other_el.bcs[ibc, other_iface][4] = iface+1
+    
+    return nconnect
+

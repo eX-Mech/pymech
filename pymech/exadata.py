@@ -84,39 +84,38 @@ class elem:
 		#                    one column for velocity, one for temperature, and one for each scalar
 		self.bcs  = np.zeros((nbc, 6), dtype='U3, i4, i4, f8, f8, f8, f8, f8')
 
-
 	def face_center(self, i):
 		"""Return the coordinates (x, y, z) of the center of the face number i"""
 
 		if i == 0:
-			kx1, ky1, kz1 =  0,  0,  0
-			kx2, ky2, kz2 =  0,  0, -1
-			kx3, ky3, kz3 = -1,  0,  0
-			kx4, ky4, kz4 = -1,  0, -1
+			kx1, ky1, kz1 =  0, 0, 0
+			kx2, ky2, kz2 =  0, 0, -1
+			kx3, ky3, kz3 = -1, 0, 0
+			kx4, ky4, kz4 = -1, 0, -1
 		elif i == 1:
-			kx1, ky1, kz1 = -1,  0,  0
-			kx2, ky2, kz2 = -1,  0, -1
-			kx3, ky3, kz3 = -1, -1,  0
+			kx1, ky1, kz1 = -1, 0, 0
+			kx2, ky2, kz2 = -1, 0, -1
+			kx3, ky3, kz3 = -1, -1, 0
 			kx4, ky4, kz4 = -1, -1, -1
 		elif i == 2:
-			kx1, ky1, kz1 =  0, -1,  0
+			kx1, ky1, kz1 =  0, -1, 0
 			kx2, ky2, kz2 =  0, -1, -1
-			kx3, ky3, kz3 = -1, -1,  0
+			kx3, ky3, kz3 = -1, -1, 0
 			kx4, ky4, kz4 = -1, -1, -1
 		elif i == 3:
-			kx1, ky1, kz1 =  0,  0,  0
-			kx2, ky2, kz2 =  0,  0, -1
-			kx3, ky3, kz3 =  0, -1,  0
+			kx1, ky1, kz1 =  0, 0, 0
+			kx2, ky2, kz2 =  0, 0, -1
+			kx3, ky3, kz3 =  0, -1, 0
 			kx4, ky4, kz4 =  0, -1, -1
 		elif i == 4:
-			kx1, ky1, kz1 =  0,  0,  0
-			kx2, ky2, kz2 =  0, -1,  0
-			kx3, ky3, kz3 = -1,  0,  0
-			kx4, ky4, kz4 = -1, -1,  0
+			kx1, ky1, kz1 =  0, 0, 0
+			kx2, ky2, kz2 =  0, -1, 0
+			kx3, ky3, kz3 = -1, 0, 0
+			kx4, ky4, kz4 = -1, -1, 0
 		elif i == 5:
-			kx1, ky1, kz1 =  0,  0, -1
+			kx1, ky1, kz1 =  0, 0, -1
 			kx2, ky2, kz2 =  0, -1, -1
-			kx3, ky3, kz3 = -1,  0, -1
+			kx3, ky3, kz3 = -1, 0, -1
 			kx4, ky4, kz4 = -1, -1, -1
 		else:
 			logger.error(f'Invalid face number {i} (must be between 0 and 5)')
@@ -258,29 +257,29 @@ class exadata:
 								bc1 = self.elem[iel1].bcs[0, iface1][0]
 								if bc1 != 'E' and not (ignore_empty and bc1 == ''):
 									# if the centers of the faces are close, connect them together
-									x0, y0, z0 =  self.elem[iel ].face_center(iface)
+									x0, y0, z0 =  self.elem[iel].face_center(iface)
 									x1, y1, z1 =  self.elem[iel1].face_center(iface1)
 									dist2 = (x1-x0)**2 + (y1-y0)**2 + (z1-z0)**2
 									if dist2 <= tol**2:
 										# reconnect the periodic faces together (assumes that all fields are periodic)
 										if bc == 'P' and bc1 == 'P':
-											iel_p    = int(self.elem[iel ].bcs[0, iface ][3])-1
+											iel_p    = int(self.elem[iel].bcs[0, iface][3])-1
 											iel_p1   = int(self.elem[iel1].bcs[0, iface1][3])-1
-											iface_p  = int(self.elem[iel ].bcs[0, iface ][4])-1
+											iface_p  = int(self.elem[iel].bcs[0, iface][4])-1
 											iface_p1 = int(self.elem[iel1].bcs[0, iface1][4])-1
 											for ibc in range(nbc):
-												self.elem[iel_p ].bcs[ibc, iface_p ][0] = 'P'
+												self.elem[iel_p].bcs[ibc, iface_p][0] = 'P'
 												self.elem[iel_p1].bcs[ibc, iface_p1][0] = 'P'
-												self.elem[iel_p ].bcs[ibc, iface_p ][3] = iel_p1+1
+												self.elem[iel_p].bcs[ibc, iface_p][3] = iel_p1+1
 												self.elem[iel_p1].bcs[ibc, iface_p1][3] = iel_p +1
-												self.elem[iel_p ].bcs[ibc, iface_p ][4] = iface_p1+1
+												self.elem[iel_p].bcs[ibc, iface_p][4] = iface_p1+1
 												self.elem[iel_p1].bcs[ibc, iface_p1][4] = iface_p +1
 										for ibc in range(nbc):
-											self.elem[iel ].bcs[ibc, iface ][0] = 'E'
+											self.elem[iel].bcs[ibc, iface][0] = 'E'
 											self.elem[iel1].bcs[ibc, iface1][0] = 'E'
-											self.elem[iel ].bcs[ibc, iface ][3] = iel1+1
+											self.elem[iel].bcs[ibc, iface][3] = iel1+1
 											self.elem[iel1].bcs[ibc, iface1][3] = iel +1
-											self.elem[iel ].bcs[ibc, iface ][4] = iface1+1
+											self.elem[iel].bcs[ibc, iface][4] = iface1+1
 											self.elem[iel1].bcs[ibc, iface1][4] = iface +1
 										nchanges = nchanges+1
 		logger.debug(f'merged {nchanges} pairs of faces')

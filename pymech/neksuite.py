@@ -70,10 +70,10 @@ def readnek(fname):
 	istep = int(header[8])
 	#
 	# get file id
-	fid = int(header[9])
+	#  fid = int(header[9])
 	#
 	# get tot number of files
-	nf = int(header[10])
+	#  nf = int(header[10])
 	#
 	# get variables [XUPTS[01-99]]
 	variables = header[11].decode('utf-8')
@@ -126,7 +126,7 @@ def readnek(fname):
 		data.endian = 'little'
 	elif (emode == '>'):
 		data.endian = 'big'
-	#
+
 	def read_file_into_data(data_var, index_var):
 		"""Read binary file into an array attribute of ``data.elem``"""
 		fi = infile.read(npel*wdsz)
@@ -245,7 +245,7 @@ def writenek(fname, data):
 			f'Unrecognized endianness {data.endian}, '
 			f'writing native {sys.byteorder}-endian file'
 		)
-	#
+
 	def correct_endianness(a):
 		''' Return the array with the requested endianness'''
 		if byteswap:
@@ -265,8 +265,8 @@ def writenek(fname, data):
 	#---------------------------------------------------------------------------
 	#
 	# compute total number of points per element
-	npel = data.lr1[0] * data.lr1[1] * data.lr1[2]
-	#
+	#  npel = data.lr1[0] * data.lr1[1] * data.lr1[2]
+
 	def write_ndarray_to_file(a):
 		'''Write a data array to the output file in the requested precision and endianness'''
 		if data.wdsz == 4:
@@ -359,7 +359,7 @@ def readrea(fname):
 	nbc = 0
 	for line in infile:
 		line_split = line.split()
-		if 'BOUNDARY' in line_split[2:] and not 'NO' in line_split:
+		if 'BOUNDARY' in line_split[2:] and 'NO' not in line_split:
 			nbc = nbc + 1
 
 	infile.seek(0)
@@ -853,7 +853,7 @@ def readre2(fname):
 	# for some reason each element is prefixed with 8 bytes of zeros, it's not clear to me why.
 	# This is the reason for the +1 here, then the first number is ignored.
 	buf = infile.read((ndim*npel+1)*wdsz*nel)
-	elem_shape = [ndim, ndim-1, 2, 2]  # nvar, lz, ly, lx
+	# elem_shape = [ndim, ndim-1, 2, 2]  # nvar, lz, ly, lx
 	for (iel, el) in enumerate(data.elem):
 		fi = np.frombuffer(buf, dtype=emode+realtype, count=ndim*npel+1, offset=(ndim*npel+1)*wdsz*iel)
 		# the data is stored in the following order (2D|3D):
@@ -965,8 +965,8 @@ def writere2(fname, data):
 	#---------------------------------------------------------------------------
 	#
 	# always double precision
-	wdsz = 8
-	realtype = 'd'
+	#  wdsz = 8
+	#  realtype = 'd'
 	nel = data.nel
 	ndim = data.ndim
 	header = f'#v002{nel:9d}{ndim:3d}{nel:9d} this is the hdr'
@@ -983,7 +983,7 @@ def writere2(fname, data):
 			f'Unrecognized endianness {data.endian}, '
 			f'writing native {sys.byteorder}-endian file'
 		)
-	#
+
 	def correct_endianness(a):
 		''' Return the array with the requested endianness'''
 		if byteswap:
@@ -1001,7 +1001,7 @@ def writere2(fname, data):
 	#
 	# compute total number of points per element
 	npel = 2**ndim
-	#
+
 	def write_data_to_file(a):
 		'''Write the geometry of an element to the output file in double precision'''
 		correct_endianness(a).tofile(outfile)

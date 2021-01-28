@@ -91,7 +91,7 @@ def readdns(fname):
 	eol = infile.read(8)
 	#
 	# compute total number of points per element
-	npel = lr1[0] * lr1[1] * lr1[2]
+	# npel = lr1[0] * lr1[1] * lr1[2]
 	#
 	# get number of pysical dimensions
 	ndim = 2 + (lr1[2]>1)
@@ -154,14 +154,13 @@ def readdns(fname):
 	#---------------------------------------------------------------------------
 	#
 	# number of points
-	npel = lr1[0]*lr1[1]*lr1[2]
+	#  npel = lr1[0]*lr1[1]*lr1[2]
 	#
 	# number of points per plane
 	nppl = lr1[0]*lr1[2]
 	#
 	# reading buffer in fourier space
-	fou =    np.zeros((lr1[2],lr1[1],lr1[0]//2+1)) + \
-			1j*np.zeros((lr1[2],lr1[1],lr1[0]//2+1))
+	fou = np.zeros((lr1[2],lr1[1],lr1[0]//2+1)) + 1j*np.zeros((lr1[2],lr1[1],lr1[0]//2+1))
 	#
 	# initialize data structure
 	data = exdat.exadata(ndim, 1, lr1, var)
@@ -221,7 +220,7 @@ def readdns(fname):
 					fou[izf,iy,ix] = (fi[ip] + 1j*fi[ip+1]) * nppl
 					ip += 2
 				# end-of-line
-				eol = infile.read(8)
+				eol = infile.read(8)  # noqa: F841  # required for reading
 		#
 		# back to physical space
 		data.elem[0].scal[ivar,:,:,:] = np.fft.irfft2(fou,(lr1[0],lr1[2]),(2,0))
@@ -280,7 +279,7 @@ def readplane(fname):
 	nn = []
 	for i in range(ndim):
 		nnn = infile.read(4)
-		nn.append( int(struct.unpack(emode+'i',nnn)[0]) )
+		nn.append(int(struct.unpack(emode+'i',nnn)[0]))
 		nt = nt*nn[i]
 	#
 	# end-of-line

@@ -12,9 +12,8 @@
 
 """
 
-from . import neksuite
-from . import simsonsuite
+from .neksuite import *  # noqa
+from .simsonsuite import *  # noqa
+from .dataset import *  # noqa
 
-__all__ = ["neksuite", "simsonsuite"]
-
-from ._version import __version__
+from ._version import __version__  # noqa

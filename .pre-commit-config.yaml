@@ -12,7 +12,6 @@ repos:
     rev: 1.2.2
     hooks:
     -   id: darker
-        args: [--revision HEAD]
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.4  # pick a git hash / tag to point to
     hooks:

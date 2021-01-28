@@ -3,6 +3,10 @@ import struct
 import numpy as np
 import pymech.exadata as exdat
 
+
+__all__ = ("readdns", "readplane")
+
+
 #==============================================================================
 def readdns(fname):
 	"""A function for reading binary data from the SIMSON binary format

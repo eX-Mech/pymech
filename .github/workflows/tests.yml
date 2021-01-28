@@ -1,4 +1,3 @@
-name: Tests
 
 on:
   push:
@@ -47,8 +46,7 @@ jobs:
         pip install -e .[tests]
 
     - name: Run tests
-      run: |
-      - pytest -s -v --cov -n 4
+      run: pytest -s -v --cov -n 4
 
     - name: Upload coverage to codecov
       if: ${{ success() }}

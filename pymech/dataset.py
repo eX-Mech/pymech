@@ -12,6 +12,9 @@ import xarray as xr
 from .neksuite import readnek
 
 
+__all__ = ("open_dataset", "open_mfdataset")
+
+
 def open_dataset(path, **kwargs):
 	"""Helper function for opening a file as an xarray_ dataset.
 

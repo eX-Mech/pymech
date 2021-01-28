@@ -11,4 +11,9 @@
    log
 
 """
-from ._version import __version__
+
+from .neksuite import *  # noqa
+from .simsonsuite import *  # noqa
+from .dataset import *  # noqa
+
+from ._version import __version__  # noqa

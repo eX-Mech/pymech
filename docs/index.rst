@@ -41,6 +41,7 @@ functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 
    tests.rst
    changelog.md
+   contributing.md
    release.rst
 
 .. Indices and tables

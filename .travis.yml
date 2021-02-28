@@ -5,7 +5,7 @@ python:
    - 3.8
 
 install:
-    - pip install coveralls
+    - pip install -U pip coveralls
     - pip install -e .[tests]
 
 script:

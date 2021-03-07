@@ -69,7 +69,7 @@ def exa2vtk(field, downsample):
 					if (field.var[4]!=0):
 						S[iel*nppel + ix + iy*nix + iz*nix*niy,:] = field.elem[iel].scal[:, iiz[iz], iiy[iy], iix[ix]]
 		if (field.var[0]==3):
-			for iz in max(range(niz-1), [0]):
+			for iz in range(max(niz-1, 1)):
 				for iy in range(niy-1):
 					for ix in range(nix-1):
 						ice = ice + nvert + 1

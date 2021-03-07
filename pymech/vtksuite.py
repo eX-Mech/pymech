@@ -1,15 +1,18 @@
 """Module for converting exadata objects to vtk"""
 import numpy as np
-from tvtk.api import tvtk
+from tvtk.api import tvtk, write_data
+
+
+__all__ = ("exa2vtk", "writevtk")
 
 
 #==============================================================================
-def exa2vtk(field, downsample):
+def exa2vtk(field, downsample=False):
 	"""A function for converting exadata to vtk data
 
 	Parameters
 	----------
-	field : str
+	field : exadata
 		a dataset in nekdata format
 	downsample : bool
 		flag T/F
@@ -41,7 +44,10 @@ def exa2vtk(field, downsample):
 	#
 	ct = np.array(nel*[cellType])
 	of = np.arange(0,nvert*nel,nvert)
-	ce = np.zeros(nel*(nvert+1)); ce[range(0,nel*(nvert+1),nvert+1)] = nvert
+
+	ce = np.zeros(nel * (nvert+1))
+	ce[np.arange(nel) * (nvert+1)] = nvert
+
 	if (field.var[0]!=0):
 		r  = np.zeros((nvert*nel,3))
 	if (field.var[1]!=0):
@@ -59,9 +65,9 @@ def exa2vtk(field, downsample):
 			for iy in range(niy):
 				for ix in range(nix):
 					if (field.var[0]==3):
-						r[iel*nppel + ix + iy*nix + iz*nix*niy,:] = field.elem[iel].pos [:, iiz[iz], iiy[iy], iix[ix]]
+						r[iel*nppel + ix + iy*nix + iz*nix*niy,:] = field.elem[iel].pos[:, iiz[iz], iiy[iy], iix[ix]]
 					if (field.var[1]==3):
-						v[iel*nppel + ix + iy*nix + iz*nix*niy,:] = field.elem[iel].vel [:, iiz[iz], iiy[iy], iix[ix]]
+						v[iel*nppel + ix + iy*nix + iz*nix*niy,:] = field.elem[iel].vel[:, iiz[iz], iiy[iy], iix[ix]]
 					if (field.var[2]==1):
 						p[iel*nppel + ix + iy*nix + iz*nix*niy]   = field.elem[iel].pres[:, iiz[iz], iiy[iy], iix[ix]]
 					if (field.var[3]==1):
@@ -87,19 +93,43 @@ def exa2vtk(field, downsample):
 	# set the cell types
 	dataset.set_cells(ct, of, ca)
 	# set the data
-	dataset.point_data.vectors = v
-	dataset.point_data.vectors.name = 'vel'
+	idata = 0
+	if (field.var[1]!=0):
+		dataset.point_data.vectors = v
+		dataset.point_data.vectors.name = 'vel'
+		idata += 1
 	if (field.var[2]==1):
 		dataset.point_data.scalars = p
 		dataset.point_data.scalars.name = 'pres'
+		idata += 1
 	if (field.var[3]==1):
 		dataset.point_data.add_array(T)
 		dataset.point_data.get_array(2).name = 'temp'
+		idata += 1
 	if (field.var[4]!=0):
 		for ii in range(field.var[4]):
 			dataset.point_data.add_array(S[:,ii])
-			dataset.point_data.get_array(ii+3).name = 'scal_%d' % (ii+1)
+			dataset.point_data.get_array(ii + idata).name = 'scal_%d' % (ii+1)
 	#
 	dataset.point_data.update()
 	#
 	return dataset
+
+
+def writevtk(fname, data):
+	"""A function for writing binary data in the XML VTK format
+
+	Parameters
+	----------
+	fname : str
+		file name
+	data : exadata
+		data organised after reading a file
+
+	"""
+	ext = ".vtp"
+	if not fname.endswith(ext):
+		fname += ext
+
+	vtk_dataset = exa2vtk(data)
+	write_data(vtk_dataset, fname)

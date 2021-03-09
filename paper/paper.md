@@ -9,16 +9,13 @@ tags:
 - file I/O
 authors:
 - name: Ashwin Vishnu Mohanan
-  orcid: https://orcid.org/0000-0002-2979-6327
   affiliation: 1
+  orcid: 0000-0002-2979-6327
 - name: Guillaume Chauvat
-  orcid: ''
   affiliation: 2
 - name: Nicolo Fabbiane
-  orcid: ''
   affiliation: 3
 - name: Jacopo Canton
-  orcid: ''
   affiliation: 4
 affiliation:
 - name: Stockholm University, Stockholm, Sweden

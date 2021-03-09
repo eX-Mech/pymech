@@ -41,7 +41,7 @@
             "audienceType": "Science/Research"
         }
     ],
-    "codeRepository": "https://github.com/jcanton/pymech/",
+    "codeRepository": "https://github.com/jcanton/pymech.git",
     "issueTracker": "https://github.com/jcanton/pymech/issues",
     "programmingLanguage": "Python",
     "datePublished": "2020-03-12",
@@ -55,7 +55,7 @@
         "SIMSON",
         "file I/O"
     ],
-    "title": "pymech",
+    "title": "Pymech: A Python suite of routines for Nek5000 and Simson",
     "provider": {
         "@id": "https://pypi.org",
         "@type": "Organization",

@@ -26,3 +26,4 @@ test*.f*
 
 # paper
 paper.pdf
+paper/.bundle

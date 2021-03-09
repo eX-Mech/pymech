@@ -23,3 +23,6 @@ docs/_build
 # test related
 test.rea
 test*.f*
+
+# paper
+paper.pdf

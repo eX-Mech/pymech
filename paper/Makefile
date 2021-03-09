@@ -1,3 +1,4 @@
+# Setup Ruby and execute `bundle install` to get whedon
 OPENJOURNALS_PATH := $(shell bundle info whedon | awk '/Path/{print $$2}')/resources
 
 draft: paper.pdf

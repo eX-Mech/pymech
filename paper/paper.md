@@ -17,7 +17,7 @@ authors:
   affiliation: 3
 - name: Jacopo Canton
   affiliation: 4
-affiliation:
+affiliations:
 - name: Stockholm University, Stockholm, Sweden
   index: 1
 - name: KTH Royal Institute of Technology, Stockholm, Sweden
@@ -29,7 +29,11 @@ affiliation:
 date: 16 November 2020
 bibliography: paper.bib
 ---
+
 # Summary
+
+- Describe exadata based on NumPy [@harrisArrayProgrammingNumPy2020]
+- Dataset interface based on Xarray [@hoyerXarrayNDLabeled2017]
 
 # Acknowledgements
 

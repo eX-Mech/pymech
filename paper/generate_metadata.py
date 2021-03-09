@@ -49,7 +49,7 @@ data = {
 	"title": cm.get("title", ""),
 	"tags": cm.get("keywords", []),
 	"authors": [make_author(_) for _ in cm.get("author", [{}])],
-	"affiliation": make_affiliations(),
+	"affiliations": make_affiliations(),
 	"date": make_date(cm.get("dateModified", "")),
 	"bibliography": "paper.bib",
 }

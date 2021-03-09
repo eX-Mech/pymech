@@ -12,6 +12,7 @@ joss: paper.md paper.bib
     --defaults=joss-defaults.yaml \
 		--data-dir=$(OPENJOURNALS_PATH) \
 		--resource-path=.:$(OPENJOURNALS_PATH) \
+		--csl=$(OPENJOURNALS_PATH)/apa.csl \
 		--template=$(OPENJOURNALS_PATH)/joss/latex.template \
 		--lua-filter=$(OPENJOURNALS_PATH)/time.lua \
   	--metadata=aas_logo_path:$(OPENJOURNALS_PATH)/joss/aas-logo.png \

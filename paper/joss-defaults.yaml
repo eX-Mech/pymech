@@ -4,8 +4,6 @@ to: latex
 output-file: paper.pdf
 standalone: true
 
-csl: apa.csl
-
 # note that structured variables may be specified:
 variables:
   archive_doi: 'DOI unavailable'

@@ -32,8 +32,21 @@ bibliography: paper.bib
 
 # Summary
 
+- Features and functionalities:
+  - Reads raw data as is without interpolation
+  - Reasonably quick for small to medium sized files (quantify?)
+  - Handles esoteric file formats used in open source solvers
+
 - Describe exadata based on NumPy [@harrisArrayProgrammingNumPy2020]
 - Dataset interface based on Xarray [@hoyerXarrayNDLabeled2017]
+
+
+- State of the field:
+  - Alternatives for mesh
+  - Alternatives to read and visualize via VTK: Paraview (mention Python
+    interface), Visit, turbulucid
+  - Similar: [nekmatlab](https://github.com/nfabbiane/nekmatlab)
+
 
 # Acknowledgements
 

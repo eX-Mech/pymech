@@ -268,11 +268,11 @@ class exadata:
             logger.debug("no pairs of faces to merge")
             return nchanges
 
-        for iel0, iface in product(range(nel1, self.nel), range(nfaces)):
+        for iel0, iface0 in product(range(nel1, self.nel), range(nfaces)):
             elem0 = self.elem[iel0]
-            bc = elem0.bcs[0, iface][0]
+            bc0 = elem0.bcs[0, iface0][0]
 
-            if bc != "E" and not (ignore_empty and bc == ""):
+            if bc0 != "E" and not (ignore_empty and bc0 == ""):
                 # boundary element, look if it can be connected to something
                 for iel1, iface1 in product(range(nel1), range(nfaces)):
                     elem1 = self.elem[iel1]
@@ -280,16 +280,16 @@ class exadata:
 
                     if bc1 != "E" and not (ignore_empty and bc1 == ""):
                         # if the centers of the faces are close, connect them together
-                        x0, y0, z0 = elem0.face_center(iface)
+                        x0, y0, z0 = elem0.face_center(iface0)
                         x1, y1, z1 = elem1.face_center(iface1)
                         dist2 = (x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2
                         if dist2 <= tol ** 2:
                             # reconnect the periodic faces together (assumes that all fields are periodic)
-                            if bc == "P" and bc1 == "P":
+                            if bc0 == bc1 == "P":
 
-                                iel_p0 = int(elem0.bcs[0, iface][3]) - 1
+                                iel_p0 = int(elem0.bcs[0, iface0][3]) - 1
                                 iel_p1 = int(elem1.bcs[0, iface1][3]) - 1
-                                iface_p0 = int(elem0.bcs[0, iface][4]) - 1
+                                iface_p0 = int(elem0.bcs[0, iface0][4]) - 1
                                 iface_p1 = int(elem1.bcs[0, iface1][4]) - 1
                                 for ibc in range(nbc):
                                     elem_p0_bcs = self.elem[iel_p0].bcs[ibc, iface_p0]
@@ -301,13 +301,14 @@ class exadata:
                                     elem_p1_bcs[3] = iel_p0 + 1
                                     elem_p0_bcs[4] = iface_p1 + 1
                                     elem_p1_bcs[4] = iface_p0 + 1
+
                             for ibc in range(nbc):
-                                elem0.bcs[ibc, iface][0] = "E"
+                                elem0.bcs[ibc, iface0][0] = "E"
                                 elem1.bcs[ibc, iface1][0] = "E"
-                                elem0.bcs[ibc, iface][3] = iel1 + 1
+                                elem0.bcs[ibc, iface0][3] = iel1 + 1
                                 elem1.bcs[ibc, iface1][3] = iel0 + 1
-                                elem0.bcs[ibc, iface][4] = iface1 + 1
-                                elem1.bcs[ibc, iface1][4] = iface + 1
+                                elem0.bcs[ibc, iface0][4] = iface1 + 1
+                                elem1.bcs[ibc, iface1][4] = iface0 + 1
                             nchanges = nchanges + 1
 
         logger.debug(f"merged {nchanges} pairs of faces")

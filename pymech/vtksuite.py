@@ -104,7 +104,7 @@ def exa2vtk(field, downsample=False):
 		idata += 1
 	if (field.var[3]==1):
 		dataset.point_data.add_array(T)
-		dataset.point_data.get_array(2).name = 'temp'
+		dataset.point_data.get_array(idata).name = 'temp'
 		idata += 1
 	if (field.var[4]!=0):
 		for ii in range(field.var[4]):

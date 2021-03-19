@@ -175,46 +175,35 @@ class exadata:
                         if iel1 < 0 or iel1 >= self.nel:
                             err = True
                             logger.error(
-                                "face {:} of element {:} is connected to face {:} of the nonexistent element {:}".format(
-                                    iface, iel, connected_face, connected_iel
-                                )
+                                f"face {iface} of element {iel} is connected to face "
+                                f"{connected_face} of the nonexistent element {connected_iel}"
                             )
                         else:
                             if cbc1 != cbc:
                                 err = True
                                 logger.error(
-                                    "mismatched boundary conditions: face {:} of element {:} with condition {:} is connected to face {:} of element {:} with condition {:}".format(
-                                        iface + 1,
-                                        iel + 1,
-                                        cbc,
-                                        connected_face + 1,
-                                        connected_iel + 1,
-                                        cbc1,
-                                    )
+                                    "mismatched boundary conditions: "
+                                    f"face {iface + 1} of element {iel + 1} with "
+                                    f"condition {cbc} is connected to face {connected_face + 1} "
+                                    f"of element {connected_iel + 1} with condition {cbc1}"
                                 )
                             if iel1 != iel:
                                 err = True
                                 logger.error(
-                                    "mismatched elements: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(
-                                        iface + 1,
-                                        iel + 1,
-                                        connected_face + 1,
-                                        connected_iel + 1,
-                                        iface1 + 1,
-                                        iel1 + 1,
-                                    )
+                                    "mismatched elements: "
+                                    f"face {iface + 1} of element {iel + 1} "
+                                    f"is connected to face {connected_face + 1} "
+                                    f"of element {connected_iel + 1} but that face is "
+                                    f"connected to face {iface + 1} of element {iel + 1}"
                                 )
                             if iface1 != iface:
                                 err = True
                                 logger.error(
-                                    "mismatched faces: face {:} of element {:} is connected to face {:} of element {:} but that face is connected to face {:} of element {:}".format(
-                                        iface + 1,
-                                        iel + 1,
-                                        connected_face + 1,
-                                        connected_iel + 1,
-                                        iface1 + 1,
-                                        iel1 + 1,
-                                    )
+                                    "mismatched faces: "
+                                    f"face {iface + 1} of element {iel + 1} "
+                                    f"is connected to face {connected_face + 1} "
+                                    f"of element {connected_iel + 1} but that face is "
+                                    f"connected to face {iface + 1} of element {iel + 1}"
                                 )
         return not err
 

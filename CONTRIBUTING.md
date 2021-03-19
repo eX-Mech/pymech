@@ -9,7 +9,7 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at <https://github.com/jcanton/pymech/issues>.
+Report bugs at <https://github.com/eX-Mech/pymech/issues>.
 
 If you are reporting a bug, please include:
 
@@ -38,7 +38,7 @@ in docstrings, or even on the web in blog posts, articles, and such.
 ### Submit Feedback
 
 The best way to send feedback is to file an issue at
-<https://github.com/jcanton/pymech/issues>.
+<https://github.com/eX-Mech/pymech/issues>.
 
 If you are proposing a feature:
 
@@ -75,7 +75,7 @@ Ready to contribute? Here's how to set up Pymech for local development.
    `flake8` and `darker` as well as the tests:
 
         $ flake8 pymech
-        $ darker --check pymech
+        $ black --check pymech
         $ pytest
 
     To get `flake8` and `darker`, just pip install them into your virtualenv.
@@ -97,6 +97,6 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
 3. The pull request should pass the CI. Check
-   <https://travis-ci.org/jcanton/pymech/pull_requests> and
-   <https://github.com/jcanton/pymech/actions>
+   <https://travis-ci.org/eX-Mech/pymech/pull_requests> and
+   <https://github.com/eX-Mech/pymech/actions>
    and make sure that the tests pass for all supported Python versions.

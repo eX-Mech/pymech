@@ -53,6 +53,6 @@ functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 
 .. External links:
 
-.. _pymech: https://github.com/jcanton/pymech
+.. _pymech: https://github.com/eX-Mech/pymech
 .. _SIMSON: https://github.com/KTH-Nek5000/SIMSON
 .. _Nek5000: https://nek5000.mcs.anl.gov/

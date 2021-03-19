@@ -63,30 +63,25 @@ def exa2vtk(field, downsample=False):
         S = np.zeros((nvert * nel, field.var[4]))
     #
     ice = -(nvert + 1)
+
+
     for iel in range(field.nel):
-        for iz in range(niz):
-            for iy in range(niy):
-                for ix in range(nix):
+        for iz, ez in enumerate(iiz):
+            for iy, ey in enumerate(iiy):
+                for ix, ex in enumerate(iix):
+                    iarray = iel * nppel + ix + iy * nix + iz * (nix * niy)
+
+                    # Downsample copy into a column vector
                     if field.var[0] == 3:
-                        r[iel * nppel + ix + iy * nix + iz * nix * niy, :] = field.elem[
-                            iel
-                        ].pos[:, iiz[iz], iiy[iy], iix[ix]]
+                        r[iarray, :] = field.elem[iel].pos[:, ez, ey, ex]
                     if field.var[1] == 3:
-                        v[iel * nppel + ix + iy * nix + iz * nix * niy, :] = field.elem[
-                            iel
-                        ].vel[:, iiz[iz], iiy[iy], iix[ix]]
+                        v[iarray, :] = field.elem[iel].vel[:, ez, ey, ex]
                     if field.var[2] == 1:
-                        p[iel * nppel + ix + iy * nix + iz * nix * niy] = field.elem[
-                            iel
-                        ].pres[:, iiz[iz], iiy[iy], iix[ix]]
+                        p[iarray] = field.elem[iel].pres[:, ez, ey, ex]
                     if field.var[3] == 1:
-                        T[iel * nppel + ix + iy * nix + iz * nix * niy] = field.elem[
-                            iel
-                        ].temp[:, iiz[iz], iiy[iy], iix[ix]]
+                        T[iarray] = field.elem[iel].temp[:, ez, ey, ex]
                     if field.var[4] != 0:
-                        S[iel * nppel + ix + iy * nix + iz * nix * niy, :] = field.elem[
-                            iel
-                        ].scal[:, iiz[iz], iiy[iy], iix[ix]]
+                        S[iarray, :] = field.elem[iel].scal[:, ez, ey, ex]
         if field.var[0] == 3:
             for iz in range(max(niz - 1, 1)):
                 for iy in range(niy - 1):

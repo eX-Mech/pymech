@@ -158,55 +158,49 @@ class exadata:
         """
         dim = self.ndim
         err = False
-        for (iel, el) in enumerate(self.elem):
-            for ibc in range(self.nbc):
-                for iface in range(2 * dim):
-                    cbc = el.bcs[ibc, iface][0]
-                    if cbc == "E" or cbc == "P":
-                        connected_iel = int(el.bcs[ibc, iface][3]) - 1
-                        connected_face = int(el.bcs[ibc, iface][4]) - 1
-                        cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
-                        iel1 = (
-                            int(self.elem[connected_iel].bcs[ibc, connected_face][3])
-                            - 1
+        for (iel, el), ibc, iface in product(
+            enumerate(self.elem), range(self.nbc), range(2 * dim)
+        ):
+            cbc = el.bcs[ibc, iface][0]
+            if cbc == "E" or cbc == "P":
+                connected_iel = int(el.bcs[ibc, iface][3]) - 1
+                connected_face = int(el.bcs[ibc, iface][4]) - 1
+                cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
+                iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3]) - 1
+                iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4]) - 1
+                if iel1 < 0 or iel1 >= self.nel:
+                    err = True
+                    logger.error(
+                        f"face {iface} of element {iel} is connected to face "
+                        f"{connected_face} of the nonexistent element {connected_iel}"
+                    )
+                else:
+                    if cbc1 != cbc:
+                        err = True
+                        logger.error(
+                            "mismatched boundary conditions: "
+                            f"face {iface + 1} of element {iel + 1} with "
+                            f"condition {cbc} is connected to face {connected_face + 1} "
+                            f"of element {connected_iel + 1} with condition {cbc1}"
                         )
-                        iface1 = (
-                            int(self.elem[connected_iel].bcs[ibc, connected_face][4])
-                            - 1
+                    if iel1 != iel:
+                        err = True
+                        logger.error(
+                            "mismatched elements: "
+                            f"face {iface + 1} of element {iel + 1} "
+                            f"is connected to face {connected_face + 1} "
+                            f"of element {connected_iel + 1} but that face is "
+                            f"connected to face {iface + 1} of element {iel + 1}"
                         )
-                        if iel1 < 0 or iel1 >= self.nel:
-                            err = True
-                            logger.error(
-                                f"face {iface} of element {iel} is connected to face "
-                                f"{connected_face} of the nonexistent element {connected_iel}"
-                            )
-                        else:
-                            if cbc1 != cbc:
-                                err = True
-                                logger.error(
-                                    "mismatched boundary conditions: "
-                                    f"face {iface + 1} of element {iel + 1} with "
-                                    f"condition {cbc} is connected to face {connected_face + 1} "
-                                    f"of element {connected_iel + 1} with condition {cbc1}"
-                                )
-                            if iel1 != iel:
-                                err = True
-                                logger.error(
-                                    "mismatched elements: "
-                                    f"face {iface + 1} of element {iel + 1} "
-                                    f"is connected to face {connected_face + 1} "
-                                    f"of element {connected_iel + 1} but that face is "
-                                    f"connected to face {iface + 1} of element {iel + 1}"
-                                )
-                            if iface1 != iface:
-                                err = True
-                                logger.error(
-                                    "mismatched faces: "
-                                    f"face {iface + 1} of element {iel + 1} "
-                                    f"is connected to face {connected_face + 1} "
-                                    f"of element {connected_iel + 1} but that face is "
-                                    f"connected to face {iface + 1} of element {iel + 1}"
-                                )
+                    if iface1 != iface:
+                        err = True
+                        logger.error(
+                            "mismatched faces: "
+                            f"face {iface + 1} of element {iel + 1} "
+                            f"is connected to face {connected_face + 1} "
+                            f"of element {connected_iel + 1} but that face is "
+                            f"connected to face {iface + 1} of element {iel + 1}"
+                        )
         return not err
 
     def merge(self, other, tol=1e-9, ignore_empty=True):

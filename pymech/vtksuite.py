@@ -64,7 +64,6 @@ def exa2vtk(field, downsample=False):
     #
     ice = -(nvert + 1)
 
-
     for iel in range(field.nel):
         for iz, ez in enumerate(iiz):
             for iy, ey in enumerate(iiy):
@@ -88,29 +87,14 @@ def exa2vtk(field, downsample=False):
                     for ix in range(nix - 1):
                         ice = ice + nvert + 1
                         for face in range(field.ndim - 1):
-                            ce[ice + face * 4 + 1] = (
+                            cell_id = (
                                 iel * nppel + ix + iy * nix + (iz + face) * nix * niy
                             )
-                            ce[ice + face * 4 + 2] = (
-                                iel * nppel
-                                + ix
-                                + 1
-                                + iy * nix
-                                + (iz + face) * nix * niy
-                            )
-                            ce[ice + face * 4 + 3] = (
-                                iel * nppel
-                                + ix
-                                + 1
-                                + (iy + 1) * nix
-                                + (iz + face) * nix * niy
-                            )
-                            ce[ice + face * 4 + 4] = (
-                                iel * nppel
-                                + ix
-                                + (iy + 1) * nix
-                                + (iz + face) * nix * niy
-                            )
+
+                            ce[ice + face * 4 + 1] = cell_id
+                            ce[ice + face * 4 + 2] = cell_id + 1
+                            ce[ice + face * 4 + 3] = cell_id + nix + 1
+                            ce[ice + face * 4 + 4] = cell_id + nix
 
     # create the array of cells
     ca = tvtk.CellArray()

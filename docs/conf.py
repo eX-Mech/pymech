@@ -13,6 +13,7 @@
 import os
 import sys
 from datetime import date
+
 try:
     from importlib import metadata
 except ImportError:
@@ -20,21 +21,21 @@ except ImportError:
     import importlib_metadata as metadata
 
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = 'pymech'
+project = "pymech"
 _meta = metadata.metadata(project)
 _today = date.today()
 
-author = _meta.get('Author')
-copyright = f"{_today.year}" #", {author}"
-master_doc = 'index'
+author = _meta.get("Author")
+copyright = f"{_today.year}"  # ", {author}"
+master_doc = "index"
 
 # The full version, including alpha/beta/rc tags
-version = _meta.get('Version')
-release = '.'.join(version.split('.')[:3])
+version = _meta.get("Version")
+release = ".".join(version.split(".")[:3])
 
 rst_prolog = f"""
 .. |author| replace:: {author}
@@ -47,42 +48,42 @@ rst_prolog = f"""
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-	'myst_nb',
-	'sphinx.ext.autodoc',
+    "myst_nb",
+    "sphinx.ext.autodoc",
     #  'sphinx.ext.autosummary',
-    'sphinx.ext.doctest',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-	'sphinx.ext.napoleon',  # Numpy-style docstrings
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
+    "sphinx.ext.doctest",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",  # Numpy-style docstrings
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
 ]
 
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.ipynb': 'myst-nb',
-    '.myst': 'myst-nb',
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".myst": "myst-nb",
 }
 jupyter_execute_notebooks = "off"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_book_theme'
+html_theme = "sphinx_book_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

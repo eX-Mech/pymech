@@ -10,6 +10,7 @@ import numpy as np
 import xarray as xr
 
 from .neksuite import readnek
+from .log import logger
 
 
 __all__ = ("open_dataset", "open_mfdataset")
@@ -53,6 +54,7 @@ def open_mfdataset(
 	parallel=False,
 	join="outer",
 	attrs_file=None,
+	box_mesh=True,
 	**kwargs,
 ):
 	"""Helper function for opening multiple files as an xarray_ dataset.
@@ -82,7 +84,7 @@ def open_mfdataset(
 		if isinstance(concat_dim, (str, xr.DataArray)) or concat_dim is None:
 			concat_dim = [concat_dim]
 
-	open_kwargs = dict()
+	open_kwargs = dict(box_mesh=box_mesh)
 
 	if parallel:
 		import dask
@@ -143,43 +145,54 @@ def open_mfdataset(
 	return combined
 
 
-def _open_nek_dataset(path):
+def _open_nek_dataset(path, box_mesh=True):
 	"""Interface for converting Nek field files into xarray_ datasets."""
 	field = readnek(path)
 	if isinstance(field, int):
 		raise OSError(f"Failed to load {path}")
 
 	elements = field.elem
-	elem_stores = [_NekDataStore(elem) for elem in elements]
-	elem_dsets = [
-		xr.Dataset.load_store(store).set_coords(store.axes)
-		for store in elem_stores
-	]
-
-	# See: https://github.com/MITgcm/xmitgcm/pull/200
-	if xr.__version__ < '0.15.2':
-		ds = xr.combine_by_coords(elem_dsets)
+	if box_mesh:
+		DataStore = _NekDataStoreBox
+		coords = ('z', 'y', 'x')
 	else:
-		ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")
+		DataStore = _NekDataStoreGeneric
+		coords = ('zmesh', 'ymesh', 'xmesh')
+
+	elem_stores = [DataStore(elem) for elem in elements]
+	try:
+		elem_dsets = [
+			xr.Dataset.load_store(store).set_coords(coords)
+			for store in elem_stores
+		]
+	except ValueError:
+		logger.critical(
+			"Cannot load as a box mesh. Try passing the keyword argument: "
+			"`box_mesh=False` while opening the dataset."
+		)
+
+	1/0
+	# See: https://github.com/MITgcm/xmitgcm/pull/200
+	if box_mesh:
+		if xr.__version__ < '0.15.2':
+			ds = xr.combine_by_coords(elem_dsets)
+		else:
+			ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")
+	else:
+		# This would work if we pre-sort elem_dsets and pass as a nested list /
+		# iterator
+		ds = xr.combine_nested(elem_dsets, concat_dim=('z', 'y', 'x'))
 
 	ds.coords.update({"time": field.time})
 
 	return ds
 
 
-class _NekDataStore(xr.backends.common.AbstractDataStore):
+class _NekDataStoreGeneric(xr.backends.common.AbstractDataStore):
 	"""Xarray store for a Nek field element."""
 	def __init__(self, elem):
 		self.elem = elem
 		self.axes = ("z", "y", "x")
-
-	def meshgrid_to_dim(self, mesh):
-		"""Reverse of np.meshgrid. This method extracts one-dimensional
-		coordinates from a cubical array format for every direction
-
-		"""
-		dim = np.unique(np.round(mesh, 8))
-		return dim
 
 	def get_dimensions(self):
 		return self.axes
@@ -199,9 +212,6 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 		elem = self.elem
 
 		data_vars = {
-			ax[2]: self.meshgrid_to_dim(elem.pos[0]),  # x
-			ax[1]: self.meshgrid_to_dim(elem.pos[1]),  # y
-			ax[0]: self.meshgrid_to_dim(elem.pos[2]),  # z
 			"xmesh": (ax, elem.pos[0]),
 			"ymesh": (ax, elem.pos[1]),
 			"zmesh": (ax, elem.pos[2]),
@@ -223,4 +233,35 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 				}
 			)
 
+		return data_vars
+
+
+class _NekDataStoreBox(_NekDataStoreGeneric):
+	"""Useful for box meshes where coordinates can be simplified into 1D
+	arrays.
+
+	"""
+
+	def meshgrid_to_dim(self, mesh):
+		"""Reverse of np.meshgrid. This method extracts one-dimensional
+		coordinates from a cubical array format for every direction
+
+		"""
+		dim = np.unique(np.round(mesh, 8))
+		return dim
+
+	def get_variables(self):
+		"""Generate an xarray dataset from a single element."""
+		ax = self.axes
+		elem = self.elem
+
+		data_vars = super().get_variables()
+
+		data_vars.update(
+			{
+				ax[2]: self.meshgrid_to_dim(elem.pos[0]),  # x
+				ax[1]: self.meshgrid_to_dim(elem.pos[1]),  # y
+				ax[0]: self.meshgrid_to_dim(elem.pos[2]),  # z
+			}
+		)
 		return data_vars

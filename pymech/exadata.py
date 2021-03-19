@@ -1,7 +1,9 @@
 """Data structures for pymech"""
-from functools import reduce
-import numpy as np
 import copy
+from itertools import product
+from functools import reduce
+
+import numpy as np
 from pymech.log import logger
 
 
@@ -253,68 +255,70 @@ class exadata:
 
         # correct the boundary condition numbers:
         # the index of the elements and neighbours have changed
-        for iel in range(nel1, self.nel):
-            for ibc in range(other.nbc):
-                for iface in range(6):
-                    self.elem[iel].bcs[ibc, iface][1] = iel + 1
-                    bc = self.elem[iel].bcs[ibc, iface][0]
-                    if bc == "E" or bc == "P":
-                        neighbour = self.elem[iel].bcs[ibc, iface][3]
-                        self.elem[iel].bcs[ibc, iface][3] = neighbour + nel1
+        for iel, ibc, iface in product(range(nel1, self.nel), range(other.nbc), range(6)):
+            self.elem[iel].bcs[ibc, iface][1] = iel + 1
+            bc = self.elem[iel].bcs[ibc, iface][0]
+            if bc == "E" or bc == "P":
+                neighbour = self.elem[iel].bcs[ibc, iface][3]
+                self.elem[iel].bcs[ibc, iface][3] = neighbour + nel1
 
         # glue common faces together
         # only look for the neighbour in the first BC field because it should be the same in all fields.
         # FIXME: this will fail to correct periodic conditions if periodic domains are merged together.
         nfaces = 2 * self.ndim
         nchanges = 0  # counter for the boundary conditions connected
-        if nbc > 0:
-            for iel in range(nel1, self.nel):
-                for iface in range(nfaces):
-                    bc = self.elem[iel].bcs[0, iface][0]
-                    if bc != "E" and not (ignore_empty and bc == ""):
-                        # boundary element, look if it can be connected to something
-                        for iel1 in range(nel1):
-                            for iface1 in range(nfaces):
-                                bc1 = self.elem[iel1].bcs[0, iface1][0]
-                                if bc1 != "E" and not (ignore_empty and bc1 == ""):
-                                    # if the centers of the faces are close, connect them together
-                                    x0, y0, z0 = self.elem[iel].face_center(iface)
-                                    x1, y1, z1 = self.elem[iel1].face_center(iface1)
-                                    dist2 = (
-                                        (x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2
-                                    )
-                                    if dist2 <= tol ** 2:
-                                        elem_bcs0 = self.elem[iel].bcs
-                                        elem_bcs1 = self.elem[iel1].bcs
+        if nbc == 0:
+            # Quickly exit the function
+            logger.debug("no pairs of faces to merge")
+            return nchanges
 
-                                        # reconnect the periodic faces together (assumes that all fields are periodic)
-                                        if bc == "P" and bc1 == "P":
+        for iel0, iface in product(range(nel1, self.nel), range(nfaces)):
+            elem0 = self.elem[iel0]
+            bc = elem0.bcs[0, iface][0]
 
-                                            iel_p0 = int(elem_bcs0[0, iface][3]) - 1
-                                            iel_p1 = int(elem_bcs1[0, iface1][3]) - 1
-                                            iface_p0 = int(elem_bcs0[0, iface][4]) - 1
-                                            iface_p1 = int(elem_bcs1[0, iface1][4]) - 1
-                                            for ibc in range(nbc):
-                                                elem_p0_bcs = self.elem[iel_p0].bcs[
-                                                    ibc, iface_p0
-                                                ]
-                                                elem_p1_bcs = self.elem[iel_p1].bcs[
-                                                    ibc, iface_p1
-                                                ]
+            if bc != "E" and not (ignore_empty and bc == ""):
+                # boundary element, look if it can be connected to something
+                for iel1, iface1 in product(range(nel1), range(nfaces)):
+                    elem1 = self.elem[iel1]
+                    bc1 = elem1.bcs[0, iface1][0]
 
-                                                elem_p0_bcs[0] = "P"
-                                                elem_p1_bcs[0] = "P"
-                                                elem_p0_bcs[3] = iel_p1 + 1
-                                                elem_p1_bcs[3] = iel_p0 + 1
-                                                elem_p0_bcs[4] = iface_p1 + 1
-                                                elem_p1_bcs[4] = iface_p0 + 1
-                                        for ibc in range(nbc):
-                                            elem_bcs0[ibc, iface][0] = "E"
-                                            elem_bcs1[ibc, iface1][0] = "E"
-                                            elem_bcs0[ibc, iface][3] = iel1 + 1
-                                            elem_bcs1[ibc, iface1][3] = iel + 1
-                                            elem_bcs0[ibc, iface][4] = iface1 + 1
-                                            elem_bcs1[ibc, iface1][4] = iface + 1
-                                        nchanges = nchanges + 1
+                    if bc1 != "E" and not (ignore_empty and bc1 == ""):
+                        # if the centers of the faces are close, connect them together
+                        x0, y0, z0 = elem0.face_center(iface)
+                        x1, y1, z1 = elem1.face_center(iface1)
+                        dist2 = (
+                            (x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2
+                        )
+                        if dist2 <= tol ** 2:
+                            # reconnect the periodic faces together (assumes that all fields are periodic)
+                            if bc == "P" and bc1 == "P":
+
+                                iel_p0 = int(elem0.bcs[0, iface][3]) - 1
+                                iel_p1 = int(elem1.bcs[0, iface1][3]) - 1
+                                iface_p0 = int(elem0.bcs[0, iface][4]) - 1
+                                iface_p1 = int(elem1.bcs[0, iface1][4]) - 1
+                                for ibc in range(nbc):
+                                    elem_p0_bcs = self.elem[iel_p0].bcs[
+                                        ibc, iface_p0
+                                    ]
+                                    elem_p1_bcs = self.elem[iel_p1].bcs[
+                                        ibc, iface_p1
+                                    ]
+
+                                    elem_p0_bcs[0] = "P"
+                                    elem_p1_bcs[0] = "P"
+                                    elem_p0_bcs[3] = iel_p1 + 1
+                                    elem_p1_bcs[3] = iel_p0 + 1
+                                    elem_p0_bcs[4] = iface_p1 + 1
+                                    elem_p1_bcs[4] = iface_p0 + 1
+                            for ibc in range(nbc):
+                                elem0.bcs[ibc, iface][0] = "E"
+                                elem1.bcs[ibc, iface1][0] = "E"
+                                elem0.bcs[ibc, iface][3] = iel1 + 1
+                                elem1.bcs[ibc, iface1][3] = iel0 + 1
+                                elem0.bcs[ibc, iface][4] = iface1 + 1
+                                elem1.bcs[ibc, iface1][4] = iface + 1
+                            nchanges = nchanges + 1
+
         logger.debug(f"merged {nchanges} pairs of faces")
         return nchanges

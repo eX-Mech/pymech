@@ -32,6 +32,8 @@ bibliography: paper.bib
 
 # Summary
 
+- Nek5000 [@NEK5000Version192019] and SIMSON [@chevalierSIMSONPseudospectralSolver2007]
+
 - Features and functionalities:
   - Reads raw data as is without interpolation
   - Reasonably quick for small to medium sized files (quantify?)
@@ -39,13 +41,43 @@ bibliography: paper.bib
 
 - Describe exadata based on NumPy [@harrisArrayProgrammingNumPy2020]
 - Dataset interface based on Xarray [@hoyerXarrayNDLabeled2017]
+- Can read for both small and very large files: only limited by available memory in the computing device. (Should we time reading and writing time with CPython and PyPy?)
 
+
+- Functionality and real world uses:
+  - Key features: Easy to understand interface to imports meshes and solution
+    data as a Python-NumPy based data structure `exadata`.
+  - Generate publication quality figures and visualizations.
+  - Bridge between two solver to transfer solutions of Simson to Nek5000
+  - A starting point and input data for post-processing algorithms
+    written in Python.
+  - Generate, (and soon extrude and combine) meshes
+  - Initial condition generation
+  - Cloning small solution data from simulation with assumed symmetry into full-3D calculations
+  - In summary the package is an "enabler" for exploratory research work
 
 - State of the field:
-  - Alternatives for mesh
-  - Alternatives to read and visualize via VTK: Paraview (mention Python
-    interface), Visit, turbulucid
+
+  - Alternatives for mesh:
+    - Nek5000 comes with a few meshing tools to generate (`genbox`, `prex`,
+      `pretext`), merge (`nekmerge`) and extrude (`n2to3`) meshes
+      from the scratch. With exception to `genbox` the others output the legacy
+      mesh format `.rea` (NOTE: confirm).
+    - Mesh converters with input formats exodus, CGNS and Gmsh are also bundled
+      with Nek5000.
+  - Alternatives to read and visualize via VTK: Paraview
+    [@ayachitParaViewGuideParallel2015]
+    interface), Visit [@childsContractBasedSystem2005a] -- both provide Python
+    interface, but the API is advanced. Alternatively, generate VTK files and
+    later visualize in packages such as turbulucid or MayaVi.
   - Similar: [nekmatlab](https://github.com/nfabbiane/nekmatlab)
+  - Alternatives to postprocessing:
+    - Nek5000 in post-processing mode, can work in parallel. Performant. Re-use
+      differentiation and interpolation operators. Disadvantage: must rely on
+      existing implementation and examples to "reverse engineer"
+      post-processing. Core API is not well-documented.
+    - Use *Filters* in Paraview and equivalent (?) in Visit. Cumbersome to script
+      by hand and inspect.
 
 
 # Acknowledgements

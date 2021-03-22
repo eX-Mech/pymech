@@ -3,10 +3,12 @@ from itertools import product
 from pathlib import Path
 
 import numpy as np
+
 try:
     from tvtk.api import tvtk, write_data
 except ImportError:
     from .log import logger
+
     logger.warning("To use VTK functions,\n    pip install mayavi")
 
 
@@ -72,7 +74,9 @@ def exa2vtk(field, downsample=False):
     ice = -(nvert + 1)
 
     for iel in range(field.nel):
-        for (iz, ez), (iy, ey), (ix, ex) in product(enumerate(iiz), enumerate(iiy), enumerate(iix)):
+        for (iz, ez), (iy, ey), (ix, ex) in product(
+            enumerate(iiz), enumerate(iiy), enumerate(iix)
+        ):
             iarray = iel * nppel + ix + iy * nix + iz * (nix * niy)
 
             # Downsample copy into a column vector
@@ -87,12 +91,12 @@ def exa2vtk(field, downsample=False):
             if field.var[4] != 0:
                 S[iarray, :] = field.elem[iel].scal[:, ez, ey, ex]
         if field.var[0] == 3:
-            for iz, iy, ix in product(range(max(niz - 1, 1)), range(niy - 1), range(nix - 1)):
+            for iz, iy, ix in product(
+                range(max(niz - 1, 1)), range(niy - 1), range(nix - 1)
+            ):
                 ice = ice + nvert + 1
                 for face in range(field.ndim - 1):
-                    cell_id = (
-                        iel * nppel + ix + iy * nix + (iz + face) * nix * niy
-                    )
+                    cell_id = iel * nppel + ix + iy * nix + (iz + face) * nix * niy
 
                     ce[ice + face * 4 + 1] = cell_id
                     ce[ice + face * 4 + 2] = cell_id + 1

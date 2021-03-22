@@ -1,5 +1,5 @@
 # Setup Ruby and execute `bundle install` to get whedon
-OPENJOURNALS_PATH := $(shell bundle info whedon | awk '/Path/{print $$2}')/resources
+OPENJOURNALS_PATH := .whedon/resources
 
 draft: paper.pdf
 
@@ -7,7 +7,7 @@ paper.pdf: paper.md paper.bib
 	pandoc -o paper.pdf -V documentclass=scrartcl -V geometry:margin=1in --pdf-engine=xelatex --citeproc paper.md
 
 
-joss: paper.md paper.bib
+joss: paper.md paper.bib .whedon
 	pandoc \
     --defaults=joss-defaults.yaml \
 		--data-dir=$(OPENJOURNALS_PATH) \
@@ -18,3 +18,6 @@ joss: paper.md paper.bib
   	--metadata=aas_logo_path:$(OPENJOURNALS_PATH)/joss/aas-logo.png \
   	--metadata=logo_path:$(OPENJOURNALS_PATH)/joss/logo.png \
   	$<
+
+.whedon:
+	git clone https://github.com/openjournals/whedon $@

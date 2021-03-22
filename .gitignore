@@ -27,3 +27,4 @@ test*.f*
 # paper
 paper.pdf
 paper/.bundle
+paper/.whedon

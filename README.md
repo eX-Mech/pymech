@@ -18,12 +18,14 @@ For some quick wins, download some sample data
 curl -LO https://github.com/eX-Mech/pymech/raw/master/tests/nek/channel3D_0.f00001
 ```
 
-Fire up a Python console and execute:
+Fire up a Python / IPython console and execute:
 
 ```py
+import matplotlib as pyplot
 import pymech as pm
 ds = pm.open_dataset('channel3D_0.f00001')
 ds.mean(['x', 'z']).ux.plot()
+plt.show()
 ```
 
 You should see something like

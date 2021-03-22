@@ -71,17 +71,17 @@ Ready to contribute? Here's how to set up Pymech for local development.
 
     Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass the linters
-   `flake8` and `darker` as well as the tests:
+5. When you're done making changes, check that your changes pass the linter
+   `flake8` as well as the tests:
 
         $ flake8 pymech
-        $ black --check pymech
         $ pytest
 
-    To get `flake8` and `darker`, just pip install them into your virtualenv.
-    These checks would be ensured via the pre-commit hooks while committing.
+    To get `flake8`, just pip install it into your virtualenv.
 
-6. Commit your changes and push your branch to GitHub:
+6. Commit your changes and push your branch to GitHub. The pre-commit hooks
+   installed in step 2 would automatically ensure that the changes are
+   formatted:
 
         $ git add .
         $ git commit -m "Your detailed description of your changes."

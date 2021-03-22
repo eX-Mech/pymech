@@ -32,15 +32,15 @@ bibliography: paper.bib
 
 # Summary
 
-- Nek5000 [@NEK5000Version192019] and SIMSON [@chevalierSIMSONPseudospectralSolver2007]
+- Nek5000 [@NEK50002019] and SIMSON [@Chevalier.etalSIMSON2007]
 
 - Features and functionalities:
   - Reads raw data as is without interpolation
   - Reasonably quick for small to medium sized files (quantify?)
   - Handles esoteric file formats used in open source solvers
 
-- Describe exadata based on NumPy [@harrisArrayProgrammingNumPy2020]
-- Dataset interface based on Xarray [@hoyerXarrayNDLabeled2017]
+- Describe exadata based on NumPy [@Harris.etalArray2020]
+- Dataset interface based on Xarray [@Hoyer.HammanXarray2017]
 - Can read for both small and very large files: only limited by available memory in the computing device. (Should we time reading and writing time with CPython and PyPy?)
 
 
@@ -66,8 +66,8 @@ bibliography: paper.bib
     - Mesh converters with input formats exodus, CGNS and Gmsh are also bundled
       with Nek5000.
   - Alternatives to read and visualize via VTK: Paraview
-    [@ayachitParaViewGuideParallel2015]
-    interface), Visit [@childsContractBasedSystem2005a] -- both provide Python
+    [@AyachitParaView2015]
+    interface), Visit [@Childs.etalContract2005] -- both provide Python
     interface, but the API is advanced. Alternatively, generate VTK files and
     later visualize in packages such as turbulucid or MayaVi.
   - Similar: [nekmatlab](https://github.com/nfabbiane/nekmatlab)

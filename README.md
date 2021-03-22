@@ -1,17 +1,44 @@
-[![Build Status](https://travis-ci.org/jcanton/pymech.svg?branch=master)](https://travis-ci.org/jcanton/pymech/builds)
-[![Coverage Status](https://coveralls.io/repos/github/jcanton/pymech/badge.png?branch=master)](https://coveralls.io/github/jcanton/pymech?branch=master)
+[![Build Status](https://travis-ci.org/eX-Mech/pymech.svg?branch=master)](https://travis-ci.org/eX-Mech/pymech/builds)
+[![Coverage Status](https://coveralls.io/repos/github/eX-Mech/pymech/badge.png?branch=master)](https://coveralls.io/github/eX-Mech/pymech?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/pymech/badge/?version=latest)](http://pymech.readthedocs.org/en/latest/?badge=latest)
 
 # pymech
 
-A Python suite of routines for *Nek5000* and *Simson*.
+A Python suite of routines for *Nek5000* and *Simson*. Install with:
 
-by Jacopo Canton, Guillaume Chauvat, Nicolò Fabbiane and Ashwin Vishnu Mohanan<br>
-[@jcanton](https://github.com/jcanton)
-[@guillaumechauvat](https://github.com/guillaumechauvat)
-[@nfabbiane](https://github.com/nfabbiane)
-[@ashwinvis](https://github.com/ashwinvis)
-
-Install with `pip install pymech`
+```
+pip install pymech
+```
 
 Read the full documentation at [Pymech doc](http://pymech.readthedocs.io).
+
+## Getting started
+
+For some quick wins, download some sample data
+
+```sh
+curl -LO https://github.com/eX-Mech/pymech/raw/master/tests/nek/channel3D_0.f00001
+```
+
+Fire up a Python / IPython console and execute:
+
+```py
+import matplotlib as pyplot
+import pymech as pm
+ds = pm.open_dataset('channel3D_0.f00001')
+ds.mean(['x', 'z']).ux.plot()
+plt.show()
+```
+
+You should see something like
+
+![](https://pymech.readthedocs.io/en/latest/_images/usage_33_1.png)
+
+For an overview of how to use pymech, [follow the usage
+documentation](https://pymech.readthedocs.io/en/latest/usage.html).
+
+## Contributing
+
+Found something that does not work? Want to add a new feature to pymech? Have a
+look at [contributing
+guidelines](https://pymech.readthedocs.io/en/latest/contributing.html).

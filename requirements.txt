@@ -1,7 +1,0 @@
-numpy
-xarray
-pytest
-pytest-pep8
-pytest-cov
-coveralls
-nbsphinx

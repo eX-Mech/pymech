@@ -1,7 +1,13 @@
 """Module for converting exadata objects to vtk"""
 from itertools import product
+from pathlib import Path
+
 import numpy as np
-from tvtk.api import tvtk, write_data
+try:
+    from tvtk.api import tvtk, write_data
+except ImportError:
+    from .log import logger
+    logger.warning("To use VTK functions,\n    pip install mayavi")
 
 
 __all__ = ("exa2vtk", "writevtk")
@@ -136,8 +142,9 @@ def writevtk(fname, data):
 
     """
     ext = ".vtp"
-    if not fname.endswith(ext):
-        fname += ext
+    fname = Path(fname)
+    if not fname.suffix != ext:
+        fname = fname.with_suffix(ext)
 
     vtk_dataset = exa2vtk(data)
     write_data(vtk_dataset, fname)

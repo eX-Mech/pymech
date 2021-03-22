@@ -32,7 +32,7 @@ def readnek(fname):
     #
     # read header
     header = infile.read(132).split()
-    logger.debug("Header: {}".format(b" ".join(header).decode("utf-8")))
+    logger.debug(b"Header: " + b" ".join(header))
 
     # get word size: single or double precision
     wdsz = int(header[1])

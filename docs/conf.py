@@ -30,7 +30,7 @@ _meta = metadata.metadata(project)
 _today = date.today()
 
 author = _meta.get("Author")
-copyright = f"{_today.year}"  # ", {author}"
+copyright = f"2016-{_today.year}"  # ", {author}"
 master_doc = "index"
 
 # The full version, including alpha/beta/rc tags
@@ -97,4 +97,8 @@ autodoc_default_options = {
     "members": True,
 }
 
-autodoc_mock_imports = ["tvtk", "xarray", "pymech._version"]
+autodoc_mock_imports = ["tvtk", "pymech._version"]
+
+# -- MyST options ------------------------------------------------------------
+
+myst_heading_anchors = 2

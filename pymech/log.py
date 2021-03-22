@@ -1,5 +1,19 @@
-"""Defines the pymech logger (variable :code:`logger`)."""
+""":mod:`pymech.log`
+=======================
 
+Defines the pymech logger (variable :code:`logger`). The logging level can be
+changed to debug level by setting::
+
+    export PYMECH_DEBUG=true
+
+before importing ``pymech``.
+
+For coloured logging::
+
+    pip install rich
+
+"""
+import os
 import logging
 
 logger = logging.getLogger("pymech")
@@ -17,4 +31,7 @@ except ImportError:
     logger.info("Disabling color, you really want to install colorlog.")
 
 
-logger.setLevel(logging.INFO)
+if bool(os.getenv("PYMECH_DEBUG")):
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)

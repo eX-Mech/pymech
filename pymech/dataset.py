@@ -165,7 +165,14 @@ def _open_nek_dataset(path):
 
 
 class _NekDataStore(xr.backends.common.AbstractDataStore):
-    """Xarray store for a Nek field element."""
+    """Xarray store for a Nek field element.
+
+    Parameters
+    ----------
+    elem: :class:`pymech.exadata.exadata`
+        An exadata instance.
+
+    """
 
     def __init__(self, elem):
         self.elem = elem

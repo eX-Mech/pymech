@@ -4,9 +4,11 @@
 
 # pymech
 
-A Python suite of routines for *Nek5000* and *Simson*.
+A Python suite of routines for *Nek5000* and *Simson*. Install with:
 
-Install with `pip install pymech`
+```
+pip install pymech
+```
 
 Read the full documentation at [Pymech doc](http://pymech.readthedocs.io).
 
@@ -31,6 +33,9 @@ plt.show()
 You should see something like
 
 ![](https://pymech.readthedocs.io/en/latest/_images/usage_33_1.png)
+
+For an overview of how to use pymech, [follow the usage
+documentation](https://pymech.readthedocs.io/en/latest/usage.html).
 
 ## Contributing
 

@@ -1,4 +1,5 @@
 """Module for converting exadata objects to vtk"""
+from itertools import product
 import numpy as np
 from tvtk.api import tvtk, write_data
 
@@ -65,36 +66,32 @@ def exa2vtk(field, downsample=False):
     ice = -(nvert + 1)
 
     for iel in range(field.nel):
-        for iz, ez in enumerate(iiz):
-            for iy, ey in enumerate(iiy):
-                for ix, ex in enumerate(iix):
-                    iarray = iel * nppel + ix + iy * nix + iz * (nix * niy)
+        for (iz, ez), (iy, ey), (ix, ex) in product(enumerate(iiz), enumerate(iiy), enumerate(iix)):
+            iarray = iel * nppel + ix + iy * nix + iz * (nix * niy)
 
-                    # Downsample copy into a column vector
-                    if field.var[0] == 3:
-                        r[iarray, :] = field.elem[iel].pos[:, ez, ey, ex]
-                    if field.var[1] == 3:
-                        v[iarray, :] = field.elem[iel].vel[:, ez, ey, ex]
-                    if field.var[2] == 1:
-                        p[iarray] = field.elem[iel].pres[:, ez, ey, ex]
-                    if field.var[3] == 1:
-                        T[iarray] = field.elem[iel].temp[:, ez, ey, ex]
-                    if field.var[4] != 0:
-                        S[iarray, :] = field.elem[iel].scal[:, ez, ey, ex]
+            # Downsample copy into a column vector
+            if field.var[0] == 3:
+                r[iarray, :] = field.elem[iel].pos[:, ez, ey, ex]
+            if field.var[1] == 3:
+                v[iarray, :] = field.elem[iel].vel[:, ez, ey, ex]
+            if field.var[2] == 1:
+                p[iarray] = field.elem[iel].pres[:, ez, ey, ex]
+            if field.var[3] == 1:
+                T[iarray] = field.elem[iel].temp[:, ez, ey, ex]
+            if field.var[4] != 0:
+                S[iarray, :] = field.elem[iel].scal[:, ez, ey, ex]
         if field.var[0] == 3:
-            for iz in range(max(niz - 1, 1)):
-                for iy in range(niy - 1):
-                    for ix in range(nix - 1):
-                        ice = ice + nvert + 1
-                        for face in range(field.ndim - 1):
-                            cell_id = (
-                                iel * nppel + ix + iy * nix + (iz + face) * nix * niy
-                            )
+            for iz, iy, ix in product(range(max(niz - 1, 1)), range(niy - 1), range(nix - 1)):
+                ice = ice + nvert + 1
+                for face in range(field.ndim - 1):
+                    cell_id = (
+                        iel * nppel + ix + iy * nix + (iz + face) * nix * niy
+                    )
 
-                            ce[ice + face * 4 + 1] = cell_id
-                            ce[ice + face * 4 + 2] = cell_id + 1
-                            ce[ice + face * 4 + 3] = cell_id + nix + 1
-                            ce[ice + face * 4 + 4] = cell_id + nix
+                    ce[ice + face * 4 + 1] = cell_id
+                    ce[ice + face * 4 + 2] = cell_id + 1
+                    ce[ice + face * 4 + 3] = cell_id + nix + 1
+                    ce[ice + face * 4 + 4] = cell_id + nix
 
     # create the array of cells
     ca = tvtk.CellArray()

@@ -35,7 +35,8 @@ class datalims:
             getattr(self, var)[:, 1] = agg_lims_var[1]
 
     def __repr__(self):
-        return dedent(f"""\
+        return dedent(
+            f"""\
           * x:         {self.pos[0]}
           * y:         {self.pos[1]}
           * z:         {self.pos[2]}"""
@@ -164,7 +165,8 @@ class exadata:
         self.elmap = np.linspace(1, nel, nel, dtype=np.int32)
 
     def __repr__(self):
-        representation = dedent(f"""\
+        representation = dedent(
+            f"""\
         <pymech.exadata.exadata>
         Dimensions:    {self.ndim}
         Precision:     {self.wdsz} bytes
@@ -177,7 +179,8 @@ class exadata:
           * elem:      [{self.elem[0]}
                         ...
                         {self.elem[-1]}]
-        """)
+        """
+        )
 
         return representation
 

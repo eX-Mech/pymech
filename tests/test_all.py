@@ -37,7 +37,8 @@ def test_readnek():
     assert field.var == [3, 3, 1, 0, 0]
     assert field.wdsz == 4
     assert (field.time - 0.2) < 1e-3
-    representation = dedent("""\
+    representation = dedent(
+        """\
     <pymech.exadata.exadata>
     Dimensions:    3
     Precision:     4 bytes
@@ -52,8 +53,9 @@ def test_readnek():
       * nel:       512
       * elem:      [<elem centered at [ 0.39269908 -0.98        0.19634954]>
                     ...
-                    <elem centered at [5.89048618 0.98       2.94524309]>]""")
-    assert (repr(field).splitlines() == representation.splitlines())
+                    <elem centered at [5.89048618 0.98       2.94524309]>]"""
+    )
+    assert repr(field).splitlines() == representation.splitlines()
 
 
 def test_writenek():

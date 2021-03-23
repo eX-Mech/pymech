@@ -1,5 +1,6 @@
 """Data structures for pymech"""
 import copy
+from textwrap import dedent, indent
 from itertools import product
 from functools import reduce
 
@@ -32,6 +33,13 @@ class datalims:
             getattr(self, var)[:, 0] = agg_lims_var[0]
             # set maximum
             getattr(self, var)[:, 1] = agg_lims_var[1]
+
+    def __repr__(self):
+        return dedent(f"""\
+          * x:         {self.pos[0]}
+          * y:         {self.pos[1]}
+          * z:         {self.pos[2]}"""
+        )
 
     def _lims_per_element(self, elem):
         """Get local limits for a given element."""
@@ -82,6 +90,14 @@ class elem:
         #                    list of 8 parameters, one per face
         #                    one column for velocity, one for temperature, and one for each scalar
         self.bcs = np.zeros((nbc, 6), dtype="U3, i4, i4, f8, f8, f8, f8, f8")
+
+    def __repr__(self):
+        message = f"<elem centered at {self.centroid}>"
+        return message
+
+    @property
+    def centroid(self):
+        return self.pos.mean(axis=(1, 2, 3))
 
     def face_center(self, i):
         """Return the coordinates (x, y, z) of the center of the face number i"""
@@ -146,6 +162,24 @@ class exadata:
         self.endian = []
         self.elem = [elem(var, lr1, nbc) for i in range(nel)]
         self.elmap = np.linspace(1, nel, nel, dtype=np.int32)
+
+    def __repr__(self):
+        representation = dedent(f"""\
+        <pymech.exadata.exadata>
+        Dimensions:    {self.ndim}
+        Precision:     {self.wdsz} bytes
+        Mesh limits:\n{indent(repr(self.lims), " "*10)}
+        Time:
+          * time:      {self.time}
+          * istep:     {self.istep}
+        Elements:
+          * nel:       {self.nel}
+          * elem:      [{self.elem[0]}
+                        ...
+                        {self.elem[-1]}]
+        """)
+
+        return representation
 
     @property
     def lims(self):

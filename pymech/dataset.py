@@ -169,8 +169,8 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 
     Parameters
     ----------
-    elem: :class:`pymech.exadata.exadata`
-        An exadata instance.
+    elem: :class:`pymech.exadata.elem`
+        A Nek5000 element.
 
     """
 

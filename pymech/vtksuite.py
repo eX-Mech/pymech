@@ -17,7 +17,26 @@ __all__ = ("exa2vtk", "writevtk")
 
 # ==============================================================================
 def exa2vtk(field, downsample=False):
-    """A function for converting exadata to vtk data
+    """A function for converting exadata to `Traited VTK`_ dataset. The
+    returned dataset can be manipulated with libraries which accept a VTK
+    object, for example Mayavi.
+
+    .. _Traited VTK: https://docs.enthought.com/mayavi/tvtk/README.html
+
+    Example
+    -------
+    This also requires you to have a GUI toolkit installed: either PyQt4,
+    PySide, PySide2, PyQt5 or wxPython.
+
+    .. code-block:: python
+
+       import pymech as pm
+       from pymech.vtksuite import exa2vtk
+       from mayavi import mlab
+
+       field = pm.readnek("tests/nek/channel3D_0.f00001")
+       dataset = exa2vtk(field)
+       mlab.pipeline.add_dataset(dataset)
 
     Parameters
     ----------
@@ -25,6 +44,11 @@ def exa2vtk(field, downsample=False):
             a dataset in nekdata format
     downsample : bool
             flag T/F
+
+    Returns
+    -------
+    dataset : tvtk.tvtk_classes.unstructured_grid.UnstructuredGrid
+            a VTK dataset
     """
     #
     if downsample:

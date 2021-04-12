@@ -8,8 +8,7 @@ structure.
 
 .. warning::
 
-   The module was a work in progress but is not in use anymore; we left it here
-   for reference and possible future work.
+   The module is experimental in nature and may have some rough edges.
 
 -------------------------------------------------------------------------------
 

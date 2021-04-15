@@ -19,7 +19,7 @@ __all__ = ("exa2vtk", "writevtk")
 def exa2vtk(field, downsample=False):
     """A function for converting exadata to `Traited VTK`_ dataset. The
     returned dataset can be manipulated with libraries which accept a VTK
-    object, for example Mayavi.
+    object, for example Mayavi_.
 
     .. _Traited VTK: https://docs.enthought.com/mayavi/tvtk/README.html
 
@@ -37,6 +37,18 @@ def exa2vtk(field, downsample=False):
        field = pm.readnek("tests/nek/channel3D_0.f00001")
        dataset = exa2vtk(field)
        mlab.pipeline.add_dataset(dataset)
+
+    Instead of MayaVi_ you could use also use something high-level like PyVista_
+    to wrap the underlying VTK object and later visualize them.
+
+    .. code-block:: python
+
+        import pyvista as pv
+        dataset = pv.wrap(dataset._vtk_obj)
+        dataset.plot()
+
+    .. _MayaVi: https://docs.enthought.com/mayavi/mayavi/mlab.html
+    .. _PyVista: https://docs.pyvista.org/getting-started/simple.html
 
     Parameters
     ----------

@@ -6,7 +6,7 @@ import struct
 import numpy as np
 import sys
 from typing import List, Optional
-from pydantic.dataclasses import dataclass
+from pydantic.dataclasses import dataclass, ValidationError
 
 import pymech.exadata as exdat
 from pymech.log import logger
@@ -17,6 +17,8 @@ __all__ = ("readnek", "writenek", "readre2", "readrea", "writere2", "writerea")
 
 @dataclass
 class Header:
+    """Dataclass for Nek5000 field file header."""
+
     # get word size: single or double precision
     wdsz: int
     # get polynomial order
@@ -33,8 +35,9 @@ class Header:
     fid: int
     # get tot number of files
     nb_files: int
+
     # get variables [XUPTS[01-99]]
-    variables: str
+    variables: Optional[str] = None
 
     # floating point precision
     realtype: Optional[str] = None
@@ -64,27 +67,67 @@ class Header:
         if not self.nb_dims:
             self.nb_dims = 2 + int(orders[2] > 1)
 
+        if not self.variables and not self.nb_vars:
+            raise ValidationError("Both variables and nb_vars cannot be None")
+        elif self.variables:
+            self.nb_vars = self._variables_to_nb_vars()
+        elif self.nb_vars:
+            self.variables = self._nb_vars_to_variables()
+
+        logger.debug(f"Variables: {self.variables}, nb_vars: {self.nb_vars}")
+
+    def _variables_to_nb_vars(self) -> List[int]:
         # get variables [XUPTS[01-99]]
         variables = self.variables
-        logger.debug(f"Variables: {variables}")
-        if not self.nb_vars:
-            var = [0] * 5
-            for v in variables:
-                if v == "X":
-                    var[0] = self.nb_dims
-                elif v == "U":
-                    var[1] = self.nb_dims
-                elif v == "P":
-                    var[2] = 1
-                elif v == "T":
-                    var[3] = 1
-                elif v == "S":
-                    # For example: variables = 'XS44'
-                    index_s = variables.index("S")
-                    nb_scalars = int(variables[index_s + 1 :])
-                    var[4] = nb_scalars
+        nb_vars = [0] * 5
+        for v in variables:
+            if v == "X":
+                nb_vars[0] = self.nb_dims
+            elif v == "U":
+                nb_vars[1] = self.nb_dims
+            elif v == "P":
+                nb_vars[2] = 1
+            elif v == "T":
+                nb_vars[3] = 1
+            elif v == "S":
+                # For example: variables = 'XS44'
+                index_s = variables.index("S")
+                nb_scalars = int(variables[index_s + 1 :])
+                nb_vars[4] = nb_scalars
 
-            self.nb_vars = var
+        return nb_vars
+
+    def _nb_vars_to_variables(self) -> str:
+        variables = ""
+        if self.nb_vars[0] > 0:
+            variables += "X"
+        if self.nb_vars[1] > 0:
+            variables += "U"
+        if self.nb_vars[2] > 0:
+            variables += "P"
+        if self.nb_vars[3] > 0:
+            variables += "T"
+        if self.nb_vars[4] > 0:
+            # TODO: check if header for scalars are written with zeros filled as S01
+            variables += "S{:02d}".format(self.nb_vars[4])
+
+        return variables
+
+    def as_bytestring(self) -> bytes:
+        header = "#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s" % (
+            self.wdsz,
+            self.orders[0],
+            self.orders[1],
+            self.orders[2],
+            self.nb_elems,
+            self.nb_elems_file,
+            self.time,
+            self.istep,
+            self.fid,
+            self.nb_files,
+            self.variables,
+        )
+        return header.ljust(132).encode("utf-8")
 
 
 def read_header(fp: io.BufferedReader) -> Header:
@@ -231,52 +274,32 @@ def writenek(fname, data):
     # WRITE HEADER
     # ---------------------------------------------------------------------------
     #
-    # multiple files (not implemented)
-    fid = 0
-    nf = 1
-    nelf = data.nel
+    h = Header(
+        data.wdsz,
+        data.lr1,
+        data.nel,
+        data.nel,
+        data.time,
+        data.istep,
+        fid=0,
+        nb_files=1,
+        nb_vars=data.var,
+    )
+    # NOTE: multiple files (not implemented). See fid, nb_files, nb_elem_file above
     #
     # get fields to be written
-    vars = ""
-    if data.var[0] > 0:
-        vars += "X"
-    if data.var[1] > 0:
-        vars += "U"
-    if data.var[2] > 0:
-        vars += "P"
-    if data.var[3] > 0:
-        vars += "T"
-    if data.var[4] > 0:
-        # TODO: check if header for scalars are written with zeros filled as S01
-        vars += "S{:02d}".format(data.var[4])
     #
     # get word size
-    if data.wdsz == 4:
+    if h.wdsz == 4:
         logger.debug("Writing single-precision file")
-    elif data.wdsz == 8:
+    elif h.wdsz == 8:
         logger.debug("Writing double-precision file")
     else:
         logger.error("Could not interpret real type (wdsz = %i)" % (data.wdsz))
         return -2
     #
     # generate header
-    header = "#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s" % (
-        data.wdsz,
-        data.lr1[0],
-        data.lr1[1],
-        data.lr1[2],
-        data.nel,
-        nelf,
-        data.time,
-        data.istep,
-        fid,
-        nf,
-        vars,
-    )
-    #
-    # write header
-    header = header.ljust(132)
-    outfile.write(header.encode("utf-8"))
+    outfile.write(h.as_bytestring())
     #
     # decide endianness
     if data.endian in ("big", "little"):

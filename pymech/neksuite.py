@@ -1,13 +1,13 @@
 """Module for reading and writing Nek5000 files"""
 from __future__ import annotations
 
+import io
 import struct
 import numpy as np
 import sys
 from dataclasses import field
 from typing import List
 from pydantic.dataclasses import dataclass
-
 
 import pymech.exadata as exdat
 from pymech.log import logger
@@ -21,11 +21,11 @@ class Header:
     # get word size: single or double precision
     wdsz: int
     # get polynomial order
-    lr1: List[int]
+    orders: List[int]
     # get number of elements
-    nel: int
+    nb_elems: int
     # get number of elements in the file
-    nelf: int
+    nb_elems_file: int
     # get current time
     time: float
     # get current time step
@@ -33,7 +33,7 @@ class Header:
     # get file id
     fid: int
     # get tot number of files
-    nf: int
+    nb_files: int
     # get variables [XUPTS[01-99]]
     variables: str
 
@@ -41,24 +41,35 @@ class Header:
     realtype: str = field(init=False)
 
     # compute total number of points per element
-    npel: int = field(init=False)
+    nb_pts_elem: int = field(init=False)
     # get number of physical dimensions
-    ndim: int = field(init=False)
+    nb_dims: int = field(init=False)
     # get number of variables
-    nvar: List[int] = field(init=False)
+    nb_vars: List[int] = field(init=False)
 
     def __post_init__(self):
-        lr1 = [int(order) for order in self.lr1]
-        self.npel = np.prod(lr1)
-        self.ndim = 2 + int(lr1[2] > 1)
+        # get word size: single or double precision
+        wdsz = int(self.wdsz)
+        if wdsz == 4:
+            self.realtype = "f"
+        elif wdsz == 8:
+            self.realtype = "d"
+        else:
+            logger.error(f"Could not interpret real type (wdsz = {wdsz})")
 
+        lr1 = [int(order) for order in self.orders]
+        self.nb_pts_elem = np.prod(lr1)
+        self.nb_dims = 2 + int(lr1[2] > 1)
+
+        # get variables [XUPTS[01-99]]
         variables = self.variables
+        logger.debug(f"Variables: {variables}")
         var = [0] * 5
         for v in variables:
             if v == "X":
-                var[0] = self.ndim
+                var[0] = self.nb_dims
             elif v == "U":
-                var[1] = self.ndim
+                var[1] = self.nb_dims
             elif v == "P":
                 var[2] = 1
             elif v == "T":
@@ -69,15 +80,17 @@ class Header:
                 nb_scalars = int(variables[index_s + 1 :])
                 var[4] = nb_scalars
 
-        self.nvar = var
+        self.nb_vars = var
 
-        wdsz = int(self.wdsz)
-        if wdsz == 4:
-            self.realtype = "f"
-        elif wdsz == 8:
-            self.realtype = "d"
-        else:
-            logger.error(f"Could not interpret real type (wdsz = {wdsz})")
+
+def read_header(fp: io.BufferedReader) -> Header:
+    """Make a :class:`pymech.neksuite.Header` instance from a file buffer
+    opened in binary mode.
+
+    """
+    header = fp.read(132).split()
+    logger.debug(b"Header: " + b" ".join(header))
+    return Header(header[1], header[2:5], *header[5:11], variables=header[11].decode("utf-8"))
 
 
 # ==============================================================================
@@ -101,66 +114,7 @@ def readnek(fname):
     # ---------------------------------------------------------------------------
     #
     # read header
-    header = infile.read(132).split()
-    logger.debug(b"Header: " + b" ".join(header))
-
-    # get word size: single or double precision
-    wdsz = int(header[1])
-    if wdsz == 4:
-        realtype = "f"
-    elif wdsz == 8:
-        realtype = "d"
-    else:
-        logger.error("Could not interpret real type (wdsz = %i)" % (wdsz))
-        return -2
-
-    _ = Header(header[1], header[2:5], *header[5:12])
-    #
-    # get polynomial order
-    lr1 = [int(header[2]), int(header[3]), int(header[4])]
-    #
-    # compute total number of points per element
-    npel = lr1[0] * lr1[1] * lr1[2]
-    #
-    # get number of physical dimensions
-    ndim = 2 + (lr1[2] > 1)
-    #
-    # get number of elements
-    nel = int(header[5])
-    #
-    # get number of elements in the file
-    nelf = int(header[6])
-    #
-    # get current time
-    time = float(header[7])
-    #
-    # get current time step
-    istep = int(header[8])
-    #
-    # get file id
-    #  fid = int(header[9])
-    #
-    # get tot number of files
-    #  nf = int(header[10])
-    #
-    # get variables [XUPTS[01-99]]
-    variables = header[11].decode("utf-8")
-    logger.debug(f"Variables: {variables}")
-    var = [0 for i in range(5)]
-    for v in variables:
-        if v == "X":
-            var[0] = ndim
-        elif v == "U":
-            var[1] = ndim
-        elif v == "P":
-            var[2] = 1
-        elif v == "T":
-            var[3] = 1
-        elif v == "S":
-            # For example: variables = 'XS44'
-            index_s = variables.index("S")
-            nb_scalars = int(variables[index_s + 1 :])
-            var[4] = nb_scalars
+    h = read_header(infile)
     #
     # identify endian encoding
     etagb = infile.read(4)
@@ -179,18 +133,18 @@ def readnek(fname):
         return -3
     #
     # read element map for the file
-    elmap = infile.read(4 * nelf)
-    elmap = list(struct.unpack(emode + nelf * "i", elmap))
+    elmap = infile.read(4 * h.nb_elems_file)
+    elmap = list(struct.unpack(emode + h.nb_elems_file * "i", elmap))
     #
     # ---------------------------------------------------------------------------
     # READ DATA
     # ---------------------------------------------------------------------------
     #
     # initialize data structure
-    data = exdat.exadata(ndim, nel, lr1, var, 0)
-    data.time = time
-    data.istep = istep
-    data.wdsz = wdsz
+    data = exdat.exadata(h.nb_dims, h.nb_elems, h.orders, h.nb_vars, 0)
+    data.time = h.time
+    data.istep = h.istep
+    data.wdsz = h.wdsz
     data.elmap = np.array(elmap, dtype=np.int32)
     if emode == "<":
         data.endian = "little"
@@ -199,37 +153,37 @@ def readnek(fname):
 
     def read_file_into_data(data_var, index_var):
         """Read binary file into an array attribute of ``data.elem``"""
-        fi = infile.read(npel * wdsz)
-        fi = np.frombuffer(fi, dtype=emode + realtype, count=npel)
+        fi = infile.read(h.nb_pts_elem * h.wdsz)
+        fi = np.frombuffer(fi, dtype=emode + h.realtype, count=h.nb_pts_elem)
 
         # Replace elem array in-place with
         # array read from file after reshaping as
-        elem_shape = lr1[::-1]  # lz, ly, lx
+        elem_shape = h.orders[::-1]  # lz, ly, lx
         data_var[index_var, ...] = fi.reshape(elem_shape)
 
     #
     # read geometry
     for iel in elmap:
         el = data.elem[iel - 1]
-        for idim in range(var[0]):  # if var[0] == 0, geometry is not read
+        for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
             read_file_into_data(el.pos, idim)
     #
     # read velocity
     for iel in elmap:
         el = data.elem[iel - 1]
-        for idim in range(var[1]):  # if var[1] == 0, velocity is not read
+        for idim in range(h.nb_vars[1]):  # if 0, velocity is not read
             read_file_into_data(el.vel, idim)
     #
     # read pressure
     for iel in elmap:
         el = data.elem[iel - 1]
-        for ivar in range(var[2]):  # if var[2] == 0, pressure is not read
+        for ivar in range(h.nb_vars[2]):  # if 0, pressure is not read
             read_file_into_data(el.pres, ivar)
     #
     # read temperature
     for iel in elmap:
         el = data.elem[iel - 1]
-        for ivar in range(var[3]):  # if var[3] == 0, temperature is not read
+        for ivar in range(h.nb_vars[3]):  # if 0, temperature is not read
             read_file_into_data(el.temp, ivar)
     #
     # read scalar fields
@@ -238,7 +192,7 @@ def readnek(fname):
     # Unlike other variables, scalars are in the outer loop and elements
     # are in the inner loop
     #
-    for ivar in range(var[4]):  # if var[4] == 0, scalars are not read
+    for ivar in range(h.nb_vars[4]):  # if 0, scalars are not read
         for iel in elmap:
             el = data.elem[iel - 1]
             read_file_into_data(el.scal, ivar)

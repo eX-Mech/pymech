@@ -1,13 +1,83 @@
 """Module for reading and writing Nek5000 files"""
+from __future__ import annotations
+
 import struct
 import numpy as np
-import pymech.exadata as exdat
 import sys
+from dataclasses import field
+from typing import List
+from pydantic.dataclasses import dataclass
 
+
+import pymech.exadata as exdat
 from pymech.log import logger
 
 
 __all__ = ("readnek", "writenek", "readre2", "readrea", "writere2", "writerea")
+
+
+@dataclass
+class Header:
+    # get word size: single or double precision
+    wdsz: int
+    # get polynomial order
+    lr1: List[int]
+    # get number of elements
+    nel: int
+    # get number of elements in the file
+    nelf: int
+    # get current time
+    time: float
+    # get current time step
+    istep: int
+    # get file id
+    fid: int
+    # get tot number of files
+    nf: int
+    # get variables [XUPTS[01-99]]
+    variables: str
+
+    # floating point precision
+    realtype: str = field(init=False)
+
+    # compute total number of points per element
+    npel: int = field(init=False)
+    # get number of physical dimensions
+    ndim: int = field(init=False)
+    # get number of variables
+    nvar: List[int] = field(init=False)
+
+    def __post_init__(self):
+        lr1 = [int(order) for order in self.lr1]
+        self.npel = np.prod(lr1)
+        self.ndim = 2 + int(lr1[2] > 1)
+
+        variables = self.variables
+        var = [0] * 5
+        for v in variables:
+            if v == "X":
+                var[0] = self.ndim
+            elif v == "U":
+                var[1] = self.ndim
+            elif v == "P":
+                var[2] = 1
+            elif v == "T":
+                var[3] = 1
+            elif v == "S":
+                # For example: variables = 'XS44'
+                index_s = variables.index("S")
+                nb_scalars = int(variables[index_s + 1 :])
+                var[4] = nb_scalars
+
+        self.nvar = var
+
+        wdsz = int(self.wdsz)
+        if wdsz == 4:
+            self.realtype = "f"
+        elif wdsz == 8:
+            self.realtype = "d"
+        else:
+            logger.error(f"Could not interpret real type (wdsz = {wdsz})")
 
 
 # ==============================================================================
@@ -43,6 +113,8 @@ def readnek(fname):
     else:
         logger.error("Could not interpret real type (wdsz = %i)" % (wdsz))
         return -2
+
+    _ = Header(header[1], header[2:5], *header[5:12])
     #
     # get polynomial order
     lr1 = [int(header[2]), int(header[3]), int(header[4])]

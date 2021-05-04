@@ -5,8 +5,7 @@ import io
 import struct
 import numpy as np
 import sys
-from dataclasses import field
-from typing import List
+from typing import List, Optional
 from pydantic.dataclasses import dataclass
 
 import pymech.exadata as exdat
@@ -38,49 +37,54 @@ class Header:
     variables: str
 
     # floating point precision
-    realtype: str = field(init=False)
+    realtype: Optional[str] = None
 
     # compute total number of points per element
-    nb_pts_elem: int = field(init=False)
+    nb_pts_elem: Optional[int] = None
     # get number of physical dimensions
-    nb_dims: int = field(init=False)
+    nb_dims: Optional[int] = None
     # get number of variables
-    nb_vars: List[int] = field(init=False)
+    nb_vars: Optional[List[int]] = None
 
-    def __post_init__(self):
+    def __post_init_post_parse__(self):
         # get word size: single or double precision
-        wdsz = int(self.wdsz)
-        if wdsz == 4:
-            self.realtype = "f"
-        elif wdsz == 8:
-            self.realtype = "d"
-        else:
-            logger.error(f"Could not interpret real type (wdsz = {wdsz})")
+        wdsz = self.wdsz
+        if not self.realtype:
+            if wdsz == 4:
+                self.realtype = "f"
+            elif wdsz == 8:
+                self.realtype = "d"
+            else:
+                logger.error(f"Could not interpret real type (wdsz = {wdsz})")
 
-        lr1 = [int(order) for order in self.orders]
-        self.nb_pts_elem = np.prod(lr1)
-        self.nb_dims = 2 + int(lr1[2] > 1)
+        orders = self.orders
+        if not self.nb_pts_elem:
+            self.nb_pts_elem = np.prod(orders)
+
+        if not self.nb_dims:
+            self.nb_dims = 2 + int(orders[2] > 1)
 
         # get variables [XUPTS[01-99]]
         variables = self.variables
         logger.debug(f"Variables: {variables}")
-        var = [0] * 5
-        for v in variables:
-            if v == "X":
-                var[0] = self.nb_dims
-            elif v == "U":
-                var[1] = self.nb_dims
-            elif v == "P":
-                var[2] = 1
-            elif v == "T":
-                var[3] = 1
-            elif v == "S":
-                # For example: variables = 'XS44'
-                index_s = variables.index("S")
-                nb_scalars = int(variables[index_s + 1 :])
-                var[4] = nb_scalars
+        if not self.nb_vars:
+            var = [0] * 5
+            for v in variables:
+                if v == "X":
+                    var[0] = self.nb_dims
+                elif v == "U":
+                    var[1] = self.nb_dims
+                elif v == "P":
+                    var[2] = 1
+                elif v == "T":
+                    var[3] = 1
+                elif v == "S":
+                    # For example: variables = 'XS44'
+                    index_s = variables.index("S")
+                    nb_scalars = int(variables[index_s + 1 :])
+                    var[4] = nb_scalars
 
-        self.nb_vars = var
+            self.nb_vars = var
 
 
 def read_header(fp: io.BufferedReader) -> Header:
@@ -90,7 +94,7 @@ def read_header(fp: io.BufferedReader) -> Header:
     """
     header = fp.read(132).split()
     logger.debug(b"Header: " + b" ".join(header))
-    return Header(header[1], header[2:5], *header[5:11], variables=header[11].decode("utf-8"))
+    return Header(header[1], header[2:5], *header[5:11], variables=header[11])
 
 
 # ==============================================================================

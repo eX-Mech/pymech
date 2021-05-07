@@ -1,0 +1,68 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "Code",
+    "identifier": "pymech",
+    "name": "pymech",
+    "version": "1.4.0",
+    "description": "A Python suite of routines for Nek5000 and Simson.",
+    "license": "GNU General Public License v3 or later (GPLv3+), OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "author": [
+        {
+            "@id": "https://orcid.org/0000-0002-2979-6327",
+            "@type": "Person",
+            "email": "avmo@misu.su.se",
+            "givenName": "Ashwin Vishnu",
+            "familyName": "Mohanan",
+            "affiliation": "Stockholm University, Stockholm, Sweden"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Guillaume",
+            "familyName": "Chauvat",
+            "affiliation": "KTH Royal Institute of Technology, Stockholm, Sweden"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Nicolo",
+            "familyName": "Fabbiane",
+            "affiliation": "ONERA, Paris, France"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Jacopo",
+            "familyName": "Canton",
+            "affiliation": "ETH Zürich, Zürich, Switzerland"
+        }
+
+    ],
+    "audience": [
+        {
+            "@type": "Audience",
+            "audienceType": "Science/Research"
+        }
+    ],
+    "codeRepository": "https://github.com/jcanton/pymech.git",
+    "issueTracker": "https://github.com/jcanton/pymech/issues",
+    "programmingLanguage": "Python",
+    "datePublished": "2020-03-12",
+    "dateModified": "2020-11-16",
+    "dateCreated": "2016-01-21",
+    "keywords": [
+        "CFD",
+        "fluid dynamics",
+        "post-processing",
+        "Nek5000",
+        "SIMSON",
+        "file I/O"
+    ],
+    "title": "Pymech: A Python suite of routines for Nek5000 and Simson",
+    "provider": {
+        "@id": "https://pypi.org",
+        "@type": "Organization",
+        "name": "The Python Package Index",
+        "url": "https://pypi.org"
+    },
+    "runtimePlatform": "Python 3",
+    "url": "https://github.com/jcanton/pymech",
+    "operatingSystem": "OS Independent"
+}

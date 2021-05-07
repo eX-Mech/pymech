@@ -6,7 +6,9 @@ import tempfile
 from pathlib import Path
 from textwrap import dedent
 
+import pytest
 from numpy import testing as npt
+
 from pymech.log import logger
 
 
@@ -430,3 +432,18 @@ def test_nekdataset():
     assert math.isclose(ds.y.max(), 1.0, abs_tol=1e-6)
     assert math.isclose(ds.z.max(), math.pi, abs_tol=1e-6)
     assert math.isclose(ds.time, 0.2, abs_tol=1e-6)
+
+
+@pytest.mark.parametrize("file_name", ["channel3D_0.f00001", "stsabl0.f00001"])
+def test_dataset_coords(file_name):
+    """Check if the 1D coordinates match with the original 3D coordinate arrays"""
+    import pymech.dataset as pd
+
+    path = "./tests/nek/" + file_name
+    ds = pd.open_dataset(path)
+
+    dsx = ds.mean(("y", "z"))
+    dsy = ds.mean(("x", "z"))
+
+    npt.assert_allclose(ds.x.data, dsx.xmesh.data, rtol=1e-6)
+    npt.assert_allclose(ds.y.data, dsy.ymesh.data, rtol=1e-6)

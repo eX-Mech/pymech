@@ -32,7 +32,7 @@ plt.show()
 
 You should see something like
 
-![](https://pymech.readthedocs.io/en/latest/_images/usage_33_1.png)
+![](https://pymech.readthedocs.io/en/latest/_images/usage_37_1.png)
 
 For an overview of how to use pymech, [follow the usage
 documentation](https://pymech.readthedocs.io/en/latest/usage.html).

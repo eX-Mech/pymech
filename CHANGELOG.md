@@ -27,6 +27,30 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [1.4.1] - 2021-05-07
+
+Backwards compatible release with a lot of housekeeping and some usability
+improvements.  This will be the last release to support Python 3.6 and Xarray <
+0.18.0
+
+### Added
+
+- Common function available from the top-level `import pymech as pm`
+- Extras requirements to install `mayavi` and `rich` with
+  `pip install 'pymech[full]'`
+- Experimental {func}`pymech.vtksuite.writevtk`
+- Environment variable PYMECH_DEBUG to control logging level. See {mod}`pymech.log`
+
+### Changed
+
+- Swap optional `colorlog` logger with `rich` in {mod}`pymech.log`
+- Refresh {func}`pymech.vtksuite.exa2vtk` implementation on an experimental basis
+
+### Fixed
+
+- Format entire code base with `black`
+- Improve docs
+
 ## [1.4.0] - 2020-11-16
 
 ### Added
@@ -86,7 +110,8 @@ writing
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.4.0...HEAD
+[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.4.1...HEAD
+[1.4.1]: https://github.com/eX-Mech/pymech/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/eX-Mech/pymech/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/eX-Mech/pymech/compare/1.3.2...1.3.3
 [1.3.2]: https://github.com/eX-Mech/pymech/compare/1.3.1...1.3.2

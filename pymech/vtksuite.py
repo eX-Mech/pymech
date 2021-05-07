@@ -4,11 +4,16 @@ from pathlib import Path
 
 import numpy as np
 
+from .log import logger
+
+logger.warning(
+    "The module pymech.vtksuite is experimental in nature and "
+    "may have some rough edges. The functions can also change in the future."
+)
+
 try:
     from tvtk.api import tvtk, write_data
 except ImportError:
-    from .log import logger
-
     logger.warning("To use VTK functions,\n    pip install mayavi")
 
 

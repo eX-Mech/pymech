@@ -33,10 +33,10 @@ def test_readnek():
 
     assert field.endian == "little"
     assert field.istep == 10
-    assert field.lr1 == [8, 8, 8]
+    assert field.lr1 == (8, 8, 8)
     assert field.ndim == 3
     assert field.nel == 512
-    assert field.var == [3, 3, 1, 0, 0]
+    assert field.var == (3, 3, 1, 0, 0)
     assert field.wdsz == 4
     assert (field.time - 0.2) < 1e-3
     representation = dedent(

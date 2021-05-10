@@ -416,6 +416,22 @@ def test_delete_internal_bcs():
 		npt.assert_array_equal(el2.bcs, ela.bcs)
 	assert meshrea.check_connectivity()
 
+def test_extrude():
+    import pymech.neksuite as ns
+    import pymech.meshtools as mt
+
+    fname = "./tests/nek/2D_section_R360.re2"
+    levels = 4
+    mesh = ns.readre2(fname)
+    mesh3D = mt.extrude(mesh, -1, 1, levels)
+
+    assert mesh3D.ndim == 3
+    assert mesh3D.nel == mesh.nel * levels
+    # curves duplicated on each side of each element
+    assert mesh3D.ncurv == mesh.ncurv * levels * 2
+    # check new periodic BCs in particular
+    assert mesh3D.check_connectivity()
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

@@ -240,7 +240,7 @@ class exadata:
                         )
         return not err
 
-    def merge(self, other, tol=1e-9, ignore_empty=True):
+    def merge(self, other, tol=1e-9, ignore_empty=True, ignore_all_bcs=False):
         """
         Merges another exadata into the current one and connects it
 
@@ -257,6 +257,11 @@ class exadata:
                 This is useful if internal boundary conditions are not defined and will make the operation *much* faster,
                 but requires boundary conditions to be defined on the faces to be merged.
 
+        ignore_all_bcs: bool
+                if True, the boundary conditions will not be changed.
+                This is likely to result in invalid boundary conditions at the interface between the merged meshes.
+                This option is intended for fast merging in a situation in which the boundary conditions
+                are either irrelevant or will be defined or corrected later.
         """
 
         # perform some consistency checks
@@ -300,7 +305,7 @@ class exadata:
         # FIXME: this will fail to correct periodic conditions if periodic domains are merged together.
         nfaces = 2 * self.ndim
         nchanges = 0  # counter for the boundary conditions connected
-        if nbc == 0:
+        if nbc == 0 or ignore_all_bcs:
             # Quickly exit the function
             logger.debug("no pairs of faces to merge")
             return nchanges

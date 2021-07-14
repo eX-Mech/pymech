@@ -202,16 +202,16 @@ class exadata:
             if cbc == "E" or cbc == "P":
                 connected_iel = int(el.bcs[ibc, iface][3]) - 1
                 connected_face = int(el.bcs[ibc, iface][4]) - 1
-                cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
-                iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3]) - 1
-                iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4]) - 1
-                if iel1 < 0 or iel1 >= self.nel:
+                if connected_iel < 0 or connected_iel >= self.nel:
                     err = True
                     logger.error(
                         f"face {iface} of element {iel} is connected to face "
                         f"{connected_face} of the nonexistent element {connected_iel}"
                     )
                 else:
+                    cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
+                    iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3]) - 1
+                    iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4]) - 1
                     if cbc1 != cbc:
                         err = True
                         logger.error(
@@ -227,7 +227,7 @@ class exadata:
                             f"face {iface + 1} of element {iel + 1} "
                             f"is connected to face {connected_face + 1} "
                             f"of element {connected_iel + 1} but that face is "
-                            f"connected to face {iface + 1} of element {iel + 1}"
+                            f"connected to face {iface1 + 1} of element {iel1 + 1}"
                         )
                     if iface1 != iface:
                         err = True
@@ -236,7 +236,7 @@ class exadata:
                             f"face {iface + 1} of element {iel + 1} "
                             f"is connected to face {connected_face + 1} "
                             f"of element {connected_iel + 1} but that face is "
-                            f"connected to face {iface + 1} of element {iel + 1}"
+                            f"connected to face {iface1 + 1} of element {iel1 + 1}"
                         )
         return not err
 

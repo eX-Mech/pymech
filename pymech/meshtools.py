@@ -186,10 +186,10 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     # Consistency checks: Functions that define the splitting lines
     nsplit = len(fun)
     if len(funpar) < nsplit:
-        print('Warning: Length of funpar < lenght of fun. Completing with', (nsplit - len(funpar)), 'zeros.')
+        logger.warn(f'Length of funpar < lenght of fun. Completing with {nsplit - len(funpar)} zeros.')
         funpar[len(funpar):nsplit] = [0.0] * (nsplit - len(funpar))
     elif len(funpar) > nsplit:
-        print('Warning: Length of funpar > lenght of fun. Ignoring', (len(funpar) - nsplit), 'values.')
+        logger.warn(f'Length of funpar > lenght of fun. Ignoring {len(funpar) - nsplit} values.')
 
     # number of elements in the z direction
     nz = len(z) - 1
@@ -201,7 +201,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
 
     # If fun is not defined, there is no splitting to be done. Call simple extrusion and end routine
     if fun is None:
-        print('Splitting function not defined. Calling simple extrusion routine.')
+        logger.info('Splitting function not defined. Calling simple extrusion routine.')
         mesh3D = extrude(mesh2D, z, bc1, bc2)
         return mesh3D
 
@@ -210,7 +210,6 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     meshes3D = []  # list of 3D meshes
 
     # Splitting 2D meshes
-    print('Splitting 2D meshes. Make sure splitting is done where value of curvature is not important.')
     for k in range(nsplit):
         meshes2D.append(copy.deepcopy(mesh2D_ext))
         meshes2D.append(copy.deepcopy(mesh2D_ext))
@@ -244,8 +243,8 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         meshes2D[2 * k + 1].nel = iel_mid
         mesh2D_ext.nel = iel_ext
 
-        print('Mesh2D', 2 * k, 'elements:', meshes2D[2 * k].nel)
-        print('Mesh2D', 2 * k + 1, 'elements:', meshes2D[2 * k + 1].nel)
+        logger.debug(f'Mesh2D {2 * k} elements: {meshes2D[2 * k].nel}')
+        logger.debug(f'Mesh2D {2 * k + 1} elements: {meshes2D[2 * k + 1].nel}')
 
         meshes2D[2 * k].elem = meshes2D[2 * k].elem[:iel_int]
         meshes2D[2 * k + 1].elem = meshes2D[2 * k + 1].elem[:iel_mid]
@@ -266,7 +265,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         meshes2D[2 * k + 1].ncurv = ncurv
 
     # End of splitting, remaining is the last mesh: Mesh_ext
-    print('Mesh2Dext elements:', mesh2D_ext.nel)
+    logger.debug(f'Mesh2Dext elements: {mesh2D_ext.nel}')
     ncurv = 0
     for el in mesh2D_ext.elem:
         for iedge in range(12):
@@ -275,7 +274,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     mesh2D_ext.ncurv = ncurv
 
     # Extruding meshes
-    print('Extruding meshes')
+    logger.info('Extruding meshes')
     for k in range(nsplit):
         # divide number of elements by 2**(coarsening level)
         n_local = nz // 2**abs(k - imesh_high)
@@ -293,7 +292,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
             z_mid = z_local
 
         if n_mid % 4 != 0:
-            logger.critical('Inconsistent elements to extrude: n must be divided by 4')
+            logger.critical(f'Inconsistent elements to extrude: n ({n_mid}) is not a multiple of 4.')
             return -11
 
         meshes3D.append(extrude(meshes2D[2 * k], z_local, bc1=bc1, bc2=bc2))
@@ -321,8 +320,8 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
                         el.bcs[ibc, iface][3] = 0.0
                         el.bcs[ibc, iface][4] = 0.0
 
-        print('Mesh3D', 2 * k, 'elements:', meshes3D[2 * k].nel)
-        print('Mesh3D', 2 * k + 1, 'elements:', meshes3D[2 * k + 1].nel)
+        logger.debug(f'Mesh3D {2 * k} elements: {meshes3D[2 * k].nel}')
+        logger.debug(f'Mesh3D {2 * k + 1} elements: {meshes3D[2 * k + 1].nel}')
 
     n_local = nz // 2**abs(nsplit - imesh_high)
     z_local = z[::int(2**abs(nsplit - imesh_high))]
@@ -338,11 +337,10 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
                     el.bcs[ibc, iface][3] = 0.0
                     el.bcs[ibc, iface][4] = 0.0
 
-    print('Mesh3Dext elements:', mesh3D_ext.nel)
+    logger.debug(f'Mesh3Dext elements: {mesh3D_ext.nel}')
 
     # Merging meshes
-    print('Merging meshes')
-    print('Boundary condition E were removed to improve merging time')
+    logger.info('Merging meshes')
     for k in range(nsplit):
         if k == 0:
             mesh3D = copy.deepcopy(meshes3D[2 * k])
@@ -351,7 +349,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         mesh3D.merge(meshes3D[2 * k + 1], ignore_all_bcs=True)
 
     mesh3D.merge(mesh3D_ext, ignore_all_bcs=True)
-    print('Merging done. Total elements:', mesh3D.nel)
+    logger.info(f'Merging done. Total elements: {mesh3D.nel}')
 
     ncurv = 0
     for el in mesh3D.elem:
@@ -559,12 +557,12 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
             for icurv in range(4):
                 # Curvature type 's' acts on faces, not edges. Does not make sense for extruded mesh. Changing to 'C'.
                 if mesh.elem[i].ccurv[icurv] == 's':
-                    print('Curvature s on element', i + 1, '. Not consistent with extrusion, changing to C')
+                    logger.warn(f'Curvature s on element {i + 1}. Not consistent with extrusion, changing to C')
                     mesh.elem[i].ccurv[icurv] == 'C'
                     mesh.elem[i].ccurv[icurv][0] = mesh.elem[i].ccurv[icurv][4]
                     mesh.elem[i].ccurv[icurv][1:4] = 0.0
                 elif (mesh.elem[i].ccurv[icurv] != '') and (mesh.elem[i].ccurv[icurv] != 'm') and (mesh.elem[i].ccurv[icurv] != 'C'):
-                    print('Warning: Curvature unknown on element', i + 1, '. Unpredictable behaviour.')
+                    logger.warn(f'Curvature unknown on element {i + 1}')
 
             # extend curvature and correct it if necessary
             # calculate coordinates of midsize-node for every curvature type, except both empty (even if both are 'C'). Then find radius, if applicable. 'm' takes precendence over 'C'.
@@ -593,7 +591,7 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                         mesh3d.elem[iel].curv[iedgehi][:4] = curvmid
                         mesh3d.elem[iel + 1].curv[iedgelo][:4] = -curvmid
                 else:
-                    print('Warning: Splitted element curvature unknown on element', i + 1, 'of mid mesh. Removing curvature.')
+                    logger.warn(f'Splitted element curvature unknown on element {i + 1} of mid mesh. Removing curvature.')
                     # For cases not implemented, remove curvature
                     mesh3d.elem[iel].ccurv[iedgehi] = ''
                     mesh3d.elem[iel + 1].ccurv[iedgelo] = ''
@@ -855,7 +853,7 @@ def edge_mid(el, iedge):
             # Curvature 'C' only needs x and y. Works for 2d and extruded meshes.
             if iedge > 7:
                 # For iedge=8-11: will give a different value to what Nek considers (Nek ignores it).
-                print('Calculating midpoint differently from Nek5000. Nek ignores it for edges 9-12.')
+                logger.warn('Calculating midpoint differently from Nek5000. Nek ignores it for edges 9-12.')
             radius = el.curv[iedge][0]
             dmid = abs(radius) - (radius**2 - (pos2[0] - pos1[0])**2 / 4.0 - (pos2[1] - pos1[1])**2 / 4.0)**0.5
             midpoint[0] = (pos2[0] + pos1[0]) / 2.0 + dmid / ((pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2)**(0.5) * radius / abs(radius) * (pos2[1] - pos1[1])

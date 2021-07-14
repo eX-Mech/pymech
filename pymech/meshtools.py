@@ -167,7 +167,7 @@ def generate_internal_bcs(mesh, tol=1e-3):
          relative to the smallest edge of the elements
     """
 
-    # First generate a length scale (squared) for each element, equal to the square of the smallest edge of tha element.
+    # First generate a length scale (squared) for each element, equal to the square of the smallest edge of that element.
     scales = np.zeros((mesh.nel,))
     for (iel, (el, l2)) in enumerate(zip(mesh.elem, scales)):
         # get coordinates of points

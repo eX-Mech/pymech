@@ -154,18 +154,11 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     bc : str
          the boundary condition to use at the ends
     fun: function
-         list of functions that define the splitting lines for different discretization meshes (default: empty, calls simple extrusion routine)
+         list of functions that define the splitting lines for different discretization meshes (default: empty, in which case the simple extrusion function `extrude` is called instead)
     funpar: list
           list of parameters for functions that define the splitting lines for different discretization meshes (default: empty, for when funpar is not needed inside fun)
     imesh_high : int
                  index of fun that defines the mesh with higher discretization. Example: 0, is the most internal mesh; 1 is the second most internal mesh, etc (default: the most internal mesh, imesh_high=0)
-
-    Special cases
-    -------------
-    1) n = [n{1},...,n{i},...,n{N-1}] and z = [z{1},...,z{i},...,z{N}] : The code extrudes the mesh between z{1} and z{N} with n{i} elements in the interval defined by z{i} and z{i+1} (len(n)=len(z)-1)
-    2) n = [''] and z = [zmin,zmax] : The code extrudes the mesh between zmin and zmax with the normalized (between 0 and 1) point distribution from z.txt
-    3) n = [dz0,s] and z = [zmin,zmax] : The code extrudes the mesh between zmin and zmax with a geometric point distribution defined by the initial spacing dz0 and inflation ratio s
-    4) fun = '' : The code ignores the splitting part and calls simple extrusion routine. Observe 'return mesh3D' right after definition of z.
     """
 
     # Consistency checks: Initial grid

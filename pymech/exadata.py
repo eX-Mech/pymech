@@ -355,3 +355,20 @@ class exadata:
 
         logger.debug(f"merged {nchanges} pairs of faces")
         return nchanges
+
+
+    def get_points(self):
+        """
+        Returns an array containing the coordinates of all the points in the mesh as a (nel, lx1*ly1*lz1, 3) array
+        """
+
+        lx1, ly1, lz1 = self.lr1
+        nxyz = lx1 * ly1 * lz1
+        ntot = self.nel * lx1 * ly1 * lz1
+        xyz = np.zeros((self.nel, nxyz, 3))
+        for el, lxyz in zip(self.elem, xyz):
+            for idim in range(3):
+                lxyz[:, idim] = el.pos[idim, ...].ravel()
+        
+
+        return xyz

@@ -5,7 +5,7 @@ from pymech.log import logger
 
 
 # ==============================================================================
-def extrude(mesh: exdat, zmin, zmax, nz, bc1='P', bc2='P'):
+def extrude(mesh: exdat, z, bc1='P', bc2='P'):
     """Extrudes a 2D mesh into a 3D one
 
     Parameters
@@ -13,13 +13,13 @@ def extrude(mesh: exdat, zmin, zmax, nz, bc1='P', bc2='P'):
     mesh : exadata
            2D mesh structure to extrude
     zmin : float
-                 min value of the z coordinate to extrude to
+           min value of the z coordinate to extrude to
     zmax : float
-                 max value of the z coordinate to extrude to
-    nz : int
-         number of elements to create in the z direction
+           max value of the z coordinate to extrude to
+    z :  float 1d array
+           z coordinates at which to extrude the mesh
     bc : str
-         the boundary condition to use at the ends
+           the boundary condition to use at the ends
     """
 
     if mesh.ndim != 2:
@@ -40,6 +40,7 @@ def extrude(mesh: exdat, zmin, zmax, nz, bc1='P', bc2='P'):
     mesh3d.lr1 = [2, 2, 2]
     mesh3d.var = [3, 0, 0, 0, 0]  # remove anything that isn't geometry for now
     nel2d = mesh.nel
+    nz = len(z) - 1
     nel3d = mesh.nel * nz
     nbc = mesh.nbc
     mesh3d.nel = nel3d
@@ -61,8 +62,8 @@ def extrude(mesh: exdat, zmin, zmax, nz, bc1='P', bc2='P'):
             mesh3d.elem[iel].pos[:, 1:2, :, :] = mesh.elem[i].pos
 
             # fill in the z location
-            z1 = zmin + k / nz * (zmax - zmin)
-            z2 = zmin + (k + 1) / nz * (zmax - zmin)
+            z1 = z[k]
+            z2 = z[k + 1]
             mesh3d.elem[iel].pos[2, 0, :, :] = z1
             mesh3d.elem[iel].pos[2, 1, :, :] = z2
 

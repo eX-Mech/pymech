@@ -422,16 +422,18 @@ def test_delete_internal_bcs():
 def test_extrude():
     import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import numpy as np
 
     fname = "./tests/nek/2D_section_R360.re2"
-    levels = 4
+    nz = 4
+    z = np.linspace(-1, 1, nz + 1)
     mesh = ns.readre2(fname)
-    mesh3D = mt.extrude(mesh, -1, 1, levels)
+    mesh3D = mt.extrude(mesh, z)
 
     assert mesh3D.ndim == 3
-    assert mesh3D.nel == mesh.nel * levels
+    assert mesh3D.nel == mesh.nel * nz
     # curves duplicated on each side of each element
-    assert mesh3D.ncurv == mesh.ncurv * levels * 2
+    assert mesh3D.ncurv == mesh.ncurv * nz * 2
     # check new periodic BCs in particular
     assert mesh3D.check_connectivity()
 

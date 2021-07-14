@@ -437,6 +437,29 @@ def test_extrude():
     # check new periodic BCs in particular
     assert mesh3D.check_connectivity()
 
+def test_extrude_refine():
+    import numpy as np
+    import pymech.neksuite as ns
+    import pymech.meshtools as mt
+
+    fnameI = './tests/nek/box2d.re2'
+    mesh2D = ns.readre2(fnameI)
+
+    zmin = 0
+    zmax = 6
+    n = 16
+    bc1='v'
+    bc2='O'
+    imesh_high=0
+    funpar = [0.5, 1.5]
+    def fun_line(xpos, ypos, rlim):
+        return ypos - rlim
+    fun = [fun_line, fun_line]
+    z = np.linspace(zmin, zmax, n + 1)
+    mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high)
+
+    assert mesh3D.ndim == 3
+    assert mesh3D.nel == 336
 
 # ------------------------------------------------------------------------------
 # test simson scripts

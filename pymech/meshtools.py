@@ -334,14 +334,9 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
 
     # Merging meshes
     logger.info('Merging meshes')
-    for k in range(nsplit):
-        if k == 0:
-            mesh3D = copy.deepcopy(meshes3D[2 * k])
-        else:
-            mesh3D.merge(meshes3D[2 * k], ignore_all_bcs=True)
-        mesh3D.merge(meshes3D[2 * k + 1], ignore_all_bcs=True)
-
-    mesh3D.merge(mesh3D_ext, ignore_all_bcs=True)
+    mesh3D = mesh3D_ext
+    for mesh_part in meshes3D:
+        mesh3D.merge(mesh_part, ignore_all_bcs=True)
     logger.info(f'Merging done. Total elements: {mesh3D.nel}')
 
     ncurv = 0

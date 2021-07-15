@@ -201,6 +201,8 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     meshes3D = []  # list of 3D meshes
 
     # Splitting 2D meshes
+    # sorts element of the 2D mesh into layers: most refined, first split, second most refined,
+    # second split, etc, until the least refined stored into mesh2D_ext.
     for k in range(nsplit):
         meshes2D.append(copy.deepcopy(mesh2D_ext))
         meshes2D.append(copy.deepcopy(mesh2D_ext))
@@ -220,13 +222,13 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
                     yvec[it] = mesh2D_ext.elem[iel].pos[1, 0, j, i]
                     rvec[it] = fun[k](xvec[it], yvec[it], funpar[k])
                     it += 1
-            if max(rvec) <= 0.0:
+            if max(rvec) <= 0.0:  # the element belongs to the internal (more refined) mesh
                 meshes2D[2 * k].elem[iel_int] = copy.deepcopy(mesh2D_ext.elem[iel])
                 iel_int += 1
-            elif min(rvec) > 0.0:
+            elif min(rvec) > 0.0:  # the element belongs to the external (less refined) mesh
                 mesh2D_ext.elem[iel_ext] = copy.deepcopy(mesh2D_ext.elem[iel])
                 iel_ext += 1
-            else:
+            else:  # the element belongs to the intermediate mesh and will be split
                 meshes2D[2 * k + 1].elem[iel_mid] = copy.deepcopy(mesh2D_ext.elem[iel])
                 iel_mid += 1
 

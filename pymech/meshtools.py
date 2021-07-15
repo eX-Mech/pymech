@@ -366,6 +366,13 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
+
+    # add extra copies of all elements
+    for k in range(6 * (nz // 4) - 1):
+        mesh_add = copy.deepcopy(mesh)
+        mesh3d.merge(mesh_add, ignore_all_bcs=True)
+
+    # make the mesh 3D
     mesh3d.lr1 = [2, 2, 2]
     mesh3d.var = [3, 0, 0, 0, 0]  # remove anything that isn't geometry for now
     nel2d = mesh.nel
@@ -375,10 +382,6 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
     mesh3d.ndim = 3
     # The curved sides will also be extruded, one on each side of each element along nz
     mesh3d.ncurv = 2 * nz * mesh.ncurv
-
-    # add extra copies of all elements
-    for k in range(6 * (nz // 4) - 1):
-        mesh3d.elem = mesh3d.elem + copy.deepcopy(mesh.elem)
 
     # set the x, y, z locations and curvature
     for k in range(0, nz, 4):
@@ -644,17 +647,22 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                 mesh3d.elem[iel + 4].bcs[ibc, 5][3] = iel + 1 + nel2d
                 mesh3d.elem[iel + 5].bcs[ibc, 4][3] = iel + 1 + 3
                 mesh3d.elem[iel + 5].bcs[ibc, 5][3] = iel + 1 + nel2d
-                # update the conditions for side faces. (FIXME : Not corrected for merging - need to know numbering of other simply-extruded meshes (it is not really necessary, internal bc are not used))
+                # update the conditions for side faces.
                 for iface in range(4):
+                    bc = mesh3d.elem[iel].bcs[ibc, iface][0]
                     for iell in range(6):
                         mesh3d.elem[iel + iell].bcs[ibc, iface][1] = iel + iell + 1
                         mesh3d.elem[iel + iell].bcs[ibc, iface][2] = iface + 1
-                    if mesh3d.elem[iel].bcs[ibc, iface][0] == 'E':
+                    if bc == 'E':
                         # el.bcs[ibc, 0][1] ought to contain iel + 1 once the mesh is valid
                         # but for now it should be off by a factor of nel2d because it is a copy of an element in the first slice
                         ielneigh = 6 * (mesh3d.elem[iel].bcs[ibc, iface][3] - 1 + nel2d * (k // 4))
                         for iell in range(6):
                             mesh3d.elem[iel + iell].bcs[ibc, iface][3] = ielneigh + 1 + iell
+                    elif bc == 'P':
+                        connected_iel = mesh3d.elem[iel].bcs[ibc, iface][3]
+                        for iell in range(6):
+                            mesh3d.elem[iel + iell].bcs[ibc, iface][3] += iell
 
                 # Correct internal bc for mid faces of elements.
                 mesh3d.elem[iel].bcs[ibc, iedgehi][0] = 'E'

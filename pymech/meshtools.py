@@ -243,28 +243,13 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         meshes2D[2 * k + 1].elem = meshes2D[2 * k + 1].elem[:iel_mid]
         mesh2D_ext.elem = mesh2D_ext.elem[:iel_ext]
 
-        ncurv = 0
-        for el in meshes2D[2 * k].elem:
-            for iedge in range(12):
-                if el.ccurv[iedge] != '':
-                    ncurv = ncurv + 1
-        meshes2D[2 * k].ncurv = ncurv
-
-        ncurv = 0
-        for el in meshes2D[2 * k + 1].elem:
-            for iedge in range(12):
-                if el.ccurv[iedge] != '':
-                    ncurv = ncurv + 1
-        meshes2D[2 * k + 1].ncurv = ncurv
-
     # End of splitting, remaining is the last mesh: Mesh_ext
     logger.debug(f'Mesh2Dext elements: {mesh2D_ext.nel}')
-    ncurv = 0
-    for el in mesh2D_ext.elem:
-        for iedge in range(12):
-            if el.ccurv[iedge] != '':
-                ncurv = ncurv + 1
-    mesh2D_ext.ncurv = ncurv
+
+    # Update curvature metadata for all sub-meshes
+    mesh2D_ext.update_ncurv()
+    for mesh_part in meshes2D:
+        mesh_part.update_ncurv()
 
     # Extruding meshes
     logger.info('Extruding meshes')

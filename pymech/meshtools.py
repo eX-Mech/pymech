@@ -58,7 +58,10 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P', internal_bcs=True):
 
     # add extra copies of all elements
     for k in range(nz - 1):
-        mesh3d.elem = mesh3d.elem + copy.deepcopy(mesh.elem)
+        mesh_add = copy.deepcopy(mesh)
+        # fix the indexing of periodic and internal conditions
+        offset_connectivity(mesh_add, (k + 1) * nel2d)
+        mesh3d.elem = mesh3d.elem + mesh_add.elem
 
     # set the z locations and curvature
     for k in range(nz):
@@ -1034,7 +1037,7 @@ def offset_connectivity(mesh: exdat, offset: int, iel_min=0):
            The first element (in zero-based indexing) to offset
     """
 
-    for el, ibc, iface in product(mesh.elem, range(mesh.nbc), range(2 * mesh.dim)):
+    for el, ibc, iface in product(mesh.elem, range(mesh.nbc), range(2 * mesh.ndim)):
         bc = el.bcs[ibc, iface][0]
         if bc == 'E' or bc == 'P':
             if int(el.bcs[ibc, iface][3]) > iel_min:  # the connected element number is 1-indexed

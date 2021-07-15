@@ -456,6 +456,11 @@ def test_extrude_refine():
         return ypos - rlim
     fun = [fun_line, fun_line]
     z = np.linspace(zmin, zmax, n + 1)
+    mesh3D = mt.extrude(mesh2D, z, bc1=bc1, bc2=bc2)
+    assert mesh3D.ndim == 3
+    assert mesh3D.nel == 24 * n
+    assert mesh3D.check_connectivity()
+
     mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high)
 
     assert mesh3D.ndim == 3

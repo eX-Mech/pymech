@@ -208,6 +208,8 @@ class exadata:
                         f"face {iface} of element {iel} is connected to face "
                         f"{connected_face} of the nonexistent element {connected_iel}"
                     )
+                    xc, yc, zc = el.face_center(iface)
+                    logger.error(f"face center: ({xc:.6e} {yc:.6e} {zc:.6e})")
                 else:
                     cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
                     iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3]) - 1
@@ -220,6 +222,9 @@ class exadata:
                             f"condition '{cbc}' is connected to face {connected_face + 1} "
                             f"of element {connected_iel + 1} with condition '{cbc1}'"
                         )
+                        xc, yc, zc = el.face_center(iface)
+                        xc1, yc1, zc1 = self.elem[connected_iel].face_center(connected_face)
+                        logger.error(f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})")
                     if iel1 != iel:
                         err = True
                         logger.error(
@@ -229,6 +234,9 @@ class exadata:
                             f"of element {connected_iel + 1} but that face is "
                             f"connected ('{cbc1}') to face {iface1 + 1} of element {iel1 + 1}"
                         )
+                        xc, yc, zc = el.face_center(iface)
+                        xc1, yc1, zc1 = self.elem[connected_iel].face_center(connected_face)
+                        logger.error(f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})")
                     if iface1 != iface:
                         err = True
                         logger.error(
@@ -238,6 +246,9 @@ class exadata:
                             f"of element {connected_iel + 1} but that face is "
                             f"connected ('{cbc1}') to face {iface1 + 1} of element {iel1 + 1}"
                         )
+                        xc, yc, zc = el.face_center(iface)
+                        xc1, yc1, zc1 = self.elem[connected_iel].face_center(connected_face)
+                        logger.error(f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})")
         return not err
 
     def merge(self, other, tol=1e-9, ignore_empty=True, ignore_all_bcs=False):

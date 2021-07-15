@@ -60,7 +60,7 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P', internal_bcs=True):
     for k in range(nz - 1):
         mesh_add = copy.deepcopy(mesh)
         # fix the indexing of periodic and internal conditions
-        offset_connectivity(mesh_add, (k + 1) * nel2d)
+        mesh_add.offset_connectivity((k + 1) * nel2d)
         mesh3d.elem = mesh3d.elem + mesh_add.elem
 
     # set the z locations and curvature
@@ -1017,28 +1017,3 @@ def generate_internal_bcs(mesh, tol=1e-3):
                             other_el.bcs[ibc, other_iface][4] = iface + 1
 
     return nconnect
-
-
-# =================================================================================
-
-def offset_connectivity(mesh: exdat, offset: int, iel_min=0):
-    """
-    Adds a value to the index of the elements connected via internal or periodic
-    boundary conditions to elements of the mesh. This is used to keep the connectivity
-    valid when deleting or inserting elements in the mesh.
-
-    Parameters
-    ----------
-    mesh    : exadata
-           The mesh to modify
-    offset  : int
-           The value by which to offset the indices
-    iel_min : int
-           The first element (in zero-based indexing) to offset
-    """
-
-    for el, ibc, iface in product(mesh.elem, range(mesh.nbc), range(2 * mesh.ndim)):
-        bc = el.bcs[ibc, iface][0]
-        if bc == 'E' or bc == 'P':
-            if int(el.bcs[ibc, iface][3]) > iel_min:  # the connected element number is 1-indexed
-                el.bcs[ibc, iface][3] += offset

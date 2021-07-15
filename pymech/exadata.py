@@ -284,21 +284,12 @@ class exadata:
         self.ncurv = self.ncurv + other.ncurv
         self.elmap = np.concatenate((self.elmap, other.elmap + nel1))
         # the deep copy is required here to avoid leaving the 'other' mesh in an inconsistent state by modifying its elements
-        self.elem = self.elem + copy.deepcopy(other.elem)
+        mesh_add = copy.deepcopy(other)
+        mesh_add.offset_connectivity(nel1)
+        self.elem = self.elem + mesh_add.elem
 
         # check how many boundary condition fields we have
         nbc = min(self.nbc, other.nbc)
-
-        # correct the boundary condition numbers:
-        # the index of the elements and neighbours have changed
-        for iel, ibc, iface in product(
-            range(nel1, self.nel), range(other.nbc), range(6)
-        ):
-            self.elem[iel].bcs[ibc, iface][1] = iel + 1
-            bc = self.elem[iel].bcs[ibc, iface][0]
-            if bc == "E" or bc == "P":
-                neighbour = self.elem[iel].bcs[ibc, iface][3]
-                self.elem[iel].bcs[ibc, iface][3] = neighbour + nel1
 
         # glue common faces together
         # only look for the neighbour in the first BC field because it should be the same in all fields.
@@ -381,3 +372,28 @@ class exadata:
                 if el.ccurv[iedge] != '':
                     ncurv = ncurv + 1
         self.ncurv = ncurv
+
+    def offset_connectivity(self, offset: int, iel_min=0):
+        """
+        Adds a value to the index of the elements connected via internal or periodic
+        boundary conditions to elements of the mesh. This is used to keep the connectivity
+        valid when deleting or inserting elements in the mesh.
+
+        Parameters
+        ----------
+        offset  : int
+            The value by which to offset the indices
+        iel_min : int
+            The first element (in zero-based indexing) to offset
+        """
+
+        for el, ibc, iface in product(self.elem, range(self.nbc), range(2 * self.ndim)):
+            bc = el.bcs[ibc, iface][0]
+            if bc == 'E' or bc == 'P':
+                if int(el.bcs[ibc, iface][3]) > iel_min:  # the connected element number is 1-indexed
+                    el.bcs[ibc, iface][3] += offset
+
+        # also fix the index of the elements themselves in its their BC if relevant
+        for el, ibc, iface in product(self.elem[iel_min:], range(self.nbc), range(2 * self.ndim)):
+            if int(el.bcs[ibc, iface][1]) > iel_min:
+                el.bcs[ibc, iface][1] += offset

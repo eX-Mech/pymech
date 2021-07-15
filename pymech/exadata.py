@@ -293,7 +293,6 @@ class exadata:
 
         # glue common faces together
         # only look for the neighbour in the first BC field because it should be the same in all fields.
-        # FIXME: this will fail to correct periodic conditions if periodic domains are merged together.
         nfaces = 2 * self.ndim
         nchanges = 0  # counter for the boundary conditions connected
         if nbc == 0 or ignore_all_bcs:

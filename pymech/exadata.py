@@ -381,4 +381,3 @@ class exadata:
                 if el.ccurv[iedge] != '':
                     ncurv = ncurv + 1
         self.ncurv = ncurv
-        

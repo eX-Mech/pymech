@@ -156,7 +156,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     fun: function
          list of functions that define the splitting lines for different discretization meshes (default: empty, in which case the simple extrusion function `extrude` is called instead)
     funpar: list
-          list of parameters for functions that define the splitting lines for different discretization meshes (default: empty, for when funpar is not needed inside fun)
+          list of parameters for functions that define the splitting lines for different discretization meshes (default: None, equivalent to an array of zeroes)
     imesh_high : int
                  index of fun that defines the mesh with higher discretization. Example: 0, is the most internal mesh; 1 is the second most internal mesh, etc (default: the most internal mesh, imesh_high=0)
     """
@@ -178,11 +178,9 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
 
     # Consistency checks: Functions that define the splitting lines
     nsplit = len(fun)
-    if len(funpar) < nsplit:
-        logger.warn(f'Length of funpar < lenght of fun. Completing with {nsplit - len(funpar)} zeros.')
-        funpar[len(funpar):nsplit] = [0.0] * (nsplit - len(funpar))
-    elif len(funpar) > nsplit:
-        logger.warn(f'Length of funpar > lenght of fun. Ignoring {len(funpar) - nsplit} values.')
+    if funpar is not None and len(funpar) != nsplit:
+        logger.critical(f'The length of funpar ({len(funpar)}) must match the length of par ({nsplit})!')
+        return -5
 
     # number of elements in the z direction
     nz = len(z) - 1

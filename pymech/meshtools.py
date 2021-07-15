@@ -222,9 +222,9 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         meshes2D.append(copy.deepcopy(mesh2D_ext))
         meshes2D.append(copy.deepcopy(mesh2D_ext))
 
-        iel_int = 0
-        iel_mid = 0
-        iel_ext = 0
+        elems_int = []
+        elems_mid = []
+        elems_ext = []
 
         for iel in range(mesh2D_ext.nel):
             it = 0
@@ -238,25 +238,17 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
                     rvec[it] = fun[k](xvec[it], yvec[it], funpar[k])
                     it += 1
             if max(rvec) <= 0.0:  # the element belongs to the internal (more refined) mesh
-                meshes2D[2 * k].elem[iel_int] = copy.deepcopy(mesh2D_ext.elem[iel])
-                iel_int += 1
+                elems_int.append(iel)
             elif min(rvec) > 0.0:  # the element belongs to the external (less refined) mesh
-                mesh2D_ext.elem[iel_ext] = copy.deepcopy(mesh2D_ext.elem[iel])
-                iel_ext += 1
+                elems_ext.append(iel)
             else:  # the element belongs to the intermediate mesh and will be split
-                meshes2D[2 * k + 1].elem[iel_mid] = copy.deepcopy(mesh2D_ext.elem[iel])
-                iel_mid += 1
+                elems_mid.append(iel)
 
-        meshes2D[2 * k].nel = iel_int
-        meshes2D[2 * k + 1].nel = iel_mid
-        mesh2D_ext.nel = iel_ext
-
+        keep_elements(meshes2D[2 * k], elems_int)
+        keep_elements(meshes2D[2 * k + 1], elems_mid)
+        keep_elements(mesh2D_ext, elems_ext)
         logger.debug(f'Mesh2D {2 * k} elements: {meshes2D[2 * k].nel}')
         logger.debug(f'Mesh2D {2 * k + 1} elements: {meshes2D[2 * k + 1].nel}')
-
-        meshes2D[2 * k].elem = meshes2D[2 * k].elem[:iel_int]
-        meshes2D[2 * k + 1].elem = meshes2D[2 * k + 1].elem[:iel_mid]
-        mesh2D_ext.elem = mesh2D_ext.elem[:iel_ext]
 
     # End of splitting, remaining is the last mesh: Mesh_ext
     logger.debug(f'Mesh2Dext elements: {mesh2D_ext.nel}')
@@ -303,8 +295,15 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     # Merging meshes
     logger.info('Merging meshes')
     mesh3D = mesh3D_ext
+    # debug
+    i = 0
     for mesh_part in meshes3D:
+        logger.debug(f'mesh {i} before merging:')
+        assert mesh_part.check_connectivity()
         mesh3D.merge(mesh_part, ignore_all_bcs=True)
+        logger.debug(f'mesh {i} after merging:')
+        assert mesh3D.check_connectivity()
+        i += 1
     logger.info(f'Merging done. Total elements: {mesh3D.nel}')
 
     # update curve metadata
@@ -659,10 +658,6 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                         ielneigh = 6 * (mesh3d.elem[iel].bcs[ibc, iface][3] - 1 + nel2d * (k // 4))
                         for iell in range(6):
                             mesh3d.elem[iel + iell].bcs[ibc, iface][3] = ielneigh + 1 + iell
-                    elif bc == 'P':
-                        connected_iel = mesh3d.elem[iel].bcs[ibc, iface][3]
-                        for iell in range(6):
-                            mesh3d.elem[iel + iell].bcs[ibc, iface][3] += iell
 
                 # Correct internal bc for mid faces of elements.
                 mesh3d.elem[iel].bcs[ibc, iedgehi][0] = 'E'
@@ -1025,3 +1020,65 @@ def generate_internal_bcs(mesh, tol=1e-3):
                             other_el.bcs[ibc, other_iface][4] = iface + 1
 
     return nconnect
+
+
+# =================================================================================
+
+def keep_elements(mesh: exdat, elems, external_bc=''):
+    """
+    Reduce the mesh to a subset of its elements
+
+    Parameters:
+    ----------
+    mesh : exdat
+            mesh to modify
+    elems: int array
+            list of element numbers (zero indexed) to keep
+    external_bc: string
+            if an element was connected to another which is removed from the mesh, replace that condition with external_bc
+    """
+
+    # sort element numbers
+    elems = np.array(elems)
+    elems.sort()
+
+    # list of booleans representing whether each element is kept
+    kept = [False for i in range(mesh.nel)]
+
+    # list of offsets to apply to each element index
+    offsets = np.zeros((mesh.nel,))
+    last_iel = -1
+    current_offset = 0
+    for iel in elems:
+        if iel >= mesh.nel:
+            logger.critical(f"invalid element number {iel} for nel = {mesh.nel}")
+            return
+        current_offset += iel - last_iel - 1
+        offsets[iel] = current_offset
+        last_iel = iel
+        kept[iel] = True
+
+    # apply negative offsets to internal & periodic boundary conditions
+    for iel, ibc, iface in product(elems, range(mesh.nbc), range(2 * mesh.ndim)):
+        offset = offsets[iel]
+        bc = mesh.elem[iel].bcs[ibc, iface][0]
+        mesh.elem[iel].bcs[ibc, iface][1] = iel - offset + 1
+        if bc == 'E' or bc == 'P':
+            connected_iel = int(mesh.elem[iel].bcs[ibc, iface][3]) - 1
+            logger.debug(f"iel: {iel}, connected iel: {connected_iel}, nel: {mesh.nel}")
+            if kept[connected_iel]:
+                # update the index of the connected element
+                mesh.elem[iel].bcs[ibc, iface][3] -= offsets[connected_iel]
+            else:
+                # delete the boundary condition or replace it with an external one
+                mesh.elem[iel].bcs[ibc, iface][0] = external_bc
+                mesh.elem[iel].bcs[ibc, iface][3] = 0
+                mesh.elem[iel].bcs[ibc, iface][4] = 0
+
+    # delete unused elements from element list
+    new_elems = []
+    for iel in elems:
+        new_elems.append(mesh.elem[iel])
+    mesh.elem = new_elems
+    mesh.nel = len(mesh.elem)
+    mesh.update_ncurv()

@@ -205,7 +205,7 @@ class exadata:
                 if connected_iel < 0 or connected_iel >= self.nel:
                     err = True
                     logger.error(
-                        f"face {iface} of element {iel} is connected to face "
+                        f"face {iface} of element {iel} is connected ('{cbc}') to face "
                         f"{connected_face} of the nonexistent element {connected_iel}"
                     )
                     xc, yc, zc = el.face_center(iface)

@@ -369,3 +369,16 @@ class exadata:
                 lxyz[:, idim] = el.pos[idim, ...].ravel()
 
         return xyz
+
+    def update_ncurv(self):
+        """
+        Updates the metadata `ncurv` integer to match the actual number of curved faces present in the mesh
+        """
+
+        ncurv = 0
+        for el in self.elem:
+            for iedge in range(12):
+                if el.ccurv[iedge] != '':
+                    ncurv = ncurv + 1
+        self.ncurv = ncurv
+        

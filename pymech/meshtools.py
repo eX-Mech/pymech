@@ -339,12 +339,8 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         mesh3D.merge(mesh_part, ignore_all_bcs=True)
     logger.info(f'Merging done. Total elements: {mesh3D.nel}')
 
-    ncurv = 0
-    for el in mesh3D.elem:
-        for iedge in range(12):
-            if el.ccurv[iedge] != '':
-                ncurv = ncurv + 1
-    mesh3D.ncurv = ncurv
+    # update curve metadata
+    mesh3D.update_ncurv()
 
     # return the extruded mesh
     return mesh3D

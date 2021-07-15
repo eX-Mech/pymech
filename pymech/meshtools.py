@@ -454,8 +454,8 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                 iedgeconlat[1] = 11
 
             # find x and y locations
-            poslo = copy.deepcopy(mesh.elem[i].pos[:, :1, index_lo[:, 0], index_lo[:, 1]])
-            poshi = copy.deepcopy(mesh.elem[i].pos[:, :1, index_hi[:, 0], index_hi[:, 1]])
+            poslo = mesh.elem[i].pos[:, :1, index_lo[:, 0], index_lo[:, 1]]
+            poshi = mesh.elem[i].pos[:, :1, index_hi[:, 0], index_hi[:, 1]]
             # mid position is influenced by curvature
             posmid = 0.5 * (mesh.elem[i].pos[:, :1, index_lo[:, 0], index_lo[:, 1]] + mesh.elem[i].pos[:, :1, index_hi[:, 0], index_hi[:, 1]])
             for ilat in range(2):
@@ -549,8 +549,8 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                     # For cases not implemented, remove curvature
                     mesh3d.elem[iel].ccurv[iedgehi] = ''
                     mesh3d.elem[iel + 1].ccurv[iedgelo] = ''
-                    mesh3d.elem[iel].curv[iedgehi] = 0.0 * (mesh.elem[i].curv[iedgehi])
-                    mesh3d.elem[iel + 1].curv[iedgelo] = copy.deepcopy(mesh3d.elem[iel].curv[iedgehi])
+                    mesh3d.elem[iel].curv[iedgehi] = 0.0 * mesh.elem[i].curv[iedgehi]
+                    mesh3d.elem[iel + 1].curv[iedgelo] = mesh3d.elem[iel].curv[iedgehi]
 
             for ilat in range(2):
                 # Fixing curvature of edges divided in half. For curv_type == 'C', it is not a true extrusion - 'diagonal edges' not consistent with 'C'.
@@ -574,14 +574,14 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                     mesh3d.elem[iel + iell].ccurv[icurv + 4] = mesh3d.elem[iel + iell].ccurv[icurv]
                     mesh3d.elem[iel + iell].curv[icurv + 4] = mesh3d.elem[iel + iell].curv[icurv]    # curvature params
 
-            mesh3d.elem[iel + 2].curv[0:4] = copy.deepcopy(mesh3d.elem[iel].curv[0:4])
-            mesh3d.elem[iel + 3].curv[4:8] = copy.deepcopy(mesh3d.elem[iel].curv[0:4])
-            mesh3d.elem[iel + 5].curv = copy.deepcopy(mesh3d.elem[iel].curv)
-            mesh3d.elem[iel + 4].curv = copy.deepcopy(mesh3d.elem[iel + 1].curv)
-            mesh3d.elem[iel + 2].ccurv[0:4] = copy.deepcopy(mesh3d.elem[iel].ccurv[0:4])
-            mesh3d.elem[iel + 3].ccurv[4:8] = copy.deepcopy(mesh3d.elem[iel].ccurv[0:4])
-            mesh3d.elem[iel + 5].ccurv = copy.deepcopy(mesh3d.elem[iel].ccurv)
-            mesh3d.elem[iel + 4].ccurv = copy.deepcopy(mesh3d.elem[iel + 1].ccurv)
+            mesh3d.elem[iel + 2].curv[0:4] = mesh3d.elem[iel].curv[0:4]
+            mesh3d.elem[iel + 3].curv[4:8] = mesh3d.elem[iel].curv[0:4]
+            mesh3d.elem[iel + 5].curv[:] = mesh3d.elem[iel].curv
+            mesh3d.elem[iel + 4].curv[:] = mesh3d.elem[iel + 1].curv
+            mesh3d.elem[iel + 2].ccurv[0:4] = mesh3d.elem[iel].ccurv[0:4]
+            mesh3d.elem[iel + 3].ccurv[4:8] = mesh3d.elem[iel].ccurv[0:4]
+            mesh3d.elem[iel + 5].ccurv[:] = mesh3d.elem[iel].ccurv
+            mesh3d.elem[iel + 4].ccurv[:] = mesh3d.elem[iel + 1].ccurv
 
             for icurv in range(4):
                 # z should be set to the proper value.
@@ -615,10 +615,10 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
 
             # Fixing the curvature of 3d-edges in z-direction that connects to lateral edges in trapezoidal elements (all other edges in z-direction - indices 8 to 11 - do not have curvature)
             for ilat in range(2):
-                mesh3d.elem[iel + 2].curv[iedgeconlat[ilat]] = copy.deepcopy(mesh3d.elem[iel + 1].curv[iedgelat[ilat] + 4])
-                mesh3d.elem[iel + 2].ccurv[iedgeconlat[ilat]] = copy.deepcopy(mesh3d.elem[iel + 1].ccurv[iedgelat[ilat] + 4])
-                mesh3d.elem[iel + 3].curv[iedgeconlat[ilat]] = copy.deepcopy(mesh3d.elem[iel + 4].curv[iedgelat[ilat]])
-                mesh3d.elem[iel + 3].ccurv[iedgeconlat[ilat]] = copy.deepcopy(mesh3d.elem[iel + 4].ccurv[iedgelat[ilat]])
+                mesh3d.elem[iel + 2].curv[iedgeconlat[ilat]] = mesh3d.elem[iel + 1].curv[iedgelat[ilat] + 4]
+                mesh3d.elem[iel + 2].ccurv[iedgeconlat[ilat]] = mesh3d.elem[iel + 1].ccurv[iedgelat[ilat] + 4]
+                mesh3d.elem[iel + 3].curv[iedgeconlat[ilat]] = mesh3d.elem[iel + 4].curv[iedgelat[ilat]]
+                mesh3d.elem[iel + 3].ccurv[iedgeconlat[ilat]] = mesh3d.elem[iel + 4].ccurv[iedgelat[ilat]]
 
     # fix the internal boundary conditions (even though it's probably useless)
     # the end boundary conditions will be overwritten later with the proper ones
@@ -762,7 +762,7 @@ def edge_mid(el, iedge):
     """
 
     # correct if ccurv=='m', otherwise, works as allocation
-    midpoint = copy.deepcopy(el.curv[iedge][:3])
+    midpoint = el.curv[iedge][:3]
 
     if el.ccurv[iedge] != 'm':
         if iedge == 0:
@@ -901,7 +901,7 @@ def edge_circle(el, iedge, midpoint):
         radius = 0.0
         center = [0.0, 0.0, 0.0]
 
-    curv = copy.deepcopy(el.curv[iedge][:4])
+    curv = el.curv[iedge][:4]
     curv[0] = radius
     curv[1:4] = center
 

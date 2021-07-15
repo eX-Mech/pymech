@@ -5,7 +5,7 @@ from pymech.log import logger
 
 
 # ==============================================================================
-def extrude(mesh: exdat, z, bc1='P', bc2='P'):
+def extrude(mesh: exdat, z, bc1='P', bc2='P', internal_bcs=True):
     """Extrudes a 2D mesh into a 3D one
 
     Parameters
@@ -18,8 +18,11 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P'):
            max value of the z coordinate to extrude to
     z :  float 1d array
            z coordinates at which to extrude the mesh
-    bc : str
-           the boundary condition to use at the ends
+    bc1, bc2 : str
+           the boundary conditions to use at each end
+    internal_bcs : bool
+           if True, build mesh connectivity using internal 'E' boundary conditions
+           (note that those are not used by Nek5000 and will not be written to binary .re2 files).
     """
 
     if mesh.ndim != 2:
@@ -37,6 +40,10 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P'):
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
+    if not internal_bcs:
+        # if we don't build proper internal boundary conditions, we can get rid
+        # of all of them to make the data cleaner
+        delete_internal_bcs(mesh3d)
     mesh3d.lr1 = [2, 2, 2]
     mesh3d.var = [3, 0, 0, 0, 0]  # remove anything that isn't geometry for now
     nel2d = mesh.nel
@@ -81,26 +88,27 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P'):
 
     # fix the internal boundary conditions (even though it's probably useless)
     # the end boundary conditions will be overwritten later with the proper ones
-    for (iel, el) in enumerate(mesh3d.elem):
-        for ibc in range(nbc):
-            el.bcs[ibc, 4][0] = 'E'
-            el.bcs[ibc, 4][1] = iel + 1
-            el.bcs[ibc, 4][2] = 5
-            el.bcs[ibc, 4][3] = iel - nel2d + 1
-            el.bcs[ibc, 4][4] = 6
-            el.bcs[ibc, 5][0] = 'E'
-            el.bcs[ibc, 5][1] = iel + 1
-            el.bcs[ibc, 5][2] = 6
-            el.bcs[ibc, 5][3] = iel + nel2d + 1
-            el.bcs[ibc, 5][4] = 5
-            # update the conditions for side faces
-            for iface in range(4):
-                el.bcs[ibc, iface][1] = iel + 1
-                if el.bcs[ibc, iface][0] == 'E':
-                    # el.bcs[ibc, 0][1] ought to contain iel+1 once the mesh is valid
-                    # but for now it should be off by a factor of nel2d because it is a copy of an element in the first slice
-                    offset = iel - el.bcs[ibc, iface][1] + 1
-                    el.bcs[ibc, iface][3] = el.bcs[ibc, iface][3] + offset
+    if internal_bcs:
+        for (iel, el) in enumerate(mesh3d.elem):
+            for ibc in range(nbc):
+                el.bcs[ibc, 4][0] = 'E'
+                el.bcs[ibc, 4][1] = iel + 1
+                el.bcs[ibc, 4][2] = 5
+                el.bcs[ibc, 4][3] = iel - nel2d + 1
+                el.bcs[ibc, 4][4] = 6
+                el.bcs[ibc, 5][0] = 'E'
+                el.bcs[ibc, 5][1] = iel + 1
+                el.bcs[ibc, 5][2] = 6
+                el.bcs[ibc, 5][3] = iel + nel2d + 1
+                el.bcs[ibc, 5][4] = 5
+                # update the conditions for side faces
+                for iface in range(4):
+                    el.bcs[ibc, iface][1] = iel + 1
+                    if el.bcs[ibc, iface][0] == 'E':
+                        # el.bcs[ibc, 0][1] ought to contain iel+1 once the mesh is valid
+                        # but for now it should be off by a factor of nel2d because it is a copy of an element in the first slice
+                        offset = iel - el.bcs[ibc, iface][1] + 1
+                        el.bcs[ibc, iface][3] = el.bcs[ibc, iface][3] + offset
 
     # now fix the end boundary conditions
     # face 5 is at zmin and face 6 is at zmax (with Nek indexing, corresponding to 4 and 5 in Python)
@@ -197,6 +205,9 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         return mesh3D
 
     mesh2D_ext = copy.deepcopy(mesh2D)
+    # get rid of internal boundary conditions because they will be hard to get correct and they are not used by Nek5000 anyway
+    delete_internal_bcs(mesh2D_ext)
+
     meshes2D = []  # list of 2D meshes
     meshes3D = []  # list of 3D meshes
 
@@ -273,47 +284,15 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
             logger.critical(f'Inconsistent elements to extrude: n ({n_mid}) is not a multiple of 4.')
             return -11
 
-        meshes3D.append(extrude(meshes2D[2 * k], z_local, bc1=bc1, bc2=bc2))
+        meshes3D.append(extrude(meshes2D[2 * k], z_local, bc1=bc1, bc2=bc2, internal_bcs=False))
         meshes3D.append(extrude_mid(meshes2D[2 * k + 1], z_mid, bc1, bc2, fun_local, funpar[k]))
-
-        for (iel, el) in enumerate(meshes3D[2 * k].elem):
-            for ibc in range(meshes3D[2 * k].nbc):
-                for iface in range(6):
-                    el.bcs[ibc, iface][1] = iel + 1
-                    if el.bcs[ibc, iface][0] == 'E':
-                        el.bcs[ibc, iface][0] = ''
-                        el.bcs[ibc, iface][1] = iel + 1
-                        el.bcs[ibc, iface][2] = iface
-                        el.bcs[ibc, iface][3] = 0.0
-                        el.bcs[ibc, iface][4] = 0.0
-
-        for (iel, el) in enumerate(meshes3D[2 * k + 1].elem):
-            for ibc in range(meshes3D[2 * k + 1].nbc):
-                for iface in range(6):
-                    el.bcs[ibc, iface][1] = iel + 1
-                    if el.bcs[ibc, iface][0] == 'E':
-                        el.bcs[ibc, iface][0] = ''
-                        el.bcs[ibc, iface][1] = iel + 1
-                        el.bcs[ibc, iface][2] = iface
-                        el.bcs[ibc, iface][3] = 0.0
-                        el.bcs[ibc, iface][4] = 0.0
 
         logger.debug(f'Mesh3D {2 * k} elements: {meshes3D[2 * k].nel}')
         logger.debug(f'Mesh3D {2 * k + 1} elements: {meshes3D[2 * k + 1].nel}')
 
     n_local = nz // 2**abs(nsplit - imesh_high)
     z_local = z[::int(2**abs(nsplit - imesh_high))]
-    mesh3D_ext = extrude(mesh2D_ext, z_local, bc1=bc1, bc2=bc2)
-    for (iel, el) in enumerate(mesh3D_ext.elem):
-        for ibc in range(mesh3D_ext.nbc):
-            for iface in range(6):
-                el.bcs[ibc, iface][1] = iel + 1
-                if el.bcs[ibc, iface][0] == 'E':
-                    el.bcs[ibc, iface][0] = ''
-                    el.bcs[ibc, iface][1] = iel + 1
-                    el.bcs[ibc, iface][2] = iface
-                    el.bcs[ibc, iface][3] = 0.0
-                    el.bcs[ibc, iface][4] = 0.0
+    mesh3D_ext = extrude(mesh2D_ext, z_local, bc1=bc1, bc2=bc2, internal_bcs=False)
 
     logger.debug(f'Mesh3Dext elements: {mesh3D_ext.nel}')
 

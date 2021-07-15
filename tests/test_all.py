@@ -460,6 +460,7 @@ def test_extrude_refine():
 
     assert mesh3D.ndim == 3
     assert mesh3D.nel == 336
+    assert mesh3D.check_connectivity()
 
 # ------------------------------------------------------------------------------
 # test simson scripts

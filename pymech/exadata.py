@@ -217,26 +217,26 @@ class exadata:
                         logger.error(
                             "mismatched boundary conditions: "
                             f"face {iface + 1} of element {iel + 1} with "
-                            f"condition {cbc} is connected to face {connected_face + 1} "
-                            f"of element {connected_iel + 1} with condition {cbc1}"
+                            f"condition '{cbc}' is connected to face {connected_face + 1} "
+                            f"of element {connected_iel + 1} with condition '{cbc1}'"
                         )
                     if iel1 != iel:
                         err = True
                         logger.error(
                             "mismatched elements: "
                             f"face {iface + 1} of element {iel + 1} "
-                            f"is connected to face {connected_face + 1} "
+                            f"is connected ('{cbc}') to face {connected_face + 1} "
                             f"of element {connected_iel + 1} but that face is "
-                            f"connected to face {iface1 + 1} of element {iel1 + 1}"
+                            f"connected ('{cbc1}') to face {iface1 + 1} of element {iel1 + 1}"
                         )
                     if iface1 != iface:
                         err = True
                         logger.error(
                             "mismatched faces: "
                             f"face {iface + 1} of element {iel + 1} "
-                            f"is connected to face {connected_face + 1} "
+                            f"is connected ('{cbc}') to face {connected_face + 1} "
                             f"of element {connected_iel + 1} but that face is "
-                            f"connected to face {iface1 + 1} of element {iel1 + 1}"
+                            f"connected ('{cbc1}') to face {iface1 + 1} of element {iel1 + 1}"
                         )
         return not err
 

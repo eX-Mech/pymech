@@ -389,6 +389,13 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
             for iell in range(6):
                 mesh3d.elem[iel + iell] = copy.deepcopy(mesh.elem[i])
                 mesh3d.elem[iel + iell].pos = np.zeros((3, 2, 2, 2))
+                # fix indexing of internal / periodic conditions
+                for ibc, iface in product(range(mesh.nbc), range(4)):
+                    bc = mesh.elem[i].bcs[ibc, iface][0]
+                    if bc == 'P' or bc == 'E':
+                        connected_i = mesh.elem[i].bcs[ibc, iface][3] - 1
+                        connected_iel = 6 * (connected_i + nel2d * (k // 4)) + iell
+                        mesh3d.elem[iel + iell].bcs[ibc, iface][3] = connected_iel + 1
 
             xvec = np.zeros((2, 2))
             yvec = np.zeros((2, 2))

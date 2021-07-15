@@ -1077,7 +1077,6 @@ def keep_elements(mesh: exdat, elems, external_bc=''):
         mesh.elem[iel].bcs[ibc, iface][1] = iel - offset + 1
         if bc == 'E' or bc == 'P':
             connected_iel = int(mesh.elem[iel].bcs[ibc, iface][3]) - 1
-            logger.debug(f"iel: {iel}, connected iel: {connected_iel}, nel: {mesh.nel}")
             if kept[connected_iel]:
                 # update the index of the connected element
                 mesh.elem[iel].bcs[ibc, iface][3] -= offsets[connected_iel]

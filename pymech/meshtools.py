@@ -393,12 +393,13 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
             xvec = np.zeros((2, 2))
             yvec = np.zeros((2, 2))
             rvec = np.zeros((2, 2))
-            index_lo = np.zeros((2, 2), dtype=int)  # index of low points
-            index_hi = np.zeros((2, 2), dtype=int)  # index of high points
-            iindex_lo = 0
-            iindex_hi = 0
+            index_lo = np.zeros((2, 2), dtype=int)  # index [ix, iy] of the two low points
+            index_hi = np.zeros((2, 2), dtype=int)  # index [ix, iy] of the two high points
+            iindex_lo = 0  # index of low points (among the four corners), that have a negative image by the function
+            iindex_hi = 0  # index of high points, that have a positive image by the function
             iedgelat = np.zeros((2), dtype=int)
             iedgeconlat = np.zeros((2), dtype=int)
+            # find which of the four corners are low points and high points; there must be two of each.
             for ii in range(2):
                 for jj in range(2):
                     xvec[jj, ii] = mesh.elem[i].pos[0, 0, jj, ii]
@@ -421,8 +422,12 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                 return -11
 
             # find the indices of edges, for curvature and boundary condition
-            # iedgehi is the index of the edge of element iel + 0 that is the intersection between iel + 0 and iel + 1 (high edge). iedgelo is the index of the edge of element iel + 1 that is the intersection (low edge).
-            # iedgelat are the indices of the lateral (splitted) edges. iedgeconlat are the indices of the edges (edge in z-direction) of elements iel + 2 and iel + 3 that connect to the respective lateral edges.
+            #
+            # iedgehi is the index of the edge of element iel + 0 that is the intersection between iel + 0 and iel + 1 (high edge).
+            # iedgelo is the index of the edge of element iel + 1 that is the intersection (low edge).
+            # iedgelat are the indices of the lateral (splitted) edges.
+            # iedgeconlat are the indices of the edges (edge in z-direction) of elements iel + 2
+            # and iel + 3 that connect to the respective lateral edges.
             if (index_lo[0, :] == [0, 0]).all():
                 if (index_hi[0, :] == [0, 1]).all():
                     iedgehi = 1

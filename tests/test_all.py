@@ -441,9 +441,11 @@ def test_extrude_refine():
     import numpy as np
     import pymech.neksuite as ns
     import pymech.meshtools as mt
+    from itertools import product
 
     fnameI = './tests/nek/box2d.re2'
     mesh2D = ns.readre2(fnameI)
+    mt.generate_internal_bcs(mesh2D)
 
     zmin = 0
     zmax = 6
@@ -456,16 +458,23 @@ def test_extrude_refine():
         return ypos - rlim
     fun = [fun_line, fun_line]
     z = np.linspace(zmin, zmax, n + 1)
-    mesh3D = mt.extrude(mesh2D, z, bc1=bc1, bc2=bc2)
-    assert mesh3D.ndim == 3
-    assert mesh3D.nel == 24 * n
-    assert mesh3D.check_connectivity()
 
-    mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high)
+    # test both with and without internal connectivity
+    mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high, internal_bcs=False)
+    assert mesh3D.check_connectivity()
+    # check that we haven't introduced any dummy conditions
+    for el, iface in product(mesh3D.elem, range(6)):
+        assert el.bcs[0, iface][0] != 'con'
+        assert el.bcs[0, iface][0] != 'E'
+
+    mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high, internal_bcs=True)
+    for el, iface in product(mesh3D.elem, range(6)):
+        assert el.bcs[0, iface][0] != 'con'
 
     assert mesh3D.ndim == 3
     assert mesh3D.nel == 336
     assert mesh3D.check_connectivity()
+    assert mesh3D.check_bcs_present()
 
 # ------------------------------------------------------------------------------
 # test simson scripts

@@ -295,15 +295,8 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     # Merging meshes
     logger.info('Merging meshes')
     mesh3D = mesh3D_ext
-    # debug
-    i = 0
     for mesh_part in meshes3D:
-        logger.debug(f'mesh {i} before merging:')
-        assert mesh_part.check_connectivity()
         mesh3D.merge(mesh_part, ignore_all_bcs=True)
-        logger.debug(f'mesh {i} after merging:')
-        assert mesh3D.check_connectivity()
-        i += 1
     logger.info(f'Merging done. Total elements: {mesh3D.nel}')
 
     # update curve metadata

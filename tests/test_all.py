@@ -450,8 +450,8 @@ def test_extrude_refine():
     zmin = 0
     zmax = 6
     n = 16
-    bc1='v'
-    bc2='O'
+    bc1='P'
+    bc2='P'
     imesh_high=0
     funpar = [0.5, 1.5]
     def fun_line(xpos, ypos, rlim):

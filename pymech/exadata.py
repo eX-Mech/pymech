@@ -100,6 +100,44 @@ class elem:
     def centroid(self):
         return self.pos.mean(axis=(1, 2, 3))
 
+    def smallest_edge(self):
+        """returns the length of the smallest edge, neglecting curvature"""
+
+        # get coordinates of points
+        x1, y1, z1 = self.pos[:, 0, 0, 0]
+        x2, y2, z2 = self.pos[:, 0, 0, 1]
+        x3, y3, z3 = self.pos[:, 0, 1, 0]
+        x4, y4, z4 = self.pos[:, 0, 1, 1]
+        # compute squares of edges lengths
+        edges_l2 = np.zeros((12,))
+        edges_l2[0] = (x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2
+        edges_l2[1] = (x3 - x2)**2 + (y3 - y2)**2 + (z3 - z2)**2
+        edges_l2[2] = (x4 - x3)**2 + (y4 - y3)**2 + (z4 - z3)**2
+        edges_l2[3] = (x1 - x4)**2 + (y1 - y4)**2 + (z1 - z4)**2
+        # the dimension is not stored but we can cheat
+        if self.pos.shape[1] > 1:
+            ndim = 3
+        else:
+            ndim = 2
+        if ndim > 2:
+            # in 3D, do the same for the upper face, and also the side edges
+            x5, y5, z5 = self.pos[:, 1, 0, 0]
+            x6, y6, z6 = self.pos[:, 1, 0, 1]
+            x7, y7, z7 = self.pos[:, 1, 1, 0]
+            x8, y8, z8 = self.pos[:, 1, 1, 1]
+            edges_l2[4] = (x6 - x5)**2 + (y6 - y5)**2 + (z6 - z5)**2
+            edges_l2[5] = (x7 - x6)**2 + (y7 - y6)**2 + (z7 - z6)**2
+            edges_l2[6] = (x8 - x7)**2 + (y8 - y7)**2 + (z8 - z7)**2
+            edges_l2[7] = (x5 - x8)**2 + (y5 - y8)**2 + (z5 - z8)**2
+            edges_l2[8] = (x5 - x1)**2 + (y5 - y1)**2 + (z5 - z1)**2
+            edges_l2[9] = (x6 - x2)**2 + (y6 - y2)**2 + (z6 - z2)**2
+            edges_l2[10] = (x7 - x3)**2 + (y7 - y3)**2 + (z7 - z3)**2
+            edges_l2[11] = (x8 - x4)**2 + (y8 - y4)**2 + (z8 - z4)**2
+            return np.sqrt(edges_l2.min())
+        else:
+            return np.sqrt(edges_l2[:4].min())
+
+
     def face_center(self, i):
         """Return the coordinates (x, y, z) of the center of the face number i"""
 
@@ -188,10 +226,15 @@ class exadata:
     def lims(self):
         return datalims(self.var, self.elem)
 
-    def check_connectivity(self):
+    def check_connectivity(self, tol=1e-3):
         """Check element connectivity, specifically for matching boundary
         conditions and geometry. Errors are reported as logging messages.
 
+        Parameters:
+        -----------
+        tol : float
+            relative tolerance (compared to the smallest edge of adjacent elements)
+            for detecting whether faces are at the same location
         """
         dim = self.ndim
         err = False
@@ -202,18 +245,19 @@ class exadata:
             if cbc == "E" or cbc == "P":
                 connected_iel = int(el.bcs[ibc, iface][3]) - 1
                 connected_face = int(el.bcs[ibc, iface][4]) - 1
+                xc, yc, zc = el.face_center(iface)
                 if connected_iel < 0 or connected_iel >= self.nel:
                     err = True
                     logger.error(
                         f"face {iface} of element {iel} is connected ('{cbc}') to face "
                         f"{connected_face} of the nonexistent element {connected_iel}"
                     )
-                    xc, yc, zc = el.face_center(iface)
                     logger.error(f"face center: ({xc:.6e} {yc:.6e} {zc:.6e})")
                 else:
                     cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
                     iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3]) - 1
                     iface1 = int(self.elem[connected_iel].bcs[ibc, connected_face][4]) - 1
+                    xc1, yc1, zc1 = self.elem[connected_iel].face_center(connected_face)
                     if cbc1 != cbc or iel1 != iel or iface1 != iface:
                         err = True
                         logger.error(
@@ -223,9 +267,19 @@ class exadata:
                             f"of element {connected_iel + 1}, which has condition '{cbc1}' "
                             f"and points to face {iface1} of element {iel1}"
                         )
-                        xc, yc, zc = el.face_center(iface)
-                        xc1, yc1, zc1 = self.elem[connected_iel].face_center(connected_face)
                         logger.error(f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})")
+                    elif cbc == "E":  # no check for 'P' yet, but it should be possible
+                        dist = np.sqrt((xc - xc1)**2 + (yc - yc1)**2 + (zc - zc1)**2)
+                        max_dist = tol * min(el.smallest_edge(), self.elem[connected_iel].smallest_edge())
+                        if dist > max_dist:
+                            err = True
+                            logger.error(
+                                "mismatched face locations: "
+                                f"face {iface + 1} of element {iel + 1} and "
+                                f"face {connected_face + 1} of element {connected_iel + 1} "
+                                "are connected but are not at the same location"
+                            )
+                            logger.error(f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})")
         return not err
 
 

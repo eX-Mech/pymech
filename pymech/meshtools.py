@@ -942,40 +942,13 @@ def generate_internal_bcs(mesh, tol=1e-3):
          relative to the smallest edge of the elements
     """
 
-    # First generate a length scale (squared) for each element, equal to the square of the smallest edge of that element.
+    # First generate a length scale for each element, equal to the smallest edge of that element.
     scales = np.zeros((mesh.nel,))
-    for (iel, (el, l2)) in enumerate(zip(mesh.elem, scales)):
-        # get coordinates of points
-        x1, y1, z1 = el.pos[:, 0, 0, 0]
-        x2, y2, z2 = el.pos[:, 0, 0, 1]
-        x3, y3, z3 = el.pos[:, 0, 1, 0]
-        x4, y4, z4 = el.pos[:, 0, 1, 1]
-        # compute squares of edges lengths
-        edges_l2 = np.zeros((12,))
-        edges_l2[0] = (x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2
-        edges_l2[1] = (x3 - x2)**2 + (y3 - y2)**2 + (z3 - z2)**2
-        edges_l2[2] = (x4 - x3)**2 + (y4 - y3)**2 + (z4 - z3)**2
-        edges_l2[3] = (x1 - x4)**2 + (y1 - y4)**2 + (z1 - z4)**2
-        if mesh.ndim > 2:
-            # in 3D, do the same for the upper face, and also the side edges
-            x5, y5, z5 = el.pos[:, 1, 0, 0]
-            x6, y6, z6 = el.pos[:, 1, 0, 1]
-            x7, y7, z7 = el.pos[:, 1, 1, 0]
-            x8, y8, z8 = el.pos[:, 1, 1, 1]
-            edges_l2[4] = (x6 - x5)**2 + (y6 - y5)**2 + (z6 - z5)**2
-            edges_l2[5] = (x7 - x6)**2 + (y7 - y6)**2 + (z7 - z6)**2
-            edges_l2[6] = (x8 - x7)**2 + (y8 - y7)**2 + (z8 - z7)**2
-            edges_l2[7] = (x5 - x8)**2 + (y5 - y8)**2 + (z5 - z8)**2
-            edges_l2[8] = (x5 - x1)**2 + (y5 - y1)**2 + (z5 - z1)**2
-            edges_l2[9] = (x6 - x2)**2 + (y6 - y2)**2 + (z6 - z2)**2
-            edges_l2[10] = (x7 - x3)**2 + (y7 - y3)**2 + (z7 - z3)**2
-            edges_l2[11] = (x8 - x4)**2 + (y8 - y4)**2 + (z8 - z4)**2
-            l2 = edges_l2.min()
-        else:
-            l2 = edges_l2[:4].min()
+    for (iel, (el, lmin)) in enumerate(zip(mesh.elem, scales)):
+        lmin = el.smallest_edge()
 
         # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.
-        if l2 <= 0.0:
+        if lmin <= 0.0:
             logger.critical(f'Detected an edge with zero length in element {iel}!')
             return -1
 
@@ -983,17 +956,17 @@ def generate_internal_bcs(mesh, tol=1e-3):
     nconnect = 0  # number of connections made
     for iel in range(mesh.nel):
         el = mesh.elem[iel]
-        l2 = scales[iel]
+        lmin = scales[iel]
         for other_iel in range(iel + 1, mesh.nel):
             other_el = mesh.elem[other_iel]
-            other_l2 = scales[other_iel]
-            max_d2 = tol**2 * min(l2, other_l2)
+            other_lmin = scales[other_iel]
+            max_d = tol * min(lmin, other_lmin)
             for iface in range(2 * mesh.ndim):
                 xf, yf, zf = el.face_center(iface)
                 for other_iface in range(2 * mesh.ndim):
                     other_xf, other_yf, other_zf = other_el.face_center(other_iface)
-                    dist2 = (other_xf - xf)**2 + (other_yf - yf)**2 + (other_zf - zf)**2
-                    if dist2 <= max_d2:
+                    dist = np.sqrt((other_xf - xf)**2 + (other_yf - yf)**2 + (other_zf - zf)**2)
+                    if dist <= max_d:
                         for ibc in range(mesh.nbc):
                             # increment counter for diagnostics
                             nconnect = nconnect + 1

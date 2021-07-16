@@ -90,7 +90,7 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P', internal_bcs=True):
                     mesh3d.elem[iel].curv[icurv][2] = z1
                     mesh3d.elem[iel].curv[icurv + 4][2] = z2
 
-    # fix the internal boundary conditions (even though it's probably useless)
+    # fix the internal boundary conditions
     # the end boundary conditions will be overwritten later with the proper ones
     if internal_bcs:
         for (iel, el) in enumerate(mesh3d.elem):
@@ -138,7 +138,7 @@ def extrude(mesh: exdat, z, bc1='P', bc2='P', internal_bcs=True):
 
 
 # ==============================================================================
-def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_high=0):
+def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_high=0, internal_bcs=True):
     """Extrudes a 2D mesh into a 3D one, following the pattern:
      _____ _____ _____ _____
     |     |     |     |     |
@@ -209,8 +209,9 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
         return mesh3D
 
     mesh2D_ext = copy.deepcopy(mesh2D)
-    # get rid of internal boundary conditions because they will be hard to get correct and they are not used by Nek5000 anyway
-    delete_internal_bcs(mesh2D_ext)
+    # get rid of internal boundary conditions if they are not requested
+    if not internal_bcs:
+        delete_internal_bcs(mesh2D_ext)
 
     meshes2D = []  # list of 2D meshes
     meshes3D = []  # list of 3D meshes
@@ -244,9 +245,15 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
             else:  # the element belongs to the intermediate mesh and will be split
                 elems_mid.append(iel)
 
-        keep_elements(meshes2D[2 * k], elems_int)
-        keep_elements(meshes2D[2 * k + 1], elems_mid)
-        keep_elements(mesh2D_ext, elems_ext)
+        external_bc = ''
+        if internal_bcs:
+            # dummy "external" boundary condition that will be used between parts of meshes
+            # to be merged together later in order to mark the faces to merge.
+            # This is only necessary if we want to build the internal connectivity.
+            external_bc = 'con'
+        keep_elements(meshes2D[2 * k], elems_int, external_bc=external_bc)
+        keep_elements(meshes2D[2 * k + 1], elems_mid, external_bc=external_bc)
+        keep_elements(mesh2D_ext, elems_ext, external_bc=external_bc)
         logger.debug(f'Mesh2D {2 * k} elements: {meshes2D[2 * k].nel}')
         logger.debug(f'Mesh2D {2 * k + 1} elements: {meshes2D[2 * k + 1].nel}')
 
@@ -280,15 +287,15 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
             logger.critical(f'Inconsistent elements to extrude: n ({n_mid}) is not a multiple of 4.')
             return -11
 
-        meshes3D.append(extrude(meshes2D[2 * k], z_local, bc1=bc1, bc2=bc2, internal_bcs=False))
-        meshes3D.append(extrude_mid(meshes2D[2 * k + 1], z_mid, bc1, bc2, fun_local, funpar[k]))
+        meshes3D.append(extrude(meshes2D[2 * k], z_local, bc1=bc1, bc2=bc2, internal_bcs=internal_bcs))
+        meshes3D.append(extrude_mid(meshes2D[2 * k + 1], z_mid, bc1, bc2, fun_local, funpar=funpar[k], internal_bcs=internal_bcs))
 
         logger.debug(f'Mesh3D {2 * k} elements: {meshes3D[2 * k].nel}')
         logger.debug(f'Mesh3D {2 * k + 1} elements: {meshes3D[2 * k + 1].nel}')
 
     n_local = nz // 2**abs(nsplit - imesh_high)
     z_local = z[::int(2**abs(nsplit - imesh_high))]
-    mesh3D_ext = extrude(mesh2D_ext, z_local, bc1=bc1, bc2=bc2, internal_bcs=False)
+    mesh3D_ext = extrude(mesh2D_ext, z_local, bc1=bc1, bc2=bc2, internal_bcs=internal_bcs)
 
     logger.debug(f'Mesh3Dext elements: {mesh3D_ext.nel}')
 
@@ -296,7 +303,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
     logger.info('Merging meshes')
     mesh3D = mesh3D_ext
     for mesh_part in meshes3D:
-        mesh3D.merge(mesh_part, ignore_all_bcs=True)
+        mesh3D.merge(mesh_part, ignore_all_bcs=not internal_bcs)
     logger.info(f'Merging done. Total elements: {mesh3D.nel}')
 
     # update curve metadata
@@ -308,7 +315,7 @@ def extrude_refine(mesh2D, z, bc1='P', bc2='P', fun=None, funpar=None, imesh_hig
 
 # =================================================================================
 
-def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
+def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
     """Extrudes the mid elments of the 2D mesh into a 3D one. Following the pattern:
      _____ _____ _____ _____
     |1   /|\   4|    /|\    |
@@ -382,13 +389,6 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
             for iell in range(6):
                 mesh3d.elem[iel + iell] = copy.deepcopy(mesh.elem[i])
                 mesh3d.elem[iel + iell].pos = np.zeros((3, 2, 2, 2))
-                # fix indexing of internal / periodic conditions
-                for ibc, iface in product(range(mesh.nbc), range(4)):
-                    bc = mesh.elem[i].bcs[ibc, iface][0]
-                    if bc == 'P' or bc == 'E':
-                        connected_i = mesh.elem[i].bcs[ibc, iface][3] - 1
-                        connected_iel = 6 * (connected_i + nel2d * (k // 4)) + iell
-                        mesh3d.elem[iel + iell].bcs[ibc, iface][3] = connected_iel + 1
 
             xvec = np.zeros((2, 2))
             yvec = np.zeros((2, 2))
@@ -625,70 +625,67 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                 mesh3d.elem[iel + 3].curv[iedgeconlat[ilat]] = mesh3d.elem[iel + 4].curv[iedgelat[ilat]]
                 mesh3d.elem[iel + 3].ccurv[iedgeconlat[ilat]] = mesh3d.elem[iel + 4].ccurv[iedgelat[ilat]]
 
-    # fix the internal boundary conditions (even though it's probably useless)
-    # the end boundary conditions will be overwritten later with the proper ones
+            # fix the internal boundary conditions
+            # the end boundary conditions will be overwritten later with the proper ones
             for ibc in range(nbc):
                 # set the conditions in faces normal to z
-                for iell in range(6):
-                    mesh3d.elem[iel + iell].bcs[ibc, 4][0] = 'E'
-                    mesh3d.elem[iel + iell].bcs[ibc, 4][1] = iel + iell + 1
-                    mesh3d.elem[iel + iell].bcs[ibc, 4][2] = 5
-                    mesh3d.elem[iel + iell].bcs[ibc, 4][4] = 6
-                    mesh3d.elem[iel + iell].bcs[ibc, 5][0] = 'E'
-                    mesh3d.elem[iel + iell].bcs[ibc, 5][1] = iel + iell + 1
-                    mesh3d.elem[iel + iell].bcs[ibc, 5][2] = 6
-                    mesh3d.elem[iel + iell].bcs[ibc, 5][4] = 5
-
-                mesh3d.elem[iel].bcs[ibc, 4][3] = iel + 1 - nel2d
-                mesh3d.elem[iel].bcs[ibc, 5][3] = iel + 1 + 2
-                mesh3d.elem[iel + 1].bcs[ibc, 4][3] = iel + 1 - nel2d
-                mesh3d.elem[iel + 1].bcs[ibc, 5][3] = iel + 1 + 2
-                mesh3d.elem[iel + 2].bcs[ibc, 4][3] = iel + 1
-                mesh3d.elem[iel + 2].bcs[ibc, 5][3] = iel + 1 + 3
-                mesh3d.elem[iel + 3].bcs[ibc, 4][3] = iel + 1 + 2
-                mesh3d.elem[iel + 3].bcs[ibc, 5][3] = iel + 1 + 5
-                mesh3d.elem[iel + 4].bcs[ibc, 4][3] = iel + 1 + 3
-                mesh3d.elem[iel + 4].bcs[ibc, 5][3] = iel + 1 + nel2d
-                mesh3d.elem[iel + 5].bcs[ibc, 4][3] = iel + 1 + 3
-                mesh3d.elem[iel + 5].bcs[ibc, 5][3] = iel + 1 + nel2d
-                # update the conditions for side faces.
-                for iface in range(4):
-                    bc = mesh3d.elem[iel].bcs[ibc, iface][0]
+                if internal_bcs:
                     for iell in range(6):
-                        mesh3d.elem[iel + iell].bcs[ibc, iface][1] = iel + iell + 1
-                        mesh3d.elem[iel + iell].bcs[ibc, iface][2] = iface + 1
-                    if bc == 'E':
-                        # el.bcs[ibc, 0][1] ought to contain iel + 1 once the mesh is valid
-                        # but for now it should be off by a factor of nel2d because it is a copy of an element in the first slice
-                        ielneigh = 6 * (mesh3d.elem[iel].bcs[ibc, iface][3] - 1 + nel2d * (k // 4))
-                        for iell in range(6):
-                            mesh3d.elem[iel + iell].bcs[ibc, iface][3] = ielneigh + 1 + iell
+                        mesh3d.elem[iel + iell].bcs[ibc, 4][0] = 'E'
+                        mesh3d.elem[iel + iell].bcs[ibc, 4][1] = iel + iell + 1
+                        mesh3d.elem[iel + iell].bcs[ibc, 4][2] = 5
+                        mesh3d.elem[iel + iell].bcs[ibc, 4][4] = 6
+                        mesh3d.elem[iel + iell].bcs[ibc, 5][0] = 'E'
+                        mesh3d.elem[iel + iell].bcs[ibc, 5][1] = iel + iell + 1
+                        mesh3d.elem[iel + iell].bcs[ibc, 5][2] = 6
+                        mesh3d.elem[iel + iell].bcs[ibc, 5][4] = 5
 
-                # Correct internal bc for mid faces of elements.
-                mesh3d.elem[iel].bcs[ibc, iedgehi][0] = 'E'
-                mesh3d.elem[iel].bcs[ibc, iedgehi][3] = iel + 1 + 1
-                mesh3d.elem[iel].bcs[ibc, iedgehi][4] = iedgelo + 1
-                mesh3d.elem[iel + 1].bcs[ibc, iedgelo][0] = 'E'
-                mesh3d.elem[iel + 1].bcs[ibc, iedgelo][3] = iel + 1
-                mesh3d.elem[iel + 1].bcs[ibc, iedgelo][4] = iedgehi + 1
-                mesh3d.elem[iel + 1].bcs[ibc, 5][0] = 'E'
-                mesh3d.elem[iel + 1].bcs[ibc, 5][3] = iel + 1 + 2
-                mesh3d.elem[iel + 1].bcs[ibc, 5][4] = iedgehi + 1
-                mesh3d.elem[iel + 2].bcs[ibc, iedgehi][0] = 'E'
-                mesh3d.elem[iel + 2].bcs[ibc, iedgehi][3] = iel + 1 + 1
-                mesh3d.elem[iel + 2].bcs[ibc, iedgehi][4] = 6
-                mesh3d.elem[iel + 3].bcs[ibc, iedgehi][0] = 'E'
-                mesh3d.elem[iel + 3].bcs[ibc, iedgehi][3] = iel + 1 + 4
-                mesh3d.elem[iel + 3].bcs[ibc, iedgehi][4] = 5
-                mesh3d.elem[iel + 4].bcs[ibc, 4][0] = 'E'
-                mesh3d.elem[iel + 4].bcs[ibc, 4][3] = iel + 1 + 3
-                mesh3d.elem[iel + 4].bcs[ibc, 4][4] = iedgehi + 1
-                mesh3d.elem[iel + 4].bcs[ibc, iedgelo][0] = 'E'
-                mesh3d.elem[iel + 4].bcs[ibc, iedgelo][3] = iel + 1 + 5
-                mesh3d.elem[iel + 4].bcs[ibc, iedgelo][4] = iedgehi + 1
-                mesh3d.elem[iel + 5].bcs[ibc, iedgehi][0] = 'E'
-                mesh3d.elem[iel + 5].bcs[ibc, iedgehi][3] = iel + 1 + 4
-                mesh3d.elem[iel + 5].bcs[ibc, iedgehi][4] = iedgelo + 1
+                    mesh3d.elem[iel].bcs[ibc, 4][3] = iel + 1 + 5 - 6 * nel2d
+                    mesh3d.elem[iel].bcs[ibc, 5][3] = iel + 1 + 2
+                    mesh3d.elem[iel + 1].bcs[ibc, 4][3] = iel + 1 + 4 - 6 * nel2d
+                    mesh3d.elem[iel + 2].bcs[ibc, 4][3] = iel + 1
+                    mesh3d.elem[iel + 2].bcs[ibc, 5][3] = iel + 1 + 3
+                    mesh3d.elem[iel + 3].bcs[ibc, 4][3] = iel + 1 + 2
+                    mesh3d.elem[iel + 3].bcs[ibc, 5][3] = iel + 1 + 5
+                    mesh3d.elem[iel + 4].bcs[ibc, 5][3] = iel + 1 + 1 + 6 * nel2d
+                    mesh3d.elem[iel + 5].bcs[ibc, 4][3] = iel + 1 + 3
+                    mesh3d.elem[iel + 5].bcs[ibc, 5][3] = iel + 1 + 6 * nel2d
+
+                    # Correct internal bc for mid faces of elements.
+                    mesh3d.elem[iel].bcs[ibc, iedgehi][0] = 'E'
+                    mesh3d.elem[iel].bcs[ibc, iedgehi][3] = iel + 1 + 1
+                    mesh3d.elem[iel].bcs[ibc, iedgehi][4] = iedgelo + 1
+                    mesh3d.elem[iel + 1].bcs[ibc, iedgelo][0] = 'E'
+                    mesh3d.elem[iel + 1].bcs[ibc, iedgelo][3] = iel + 1
+                    mesh3d.elem[iel + 1].bcs[ibc, iedgelo][4] = iedgehi + 1
+                    mesh3d.elem[iel + 1].bcs[ibc, 5][0] = 'E'
+                    mesh3d.elem[iel + 1].bcs[ibc, 5][3] = iel + 1 + 2
+                    mesh3d.elem[iel + 1].bcs[ibc, 5][4] = iedgehi + 1
+                    mesh3d.elem[iel + 2].bcs[ibc, iedgehi][0] = 'E'
+                    mesh3d.elem[iel + 2].bcs[ibc, iedgehi][3] = iel + 1 + 1
+                    mesh3d.elem[iel + 2].bcs[ibc, iedgehi][4] = 6
+                    mesh3d.elem[iel + 3].bcs[ibc, iedgehi][0] = 'E'
+                    mesh3d.elem[iel + 3].bcs[ibc, iedgehi][3] = iel + 1 + 4
+                    mesh3d.elem[iel + 3].bcs[ibc, iedgehi][4] = 5
+                    mesh3d.elem[iel + 4].bcs[ibc, 4][0] = 'E'
+                    mesh3d.elem[iel + 4].bcs[ibc, 4][3] = iel + 1 + 3
+                    mesh3d.elem[iel + 4].bcs[ibc, 4][4] = iedgehi + 1
+                    mesh3d.elem[iel + 4].bcs[ibc, iedgelo][0] = 'E'
+                    mesh3d.elem[iel + 4].bcs[ibc, iedgelo][3] = iel + 1 + 5
+                    mesh3d.elem[iel + 4].bcs[ibc, iedgelo][4] = iedgehi + 1
+                    mesh3d.elem[iel + 5].bcs[ibc, iedgehi][0] = 'E'
+                    mesh3d.elem[iel + 5].bcs[ibc, iedgehi][3] = iel + 1 + 4
+                    mesh3d.elem[iel + 5].bcs[ibc, iedgehi][4] = iedgelo + 1
+
+                # update the conditions for side faces.
+                for iface in iedgelat:
+                    bc = mesh.elem[i].bcs[ibc, iface][0]
+                    if bc == 'P' or bc == 'E':
+                        for iell in range(6):
+                            connected_i = mesh.elem[i].bcs[ibc, iface][3] - 1
+                            connected_iel = 6 * (connected_i + nel2d * (k // 4)) + iell
+                            mesh3d.elem[iel + iell].bcs[ibc, iface][3] = connected_iel + 1
+                            mesh3d.elem[iel + iell].bcs[ibc, iface][4] = mesh.elem[i].bcs[ibc, iface][4]
 
     # now fix the end boundary conditions
     # face 5 is at zmin and face 6 is at zmax (with Nek indexing, corresponding to 4 and 5 in Python)
@@ -728,18 +725,6 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0):
                 mesh3d.elem[i1].bcs[ibc, 5][4] = 5
                 mesh3d.elem[i1 - 1].bcs[ibc, 5][3] = i + 1 + 1
                 mesh3d.elem[i1 - 1].bcs[ibc, 5][4] = 5
-
-    # Removing internal boundary conditions. 'E' boundary conditions are wrong where meshes merge, but should be right internally. (When possible: FIXME indices and delete these lines. However, it is not really necessary, internal bc are not used)
-    for (iel, el) in enumerate(mesh3d.elem):
-        for ibc in range(mesh3d.nbc):
-            for iface in range(6):
-                el.bcs[ibc, iface][1] = iel + 1
-                if el.bcs[ibc, iface][0] == 'E':
-                    el.bcs[ibc, iface][0] = ''
-                    el.bcs[ibc, iface][1] = iel + 1
-                    el.bcs[ibc, iface][2] = iface + 1
-                    el.bcs[ibc, iface][3] = 0.0
-                    el.bcs[ibc, iface][4] = 0.0
 
     # FIND THE CURVED ELEMENTS
     ncurv = 0

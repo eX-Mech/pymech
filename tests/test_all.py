@@ -476,6 +476,29 @@ def test_extrude_refine():
     assert mesh3D.check_connectivity()
     assert mesh3D.check_bcs_present()
 
+def test_gen_circle():
+    import pymech.meshtools as mt
+
+    # try a tiny mesh
+    mesh = mt.gen_circle(1, 0.5, 2, 2)
+    assert mesh.check_connectivity()
+    assert mesh.check_bcs_present()
+    assert mesh.nel == 20
+
+    # one with ns > no
+    mesh = mt.gen_circle(1, 0.5, 9, 2)
+    assert mesh.check_connectivity()
+    assert mesh.check_bcs_present()
+    assert mesh.nel == 153
+
+    # and a big one, without internal BCs
+    mesh = mt.gen_circle(1, 0.1, 10, 200, internal_bcs=False)
+    assert mesh.check_connectivity()
+    assert mesh.nel == 8100
+
+
+
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

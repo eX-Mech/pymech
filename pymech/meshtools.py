@@ -3,6 +3,7 @@ import pymech.exadata as exdat
 import copy
 from pymech.log import logger
 from itertools import product
+from math import log, cos, sin, sqrt, pi, atan
 
 
 # ==============================================================================
@@ -1044,3 +1045,352 @@ def keep_elements(mesh: exdat, elems, external_bc=''):
     mesh.elem = new_elems
     mesh.nel = len(mesh.elem)
     mesh.update_ncurv()
+
+
+# =================================================================================
+
+def exponential_refinement_parameter(l0, ltot, n, tol=1e-14):
+    """
+    In a 1D exponential mesh spacing where n elements of lengths l0, alpha*l0, ..., alpha^(n-1)*l0
+    add up to a total length ltot, return the parameter alpha given l0, ltot, and n.
+
+    Parameters:
+    ----------
+    l0 : float
+        the initial mesh spacing (size of the first element)
+    ltot : float
+        total length of the mesh
+    n : integer
+        number of elements
+    tol : float
+        error tolerance on alpha
+
+    Returns:
+    ----------
+    alpha : float
+        the mesh refinement parameter
+    """
+
+    # interval around 1 where to approximate the functions (see below)
+    eps_approx_f = 2.0e-6
+    eps_approx_fp = 2.0e-6
+    # maximum number of iterations; really this should converge in less than 100.
+    maxiter = 10000
+
+    # the total length is ltot = (1 - alpha^n)/(1 - alpha) * l0,
+    # so we want to find alpha such that (1 - alpha^n)/(1 - alpha) = ltot/l0.
+    # It's better posed numerically if we solve instead for log((1 - alpha^n)/(1 - alpha)) = log(ltot/l0),
+    def err(x):
+        # We can further approximate the function around x=1 to get rid of the 0/0 appearing in the expression.
+        # In practice it seems to be worth using the linearised form for |alpha-1| < 2e-6 or so for n=1000 and l/l0=10000
+        if abs(x - 1) < eps_approx_f:
+            # this would be first order accurate
+            # return log(n * l0 / ltot) + 0.5 * (n - 1) * (x - 1)
+            # this is third order
+            return log(n * l0 / ltot) + log(1 + (n - 1) / 2 * (x - 1) + (n - 1) * (n - 2) / 6 * (x - 1)**2 + (n - 1) * (n - 2) * (n - 3) / 24 * (x - 1)**3)
+        else:
+            return log((x**n - 1) / (x - 1) * l0 / ltot)
+
+    def err_prime(x):
+        # We can further approximate the derivative of the error function around x=1
+        # to get rid of the 0^2/0^2 appearing in the expression.
+        # In practice it seems to be worth using the linearised form for |alpha-1| < 2e-6 or so for n=1000 and l/l0=10000
+        if abs(x - 1) < eps_approx_fp:
+            return 0.5 * (n - 1) + (n - 1) * (n - 5) / 12 * (x - 1)
+        else:
+            # this would be first order accurate
+            # return n * x**(n - 1) / (x**n - 1) - 1 / (x - 1)
+            # this is second order
+            return ((n - 1) / 2 + (n - 1) * (n - 2) / 3 * (x - 1) + (n - 1) * (n - 2) * (n - 3) / 8 * (x - 1)**2) / (1 + (n - 1) / 2 * (x - 1) + (n - 1) * (n - 2) / 6 * (x - 1)**2)
+
+    # Solve this using the Newton method.
+    # initial guess: we can choose alpha = 1 now that the function is well behaved around that point.
+    alpha = 1
+    residual = 1
+    iter = 0
+    while residual > tol and iter < maxiter:
+        fx = err(alpha)
+        fpx = err_prime(alpha)
+        alpha1 = alpha - fx / fpx
+        residual = abs(alpha1 - alpha)
+        alpha = alpha1
+        logger.debug(f"{iter} {alpha}, res: {residual}")
+        iter += 1
+    return alpha
+
+
+# =================================================================================
+
+def rotate_2d(mesh, x0, y0, theta):
+    """
+    Rotate a mesh around an axis aligned with z passing through (x0, y0, 0) by an angle theta.
+
+    Parameters:
+    ----------
+    mesh : exdat
+        the mesh to modify in place
+    x0 : float
+        x-coordinate of the center of rotation
+    y0 : float
+        y-coordinate of the center of rotation
+    theta : rotation angle
+    """
+
+    cost = cos(theta)
+    sint = sin(theta)
+    for el in mesh.elem:
+        x = el.pos[0, ...].copy()
+        y = el.pos[1, ...].copy()
+        el.pos[0, ...] = cost * x - sint * y
+        el.pos[1, ...] = sint * x + cost * y
+
+
+# =================================================================================
+
+
+def gen_circle(r: float, s: float, ns: int, no: int, curvature_fun=None, bl_fun=None, var=[2, 2, 1, 0, 0], nbc=1, bc=['W'], internal_bcs=True):
+    """
+    Generates a 2D circular mesh with a square at the center surrounded by an O mesh.
+
+    Parameters:
+    ----------
+    r : float
+        radius of the mesh
+    s : float
+        relative length of the diagonal of the centre square mesh to the circle diameter
+    ns : int
+        number of elements in the side of the square and in a quarter of the circumference of the circle
+    no : int
+        number of elements in the O mesh part in the radial direction
+    internal_bcs : bool
+        if True, builds the internal connectivity information of the elements
+    curvature_fun : [0, 1] -> [0, 1] function or None
+        Function defining the evolution of the relative curvature of the edges between the
+        straight side of the square and the circular edge.
+        Defaults to x -> sin(pi/2 x) if None. A constant 1 means concentric circles,
+        a constant zero means only straight edges inside the domain, but ideally you want
+        a continuous function with f(0) = 0 and f(1) = 1.
+    bl_fun : [0, 1] -> [0, 1] function or None
+        Function defining the evolution of the grid location between the edge of
+        the square at 0 and the edge of the circle at 1.
+        Defaults to an exponential grid spacing with a uniform spacing around the square if None.
+    var : integer list
+        Number of geometry, velocity, pressure, temperature and scalar variables to define in the mesh
+    bc : str list
+        boundary conditions to use for each field
+    internal_bcs : bool
+        whether to build internal connectivity information
+    """
+
+    # Generate five sub-meshes: one square and four quarter O meshes.
+    # Because of the symmetry, generate only one quarter and rotate it.
+
+    # dimension constants for mesh / elements generation
+    lr1 = [2, 2, 1]  # the mesh is 2D so lz1 = 1
+    ndim = 2
+
+    # default curvature function
+    if curvature_fun is None:
+        def curvature_fun(x):
+            return sin(0.5 * pi * x)**2
+            # return sqrt(1 - (1 - x)**2)  # this one also works
+
+    # default curvature and BL functions
+    if bl_fun is None:
+        # element size in the square
+        square_spacing = s * r * sqrt(2) / ns
+        # total length between the side of the square to the edge of the largest square fitting in the circle
+        width = 0.5 * r * (1 - s) * sqrt(2)
+        # we want the size of the first element to be `square_spacing`, but it's going to be stretched by the curvature function,
+        # so we need to find the length before stretching that gives the right length after stretching
+        def err_stretching(l, l_ref):
+            eta = curvature_fun(l/width)
+            total_width = r * (1 - 0.5 * sqrt(2) * s)
+            l1 = l / width * ((1 - eta) * width + eta * total_width)
+            return l1 - l_ref
+        # iterate using the secant method
+        l0 = 1
+        l1 = 0
+        f0 = err_stretching(l0, square_spacing)
+        eps = 1e-12  # this value shouldn't matter very much
+        maxit = 10000
+        iter = 0
+        while abs(f0) > eps and iter < maxit:
+            f1 = err_stretching(l1, square_spacing)
+            l2 = l1 - (l1 - l0) / (f1 - f0) * f1
+            l0 = l1
+            l1 = l2
+            f0 = f1
+            iter += 1
+
+        # geometric spacing progression factor using that first element size
+        alpha = exponential_refinement_parameter(l1, width, no)
+
+        def bl_fun(x):
+            eps = 1e-12
+            # (l0 + alpha*l0 + ... + alpha^j*l0)/ltot = (l0 * (alpha^j - 1)/(alpha - 1))/ltot
+            # with j = x*no
+            if abs(alpha - 1) < eps:
+                return x
+            else:
+                return l1 / width * (alpha**(x * no) - 1) / (alpha - 1)
+
+    # indexing in each block, 0-indexed
+    def elnum(i, j, ni, nj):
+        return i + ni * j
+
+    # external boundary conditions
+    def apply_bcs(mesh, ni, nj, bc0, bc1, bc2, bc3):
+        for ibc in range(nbc):
+            for i in range(ni):
+                # bottom face
+                mesh.elem[elnum(i, 0, ni, nj)].bcs[ibc, 0][0] = bc0[ibc]
+                # top face
+                mesh.elem[elnum(i, nj - 1, ni, nj)].bcs[ibc, 2][0] = bc2[ibc]
+            for j in range(nj):
+                # right face
+                mesh.elem[elnum(ni - 1, j, ni, nj)].bcs[ibc, 1][0] = bc1[ibc]
+                # left face
+                mesh.elem[elnum(0, j, ni, nj)].bcs[ibc, 3][0] = bc3[ibc]
+
+    # mesh connectivity for a structured grid, ignoring boundaries
+    def build_connectivity(mesh, ni, nj):
+        for i, j in product(range(ni), range(nj)):
+            el = mesh.elem[elnum(i, j, ni, nj)]
+            for ibc in range(nbc):
+                # bottom face
+                if j != 0:
+                    el.bcs[ibc, 0][0] = 'E'
+                    el.bcs[ibc, 0][1] = elnum(i, j, ni, nj) + 1
+                    el.bcs[ibc, 0][2] = 1
+                    el.bcs[ibc, 0][3] = elnum(i, j - 1, ni, nj) + 1
+                    el.bcs[ibc, 0][4] = 3
+                # right face
+                if i != ni - 1:
+                    el.bcs[ibc, 1][0] = 'E'
+                    el.bcs[ibc, 1][1] = elnum(i, j, ni, nj) + 1
+                    el.bcs[ibc, 1][2] = 2
+                    el.bcs[ibc, 1][3] = elnum(i + 1, j, ni, nj) + 1
+                    el.bcs[ibc, 1][4] = 4
+                # top face
+                if j != nj - 1:
+                    el.bcs[ibc, 2][0] = 'E'
+                    el.bcs[ibc, 2][1] = elnum(i, j, ni, nj) + 1
+                    el.bcs[ibc, 2][2] = 3
+                    el.bcs[ibc, 2][3] = elnum(i, j + 1, ni, nj) + 1
+                    el.bcs[ibc, 2][4] = 1
+                # left face
+                if i != 0:
+                    el.bcs[ibc, 3][0] = 'E'
+                    el.bcs[ibc, 3][1] = elnum(i, j, ni, nj) + 1
+                    el.bcs[ibc, 3][2] = 4
+                    el.bcs[ibc, 3][3] = elnum(i - 1, j, ni, nj) + 1
+                    el.bcs[ibc, 3][4] = 2
+
+    # Box 1: square
+    nel_square = ns * ns
+    box_square = exdat.exadata(ndim, nel_square, lr1, var, nbc=nbc)
+    # the characteristic distance is the diagonal
+    c = s * r * sqrt(2)
+    for i, j in product(range(ns), range(ns)):
+        # coordinates of corners
+        x0 = c * (i / ns - 0.5)
+        x1 = c * ((i + 1) / ns - 0.5)
+        y0 = c * (j / ns - 0.5)
+        y1 = c * ((j + 1) / ns - 0.5)
+        # make a new element
+        el = box_square.elem[elnum(i, j, ns, ns)]
+        el.pos[0, 0, :, 0] = x0
+        el.pos[0, 0, :, 1] = x1
+        el.pos[1, 0, 0, :] = y0
+        el.pos[1, 0, 1, :] = y1
+    # connectivity
+    if internal_bcs:
+        build_connectivity(box_square, ns, ns)
+    # boundary conditions: dummy BCs to signal that the faces should be glued
+    apply_bcs(box_square, ns, ns, ['con'], ['con'], ['con'], ['con'])
+
+    # Box 2: quarter-O
+    nel_o = no * ns
+    box_o = exdat.exadata(ndim, nel_o, lr1, var, nbc=nbc)
+    for i, j in product(range(no), range(ns)):
+        # angular positions, between -pi/4 and pi/4
+        alpha0 = 0.5 * pi * (j / ns - 0.5)
+        alpha1 = 0.5 * pi * ((j + 1) / ns - 0.5)
+        # angular positions along the square
+        beta0 = atan(2 * j / ns - 1)
+        beta1 = atan(2 * (j + 1) / ns - 1)
+        # distance from centre of circle to square edge
+        l_sa0 = 0.5 * c / cos(alpha0)
+        l_sa1 = 0.5 * c / cos(alpha1)
+        l_sb0 = 0.5 * c / cos(beta0)
+        l_sb1 = 0.5 * c / cos(beta1)
+        # distance from square edge to circle edge
+        l_c0 = r - l_sa0
+        l_c1 = r - l_sa1
+        # distance from square edge to edge of largest square fitting in the circle
+        l_h0 = 0.5 * sqrt(2) * r / cos(beta0) - l_sb0
+        l_h1 = 0.5 * sqrt(2) * r / cos(beta1) - l_sb1
+        # progression along the radius
+        eta0 = bl_fun(i / no)
+        eta1 = bl_fun((i + 1) / no)
+        # interpolation between l_h and l_c using curvature function
+        gamma0 = curvature_fun(eta0)
+        gamma1 = curvature_fun(eta1)
+        d_c00 = l_sa0 + eta0 * l_c0
+        d_c01 = l_sa0 + eta1 * l_c0
+        d_c10 = l_sa1 + eta0 * l_c1
+        d_c11 = l_sa1 + eta1 * l_c1
+        d_h00 = l_sb0 + eta0 * l_h0
+        d_h01 = l_sb0 + eta1 * l_h0
+        d_h10 = l_sb1 + eta0 * l_h1
+        d_h11 = l_sb1 + eta1 * l_h1
+        # angles from center
+        theta00 = gamma0 * alpha0 + (1 - gamma0) * beta0
+        theta01 = gamma1 * alpha0 + (1 - gamma1) * beta0
+        theta10 = gamma0 * alpha1 + (1 - gamma0) * beta1
+        theta11 = gamma1 * alpha1 + (1 - gamma1) * beta1
+        # distances of corners to center
+        d00 = gamma0 * d_c00 + (1 - gamma0) * d_h00
+        d01 = gamma1 * d_c01 + (1 - gamma1) * d_h01
+        d10 = gamma0 * d_c10 + (1 - gamma0) * d_h10
+        d11 = gamma1 * d_c11 + (1 - gamma1) * d_h11
+        # coordinates of corners
+        x00 = d00 * cos(theta00)
+        x01 = d01 * cos(theta01)
+        x10 = d10 * cos(theta10)
+        x11 = d11 * cos(theta11)
+        y00 = d00 * sin(theta00)
+        y01 = d01 * sin(theta01)
+        y10 = d10 * sin(theta10)
+        y11 = d11 * sin(theta11)
+        # make a new element
+        el = box_o.elem[elnum(i, j, no, ns)]
+        el.pos[0, 0, 0, 0] = x00
+        el.pos[0, 0, 0, 1] = x01
+        el.pos[0, 0, 1, 0] = x10
+        el.pos[0, 0, 1, 1] = x11
+        el.pos[1, 0, 0, 0] = y00
+        el.pos[1, 0, 0, 1] = y01
+        el.pos[1, 0, 1, 0] = y10
+        el.pos[1, 0, 1, 1] = y11
+    # connectivity
+    if internal_bcs:
+        build_connectivity(box_o, no, ns)
+    # boundary conditions: dummy BCs on the faces to be connected, external BC on the right face
+    apply_bcs(box_o, no, ns, ['con'], bc, ['con'], ['con'])
+
+    # copy the O box, rotate it to the other sides and merge it into the mesh
+    # right box
+    box_square.merge(box_o, ignore_all_bcs=not internal_bcs)
+    # top box
+    rotate_2d(box_o, 0, 0, 0.5 * pi)
+    box_square.merge(box_o, ignore_all_bcs=not internal_bcs)
+    # left box
+    rotate_2d(box_o, 0, 0, 0.5 * pi)
+    box_square.merge(box_o, ignore_all_bcs=not internal_bcs)
+    # bottom box
+    rotate_2d(box_o, 0, 0, 0.5 * pi)
+    box_square.merge(box_o, ignore_all_bcs=not internal_bcs)
+
+    return box_square

@@ -299,7 +299,7 @@ class exadata:
         return res
 
 
-    def merge(self, other, tol=1e-9, ignore_empty=True, ignore_all_bcs=False):
+    def merge(self, other, tol=1e-2, ignore_empty=True, ignore_all_bcs=False):
         """
         Merges another exadata into the current one and connects it
 
@@ -309,7 +309,7 @@ class exadata:
                 mesh to merge into self
 
         tol: float
-                maximum distance at which points are considered identical
+                maximum distance, relative to the smallest edge of neighbouring elements, at which faces are considered touching
 
         ignore_empty: bool
                 if True, the faces with an empty boundary condition ('') will be treated as internal faces and will not be merged.
@@ -373,11 +373,11 @@ class exadata:
                         # if the centers of the faces are close, connect them together
                         x0, y0, z0 = elem0.face_center(iface0)
                         x1, y1, z1 = elem1.face_center(iface1)
-                        dist2 = (x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2
-                        if dist2 <= tol ** 2:
+                        dist = np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
+                        dist_ref = min(elem0.smallest_edge(), elem1.smallest_edge())
+                        if dist <= tol * dist_ref:
                             # reconnect the periodic faces together (assumes that all fields are periodic)
                             if bc0 == bc1 == "P":
-
                                 iel_p0 = int(elem0.bcs[0, iface0][3]) - 1
                                 iel_p1 = int(elem1.bcs[0, iface1][3]) - 1
                                 iface_p0 = int(elem0.bcs[0, iface0][4]) - 1

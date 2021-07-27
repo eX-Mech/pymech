@@ -1143,6 +1143,13 @@ def rotate_2d(mesh, x0, y0, theta):
         y = el.pos[1, ...].copy()
         el.pos[0, ...] = cost * x - sint * y
         el.pos[1, ...] = sint * x + cost * y
+        # rotate 'm' curvature
+        for edge in range(12):
+            if el.ccurv[edge] == 'm':
+                x = el.curv[edge, 0]
+                y = el.curv[edge, 1]
+                el.curv[edge, 0] = cost * x - sint * y
+                el.curv[edge, 1] = sint * x + cost * y
 
 
 # =================================================================================

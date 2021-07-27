@@ -1386,6 +1386,12 @@ def gen_circle(r: float, s: float, ns: int, no: int, curvature_fun=None, bl_fun=
         build_connectivity(box_o, no, ns)
     # boundary conditions: dummy BCs on the faces to be connected, external BC on the right face
     apply_bcs(box_o, no, ns, ['con'], bc, ['con'], ['con'])
+    # add circular curvature for external faces
+    for j in range(ns):
+        el = box_o.elem[elnum(no - 1, j, no, ns)]
+        edge = 1  # right edge
+        el.ccurv[edge] = 'C'
+        el.curv[edge, 0] = r
 
     # copy the O box, rotate it to the other sides and merge it into the mesh
     # right box

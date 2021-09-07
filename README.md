@@ -23,8 +23,9 @@ curl -LO https://github.com/eX-Mech/pymech/raw/master/tests/nek/channel3D_0.f000
 Fire up a Python / IPython console and execute:
 
 ```py
-import matplotlib as pyplot
+import matplotlib.pyplot as plt
 import pymech as pm
+
 ds = pm.open_dataset('channel3D_0.f00001')
 ds.mean(['x', 'z']).ux.plot()
 plt.show()

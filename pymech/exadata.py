@@ -10,29 +10,29 @@ from pymech.log import logger
 
 # ==============================================================================
 class datalims:
-    """A class containing the extrema of all quantities stored in the mesh"""
+    """A class containing the extrema of all quantities stored in the mesh
 
-    def __init__(self, nb_var, elements):
-        #                    x,y,z   min,max
-        self.pos = np.zeros((3, 2))
-        #                    u,v,w   min,max
-        self.vel = np.zeros((3, 2))
-        #                    p       min,max
-        self.pres = np.zeros((nb_var[2], 2))
-        #                    T       min,max
-        self.temp = np.zeros((nb_var[3], 2))
-        #                    s_i     min,max
-        self.scal = np.zeros((nb_var[4], 2))
-        #
+    Attributes
+    ----------
+    - pos:  x,y,z   min,max
+    - vel:  u,v,w   min,max
+    - pres: p       min,max
+    - temp: T       min,max
+    - scal: s_i     min,max
+
+    """
+
+    def __init__(self, elements):
         self._variables = ("pos", "vel", "pres", "temp", "scal")
 
         aggregated_lims = reduce(self._lims_aggregator, elements)
         for var in self._variables:
             agg_lims_var = aggregated_lims[var]
-            # set minimum
-            getattr(self, var)[:, 0] = agg_lims_var[0]
-            # set maximum
-            getattr(self, var)[:, 1] = agg_lims_var[1]
+            # set minimum, maximum of variables as a nested tuple
+            setattr(self, var, tuple(zip(*agg_lims_var)))
+
+        # prevent further mutation of attributes via __setattr__
+        self._initialized = True
 
     def __repr__(self):
         return dedent(
@@ -41,6 +41,12 @@ class datalims:
           * y:         {self.pos[1]}
           * z:         {self.pos[2]}"""
         )
+
+    def __setattr__(self, name, value):
+        if hasattr(self, "_initialized") and self._initialized:
+            raise AttributeError(f"Setting attribute {name} is not permitted")
+        else:
+            super().__setattr__(name, value)
 
     def _lims_per_element(self, elem):
         """Get local limits for a given element."""
@@ -186,7 +192,7 @@ class exadata:
 
     @property
     def lims(self):
-        return datalims(self.var, self.elem)
+        return datalims(self.elem)
 
     def check_connectivity(self):
         """Check element connectivity, specifically for matching boundary

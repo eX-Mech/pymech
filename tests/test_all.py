@@ -45,9 +45,9 @@ def test_readnek():
     Dimensions:    3
     Precision:     4 bytes
     Mesh limits:
-      * x:         [0.         6.28318548]
-      * y:         [-1.  1.]
-      * z:         [0.         3.14159274]
+      * x:         (0.0, 6.2831854820251465)
+      * y:         (-1.0, 1.0)
+      * z:         (0.0, 3.1415927410125732)
     Time:
       * time:      0.2
       * istep:     10

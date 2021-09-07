@@ -27,6 +27,10 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+### Changed
+
+- Attributes of {class}`pymech.exadata.datalims` are now immutable tuples.
+
 ## [1.4.1] - 2021-05-07
 
 Backwards compatible release with a lot of housekeeping and some usability

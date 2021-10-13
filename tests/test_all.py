@@ -386,6 +386,119 @@ def test_writere2_3d():
         npt.assert_array_equal(elw.ccurv, el.ccurv)
 
 
+def test_generate_internal_bcs():
+    import pymech.neksuite as ns
+    import pymech.meshtools as mt
+
+    # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
+    # The idea is to reconstruct the internal BCs of the re2 and compare with the .rea. They should be identical.
+    frea = './tests/nek/box3d.rea'
+    fre2 = './tests/nek/box3d.re2'
+    meshrea = ns.readrea(frea)
+    meshre2 = ns.readre2(fre2)
+    nconnect = mt.generate_internal_bcs(meshre2)
+    assert nconnect == 54  # This is a 3x3x3 box
+    for (ela, el2) in zip(meshrea.elem, meshre2.elem):
+        npt.assert_array_equal(el2.bcs, ela.bcs)
+    assert meshre2.check_connectivity()
+
+
+def test_delete_internal_bcs():
+    import pymech.neksuite as ns
+    import pymech.meshtools as mt
+
+    # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
+    frea = './tests/nek/box3d.rea'
+    fre2 = './tests/nek/box3d.re2'
+    meshrea = ns.readrea(frea)
+    meshre2 = ns.readre2(fre2)
+    ndelete = mt.delete_internal_bcs(meshrea)
+    assert ndelete == 108  # This is a 3x3x3 box, and each connection is deleted twice, one for each connected element
+    for (ela, el2) in zip(meshrea.elem, meshre2.elem):
+        npt.assert_array_equal(el2.bcs, ela.bcs)
+    assert meshrea.check_connectivity()
+
+
+def test_extrude():
+    import pymech.neksuite as ns
+    import pymech.meshtools as mt
+    import numpy as np
+
+    fname = "./tests/nek/2D_section_R360.re2"
+    nz = 4
+    z = np.linspace(-1, 1, nz + 1)
+    mesh = ns.readre2(fname)
+    mesh3D = mt.extrude(mesh, z)
+
+    assert mesh3D.ndim == 3
+    assert mesh3D.nel == mesh.nel * nz
+    # curves duplicated on each side of each element
+    assert mesh3D.ncurv == mesh.ncurv * nz * 2
+    # check new periodic BCs in particular
+    assert mesh3D.check_connectivity()
+
+def test_extrude_refine():
+    import numpy as np
+    import pymech.neksuite as ns
+    import pymech.meshtools as mt
+    from itertools import product
+
+    fnameI = './tests/nek/box2d.re2'
+    mesh2D = ns.readre2(fnameI)
+    mt.generate_internal_bcs(mesh2D)
+
+    zmin = 0
+    zmax = 6
+    n = 16
+    bc1='P'
+    bc2='P'
+    imesh_high=0
+    funpar = [0.5, 1.5]
+    def fun_line(xpos, ypos, rlim):
+        return ypos - rlim
+    fun = [fun_line, fun_line]
+    z = np.linspace(zmin, zmax, n + 1)
+
+    # test both with and without internal connectivity
+    mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high, internal_bcs=False)
+    assert mesh3D.check_connectivity()
+    # check that we haven't introduced any dummy conditions
+    for el, iface in product(mesh3D.elem, range(6)):
+        assert el.bcs[0, iface][0] != 'con'
+        assert el.bcs[0, iface][0] != 'E'
+
+    mesh3D = mt.extrude_refine(mesh2D, z, bc1=bc1, bc2=bc2, fun=fun, funpar=funpar, imesh_high=imesh_high, internal_bcs=True)
+    for el, iface in product(mesh3D.elem, range(6)):
+        assert el.bcs[0, iface][0] != 'con'
+
+    assert mesh3D.ndim == 3
+    assert mesh3D.nel == 336
+    assert mesh3D.check_connectivity()
+    assert mesh3D.check_bcs_present()
+
+def test_gen_circle():
+    import pymech.meshtools as mt
+
+    # try a tiny mesh
+    mesh = mt.gen_circle(1, 0.5, 2, 2)
+    assert mesh.check_connectivity()
+    assert mesh.check_bcs_present()
+    assert mesh.nel == 20
+
+    # one with ns > no
+    mesh = mt.gen_circle(1, 0.5, 9, 2)
+    assert mesh.check_connectivity()
+    assert mesh.check_bcs_present()
+    assert mesh.nel == 153
+
+    # and a big one, without internal BCs
+    mesh = mt.gen_circle(1, 0.1, 10, 200, internal_bcs=False)
+    assert mesh.check_connectivity()
+    assert mesh.nel == 8100
+
+
+
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

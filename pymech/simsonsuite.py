@@ -1,7 +1,7 @@
 """Module for reading and writing SIMSON files"""
 import struct
 import numpy as np
-import pymech.exadata as exdat
+from pymech.core import HexaData
 
 
 __all__ = ("readdns", "readplane")
@@ -166,7 +166,7 @@ def readdns(fname):
     )
     #
     # initialize data structure
-    data = exdat.exadata(ndim, 1, lr1, var)
+    data = HexaData(ndim, 1, lr1, var)
     data.time = time
     data.wdsz = wdsz
     if emode == "<":

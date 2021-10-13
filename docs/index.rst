@@ -25,7 +25,7 @@ functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 Installation
 ------------
 
-Pymech requires Python version 3.6 and above. For most purposes, we recommend
+Pymech requires Python version 3.7 and above. For most purposes, we recommend
 creating a `virtual environment`_ and then running::
 
    pip install pymech
@@ -42,7 +42,7 @@ Optional dependencies can be installed as follows::
    :maxdepth: 2
    :caption: User Guide
 
-   exadata.rst
+   core.rst
    neksuite.rst
    simsonsuite.rst
    vtksuite.rst
@@ -55,6 +55,7 @@ Optional dependencies can be installed as follows::
 
    internals
    tests.rst
+   deprecations.rst
    changelog.md
    contributing.md
    thanks.md

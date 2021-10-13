@@ -1,4 +1,19 @@
-"""Dummy module for compatibility with pymech <= 1.4.1"""
+"""Dummy module for compatibility with pymech version < 1.5.0
+
+
+.. class:: pymech.exadata.datalims
+
+   Use :class:`pymech.core.DataLims` instead
+
+.. class:: pymech.exadata.elem
+
+   Use :class:`pymech.core.Elem` instead
+
+.. class:: pymech.exadata.exadata
+
+   Use :class:`pymech.core.HexaData` instead
+
+"""
 from warnings import warn
 
 from pymech.core import DataLims as datalims  # noqa

@@ -5,7 +5,7 @@ import io
 import struct
 import numpy as np
 import sys
-from typing import List, Optional
+from typing import Tuple, Optional
 from pydantic.dataclasses import dataclass, ValidationError
 
 import pymech.exadata as exdat
@@ -22,7 +22,7 @@ class Header:
     # get word size: single or double precision
     wdsz: int
     # get polynomial order
-    orders: List[int]
+    orders: Tuple[int, ...]
     # get number of elements
     nb_elems: int
     # get number of elements in the file
@@ -47,7 +47,7 @@ class Header:
     # get number of physical dimensions
     nb_dims: Optional[int] = None
     # get number of variables
-    nb_vars: Optional[List[int]] = None
+    nb_vars: Optional[Tuple[int, ...]] = None
 
     def __post_init_post_parse__(self):
         # get word size: single or double precision
@@ -68,7 +68,7 @@ class Header:
             self.nb_dims = 2 + int(orders[2] > 1)
 
         if not self.variables and not self.nb_vars:
-            raise ValidationError("Both variables and nb_vars cannot be None")
+            raise ValidationError("Both variables and nb_vars cannot be None", self)
         elif self.variables:
             self.nb_vars = self._variables_to_nb_vars()
         elif self.nb_vars:
@@ -76,42 +76,42 @@ class Header:
 
         logger.debug(f"Variables: {self.variables}, nb_vars: {self.nb_vars}")
 
-    def _variables_to_nb_vars(self) -> List[int]:
+    def _variables_to_nb_vars(self) -> Optional[Tuple[int, ...]]:
         # get variables [XUPTS[01-99]]
         variables = self.variables
-        nb_vars = [0] * 5
-        for v in variables:
-            if v == "X":
-                nb_vars[0] = self.nb_dims
-            elif v == "U":
-                nb_vars[1] = self.nb_dims
-            elif v == "P":
-                nb_vars[2] = 1
-            elif v == "T":
-                nb_vars[3] = 1
-            elif v == "S":
-                # For example: variables = 'XS44'
-                index_s = variables.index("S")
-                nb_scalars = int(variables[index_s + 1 :])
-                nb_vars[4] = nb_scalars
+        nb_dims = self.nb_dims
+
+        if not variables:
+            logger.error("Failed to convert variables to nb_vars")
+            return None
+
+        if not nb_dims:
+            logger.error("Unintialized nb_dims")
+            return None
+
+        def nb_scalars():
+            index_s = variables.index("S")
+            return int(variables[index_s + 1 :])
+
+        nb_vars = (
+            nb_dims if "X" in variables else 0,
+            nb_dims if "U" in variables else 0,
+            1 if "P" in variables else 0,
+            1 if "T" in variables else 0,
+            nb_scalars() if "S" in variables else 0,
+        )
 
         return nb_vars
 
-    def _nb_vars_to_variables(self) -> str:
-        variables = ""
-        if self.nb_vars[0] > 0:
-            variables += "X"
-        if self.nb_vars[1] > 0:
-            variables += "U"
-        if self.nb_vars[2] > 0:
-            variables += "P"
-        if self.nb_vars[3] > 0:
-            variables += "T"
-        if self.nb_vars[4] > 0:
-            # TODO: check if header for scalars are written with zeros filled as S01
-            variables += "S{:02d}".format(self.nb_vars[4])
+    def _nb_vars_to_variables(self) -> Optional[str]:
+        nb_vars = self.nb_vars
+        if not nb_vars:
+            logger.error("Failed to convert nb_vars to variables")
+            return None
 
-        return variables
+        str_vars = ("X", "U", "P", "T", f"S{nb_vars[4]:02d}")
+        variables = (str_vars[i] if nb_vars[i] > 0 else "" for i in range(5))
+        return "".join(variables)
 
     def as_bytestring(self) -> bytes:
         header = "#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s" % (
@@ -137,7 +137,10 @@ def read_header(fp: io.BufferedReader) -> Header:
     """
     header = fp.read(132).split()
     logger.debug(b"Header: " + b" ".join(header))
-    return Header(header[1], header[2:5], *header[5:11], variables=header[11])
+    if len(header) < 12:
+        raise IOError("Header of the file was too short.")
+
+    return Header(header[1], header[2:5], *header[5:12])
 
 
 # ==============================================================================
@@ -313,7 +316,7 @@ def writenek(fname, data):
         )
 
     def correct_endianness(a):
-        """ Return the array with the requested endianness"""
+        """Return the array with the requested endianness"""
         if byteswap:
             return a.byteswap()
         else:
@@ -1116,7 +1119,10 @@ def readre2(fname):
     for icurv in range(ncurv):
         # interpret the data
         curv = np.frombuffer(
-            buf, dtype=emode + realtype, count=ncparam, offset=icurv * ncparam * wdsz
+            buf,
+            dtype=emode + realtype,
+            count=ncparam,
+            offset=icurv * ncparam * wdsz,
         )
         iel = int(curv[0]) - 1
         iedge = int(curv[1]) - 1
@@ -1235,7 +1241,7 @@ def writere2(fname, data):
         )
 
     def correct_endianness(a):
-        """ Return the array with the requested endianness"""
+        """Return the array with the requested endianness"""
         if byteswap:
             return a.byteswap()
         else:

@@ -17,7 +17,13 @@ __all__ = ("readnek", "writenek", "readre2", "readrea", "writere2", "writerea")
 
 @dataclass
 class Header:
-    """Dataclass for Nek5000 field file header."""
+    """Dataclass for Nek5000 field file header. This relies on the package
+    pydantic_ and its ability to do type-checking and type-coercion of the
+    header metadata.
+
+    .. _pydantic: https://pydantic-docs.helpmanual.io/
+
+    """
 
     # get word size: single or double precision
     wdsz: int

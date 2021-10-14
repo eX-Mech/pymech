@@ -1,5 +1,5 @@
 [![Tests Status](https://github.com/eX-Mech/pymech/actions/workflows/tests.yml/badge.svg)](https://github.com/eX-Mech/pymech/actions/workflows/tests.yml)
-[![Coverage Status](https://coveralls.io/repos/github/eX-Mech/pymech/badge.png?branch=master)](https://coveralls.io/github/eX-Mech/pymech?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/eX-Mech/pymech/badge.svg)](https://coveralls.io/github/eX-Mech/pymech)
 [![Documentation Status](https://readthedocs.org/projects/pymech/badge/?version=latest)](http://pymech.readthedocs.org/en/stable/)
 
 # pymech

@@ -241,7 +241,9 @@ def readdns(fname):
 
 # ==============================================================================
 def readplane(fname):
-    """A function for reading binary data from SIMSON's (pxyst) plane files
+    """A function for reading binary data from SIMSON's pxyst_ plane files
+
+    .. _pxyst: https://github.com/KTH-Nek5000/SIMSON/tree/master/pxyst
 
     Parameters
     ----------

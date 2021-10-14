@@ -44,7 +44,40 @@ Optional dependencies can be installed as follows::
 
 .. _virtual environment: https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments
 
--------------------------------------------------------------------------------
+Install using conda / mamba
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In certain cases, typically:
+
+- in an OS where at least Python version |py_min_version| is unavailable, or
+- to install ``mayavi`` to make use of :mod:`pymech.vtksuite`, or
+- to use PyPy_ instead of CPython,
+
+a simple ``pip install pymech`` may not cut it.  Then, it is recommended to use conda_ (or
+mamba_) to set up the Python environment first. To install Pymech with a Python
+interpreter of your choice:
+
+.. tab:: PyPy
+
+   ::
+
+      conda create -n my-env -c conda-forge pypy pip xarray pydantic
+      conda activate my-env
+      pypy -m pip install pymech
+
+.. tab:: CPython
+
+   ::
+
+      conda create -n my-env -c conda-forge python pip
+      conda activate my-env
+      python -m pip install pymech
+
+.. _PyPy: https://www.pypy.org/
+.. _conda: https://docs.conda.io/projects/conda/en/latest/user-guide/index.html
+.. _mamba: https://mamba.readthedocs.io/en/latest/installation.html
+
+----------------------------------------------------------------------------
 
 .. toctree::
    :maxdepth: 2

@@ -37,27 +37,33 @@ master_doc = "index"
 version = _meta.get("Version")
 release = ".".join(version.split(".")[:3])
 
+_py_min_version = _meta.get("Requires-Python").split(">=")[-1]
+
 rst_prolog = f"""
 .. |author| replace:: {author}
 .. |today| replace:: {_today}
+.. |py_min_version| replace:: {_py_min_version}
 """
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
+
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     "myst_nb",
     "sphinx.ext.autodoc",
-    #  'sphinx.ext.autosummary',
-    "sphinx.ext.doctest",
+    # 'sphinx.ext.autosummary',
+    # "sphinx.ext.doctest",
     "sphinx.ext.todo",
-    "sphinx.ext.coverage",
-    "sphinx.ext.mathjax",
+    #  "sphinx.ext.coverage",
+    #  "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",  # Numpy-style docstrings
-    "sphinx.ext.ifconfig",
+    #  "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
+    "sphinx_copybutton",
+    "sphinx_inline_tabs",
 ]
 
 source_suffix = {
@@ -83,7 +89,7 @@ pygments_style = "sphinx"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -102,3 +108,4 @@ autodoc_mock_imports = ["tvtk", "pymech._version"]
 # -- MyST options ------------------------------------------------------------
 
 myst_heading_anchors = 2
+myst_enable_extensions = ["amsmath", "dollarmath", "colon_fence"]

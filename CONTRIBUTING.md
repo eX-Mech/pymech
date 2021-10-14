@@ -2,45 +2,24 @@
 
 Contributions are welcome, and they are greatly appreciated! Every
 little bit helps, and [credit](thanks.md) will always be given.
-
 You can contribute in many ways:
 
 ## Types of Contributions
 
-### Report Bugs
+### Report Bugs and Propose Features
 
-Report bugs at <https://github.com/eX-Mech/pymech/issues>.
+```{note}
+First, go to [issue tracker][] and see if any of the existing issues sounds familiar
+```
 
-If you are reporting a bug, please include:
+If you are **reporting a bug**, please include:
 
   - Your operating system name and version.
   - Any details about your local setup that might be helpful in
     troubleshooting.
   - Detailed steps to reproduce the bug.
 
-### Fix Bugs
-
-Look through the GitHub issues for bugs. Anything tagged with "bug" and
-"help wanted" is open to whoever wants to implement it.
-
-### Implement Features
-
-Look through the GitHub issues for features. Anything tagged with
-"enhancement" and "help wanted" is open to whoever wants to implement
-it.
-
-### Write Documentation
-
-Pymech could always use more documentation,
-whether as part of the official Pymech docs,
-in docstrings, or even on the web in blog posts, articles, and such.
-
-### Submit Feedback
-
-The best way to send feedback is to file an issue at
-<https://github.com/eX-Mech/pymech/issues>.
-
-If you are proposing a feature:
+If you are **proposing a feature**:
 
   - Explain in detail how it would work.
   - Keep the scope as narrow as possible, to make it easier to
@@ -48,55 +27,35 @@ If you are proposing a feature:
   - Remember that this is a volunteer-driven project, and that
     contributions are welcome :)
 
-## Get Started!
+### Fix Bugs
 
-Ready to contribute? Here's how to set up Pymech for local development.
+Look through the [issue tracker][] for bugs. Anything tagged with "bug" and
+"help wanted" is open to whoever wants to implement it.
 
-1. Fork the `pymech` repo on GitHub.
-2. Clone your fork locally:
+### Implement Features
 
-        $ git clone git@github.com:your_name_here/pymech.git
+Look through the [issue tracker][] for feature requests. Anything tagged with
+"enhancement" and "help wanted" is open to whoever wants to implement it.
 
-3. Install your local copy into a virtualenv. This is how you set up your fork for local development:
+### Write Documentation
 
-        $ cd pymech/
-        $ python -m venv venv
-        $ source venv/bin/activate
-        $ pip install -e ".[dev]"
-        $ pre-commit install
+Pymech could always use more documentation, whether as part of the official
+Pymech docs, in docstrings, as tutorials, or even on the web in blog posts,
+articles, and such.
 
-4. Create a branch for local development:
+```{hint}
+The latest documentation built directly from unreleased version is visible at
+<https://pymech.readthedocs.io/en/latest/>
+```
 
-        $ git checkout -b name-of-your-bugfix-or-feature
+```{note}
+If any of the above seems interesting, take a look how to {ref}`get-started`
+```
 
-    Now you can make your changes locally.
+## Seek support
 
-5. When you're done making changes, check that your changes pass the linter
-   `flake8` as well as the tests:
+Need help? You are welcome to contact us and post your questions at the instant
+messaging Matrix chat room,
+[#ex-mech-help:matrix.org](https://matrix.to/#/#ex-mech-help:matrix.org)
 
-        $ flake8 pymech
-        $ pytest
-
-    To get `flake8`, just pip install it into your virtualenv.
-
-6. Commit your changes and push your branch to GitHub. The pre-commit hooks
-   installed in step 2 would automatically ensure that the changes are
-   formatted:
-
-        $ git add .
-        $ git commit -m "Your detailed description of your changes."
-        $ git push origin name-of-your-bugfix-or-feature
-
-7.  Submit a pull request through the GitHub website.
-
-## Pull Request Guidelines
-
-Before you submit a pull request, check that it meets these guidelines:
-
-1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring.
-3. The pull request should pass the CI. Check
-   <https://travis-ci.org/eX-Mech/pymech/pull_requests> and
-   <https://github.com/eX-Mech/pymech/actions>
-   and make sure that the tests pass for all supported Python versions.
+[issue tracker]: https://github.com/eX-Mech/pymech/issues

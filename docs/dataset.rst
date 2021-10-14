@@ -1,7 +1,7 @@
 .. _dataset:
 
-dataset.py
-==========
+pymech.dataset
+==============
 
 Contents of dataset.py
 ----------------------

@@ -57,7 +57,7 @@ def exa2vtk(field, downsample=False):
 
     Parameters
     ----------
-    field : exadata
+    field : :class:`pymech.core.HexaData`
             a dataset in nekdata format
     downsample : bool
             flag T/F
@@ -182,7 +182,7 @@ def writevtk(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
+    data : :class:`pymech.core.HexaData`
             data organised after reading a file
 
     """

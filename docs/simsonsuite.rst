@@ -1,7 +1,7 @@
 .. _simsonsuite:
 
-simsonsuite.py
-==============
+pymech.simsonsuite
+==================
 
 This module contains the functions used to interact with *Simson* files.
 The :ref:`simsonsuite-contents` are reported at the bottom of this page.

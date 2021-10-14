@@ -29,7 +29,7 @@ Security in case of vulnerabilities.
 
 ### Changed
 
-- Attributes of {class}`pymech.exadata.datalims` are now immutable tuples.
+- Attributes of {class}`pymech.core.Dataset` are now immutable tuples.
 
 ## [1.4.1] - 2021-05-07
 
@@ -75,7 +75,7 @@ improvements.  This will be the last release to support Python 3.6 and Xarray <
   metadata -- in `writenek`
 
 ### Added
-- Function `exadata.merge` to merge meshes together and build proper connectivity
+- {meth}`pymech.core.Hexadata.merge` to merge meshes together and build proper connectivity
 
 ## [1.3.2] - 2020-09-23
 
@@ -103,7 +103,7 @@ writing
 
 ### Changed
 - Faster `readnek` function uses less for loops
-- Lazy load `exadata` limits as properties
+- Lazy load {class}`pymech.core.DataLims` limits as properties
 - Autogenerate documentation using sphinx extension `autodoc`
 
 ## [1.2.0] - 2020-03-18

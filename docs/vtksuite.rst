@@ -1,7 +1,7 @@
 .. _vtksuite:
 
-vtksuite.py
-===========
+pymech.vtksuite
+===============
 
 This Python module contains one routine to convert from exadata to vtk data
 structure.

@@ -1,0 +1,6 @@
+Deprecations
+============
+
+.. toctree::
+
+   exadata.rst

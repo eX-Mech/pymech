@@ -16,20 +16,20 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Cache pip requirements
       id: pip-cache
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       with:
         path: ${{ env.PIP_CACHE_DIR }}
         key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.*') }}
@@ -43,14 +43,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install coveralls
         pip install -e .[tests]
 
     - name: Run tests
-      run: pytest -s -v --cov -n 4
+      run: pytest -s -v -n 4
 
-    # - name: Upload coverage
-    #   if: ${{ success() }}
-    #   run: coveralls
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload coverage
+      if: ${{ success() && matrix.python-version == '3.7' }}
+      run: |
+        pip install coveralls
+        coveralls --service=github
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

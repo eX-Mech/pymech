@@ -1,7 +1,7 @@
 .. _neksuite:
 
-neksuite.py
-===========
+pymech.neksuite
+===============
 
 This module contains the functions used to interact with *Nek5000* files.
 The :ref:`neksuite-contents` are reported at the bottom of this page.

@@ -1,7 +1,7 @@
 .. _core:
 
-core.py
-=======
+pymech.core
+===========
 
 This module contains the classes for the data structures used by
 :ref:`neksuite` and :ref:`simsonsuite`.

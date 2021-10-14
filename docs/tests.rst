@@ -3,31 +3,24 @@
 Tests
 =====
 
-To test locally, set up a virtual environment and then::
+To test locally, :ref:`set up a virtual environment as shown here
+<get-started>`. After that, install Pymech along with test dependencies and run
+the tests::
 
-  git clone https://github.com/eX-Mech/pymech
-  cd pymech/
-  pip install -e '.[tests]'
-  pytest -s -v
+    pip install -e '.[tests]'
+    pytest -s -v
 
 
 Continuous Integration
 ----------------------
 
-Tests are run automatically at every `push` to the repository.
+Tests are run automatically at every `push` and `pull request` to the repository.
 
-The tests are run on TravisCI_ for Python versions between 3.6 and 3.8.
+The tests are run on GitHub_ for Python versions between |py_min_version| and up.
 
-.. image:: https://travis-ci.org/eX-Mech/pymech.svg?branch=master
-   :target: https://travis-ci.org/eX-Mech/pymech
-
-The code coverage is also automatically checked by Coverall_.
-
-.. image:: https://coveralls.io/repos/github/eX-Mech/pymech/badge.svg?branch=master
-   :target: https://coveralls.io/github/eX-Mech/pymech
-
+The code coverage is also logged at Coveralls_.
 
 .. External links:
 
-.. _TravisCI: https://travis-ci.org/eX-Mech/pymech
-.. _Coverall: https://coveralls.io/github/eX-Mech/pymech
+.. _GitHub: https://github.com/eX-Mech/pymech/actions
+.. _Coveralls: https://coveralls.io/github/eX-Mech/pymech

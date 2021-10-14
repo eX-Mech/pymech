@@ -16,7 +16,7 @@ Pymech can be used for reading, editing and writing Nek5000_ and SIMSON_ meshes
 and output files. For a detailed tutorial refer to :ref:`usage
 <Usage.ipynb#usage>`.
 
-The data structure is defined by the :py:class:`pymech.exadata.exadata` class, found in :ref:`exadata`.
+The data structure is defined by the :py:class:`pymech.core.HexaData` class, found in :ref:`exadata`.
 The functions for manipulating Nek5000_ files are in :ref:`neksuite`, while the
 functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 
@@ -25,7 +25,7 @@ functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 Installation
 ------------
 
-Pymech requires Python version 3.7 and above. For most purposes, we recommend
+Pymech requires Python version |py_min_version| and above. For most purposes, we recommend
 creating a `virtual environment`_ and then running::
 
    pip install pymech
@@ -33,6 +33,14 @@ creating a `virtual environment`_ and then running::
 Optional dependencies can be installed as follows::
 
    pip install "pymech[full]"
+
+.. note::
+
+   Specifying ``[full]`` would also install optional dependencies, namely:
+
+   .. literalinclude:: ../setup.cfg
+      :start-at: full =
+      :end-before: docs =
 
 .. _virtual environment: https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments
 
@@ -46,20 +54,18 @@ Optional dependencies can be installed as follows::
    neksuite.rst
    simsonsuite.rst
    vtksuite.rst
-   dataset
+   dataset.rst
    usage.ipynb
 
 .. toctree::
    :maxdepth: 1
    :caption: Reference
 
-   internals
-   tests.rst
    deprecations.rst
+   dev.md
    changelog.md
    contributing.md
    thanks.md
-   release.rst
 
 .. Indices and tables
 

@@ -238,11 +238,12 @@ class HexaData:
         """Check element connectivity, specifically for matching boundary
         conditions and geometry. Errors are reported as logging messages.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         tol : float
             relative tolerance (compared to the smallest edge of adjacent elements)
             for detecting whether faces are at the same location
+
         """
         dim = self.ndim
         err = False

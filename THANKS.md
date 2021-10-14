@@ -10,3 +10,4 @@
 ## Contributors
 
 - Timofey Mukha [@timofeymukha](https://github.com/timofeymukha)
+- Vitor Kleine

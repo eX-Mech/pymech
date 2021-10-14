@@ -1,6 +1,6 @@
 [![Tests Status](https://github.com/eX-Mech/pymech/actions/workflows/tests.yml/badge.svg)](https://github.com/eX-Mech/pymech/actions/workflows/tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/eX-Mech/pymech/badge.png?branch=master)](https://coveralls.io/github/eX-Mech/pymech?branch=master)
-[![Documentation Status](https://readthedocs.org/projects/pymech/badge/?version=latest)](http://pymech.readthedocs.org/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/pymech/badge/?version=latest)](http://pymech.readthedocs.org/en/stable/)
 
 # pymech
 
@@ -10,7 +10,7 @@ A Python suite of routines for *Nek5000* and *Simson*. Install with:
 pip install pymech
 ```
 
-Read the full documentation at [Pymech doc](http://pymech.readthedocs.io).
+Read the full documentation at [Pymech doc](http://pymech.readthedocs.io/en/stable).
 
 ## Getting started
 
@@ -33,13 +33,13 @@ plt.show()
 
 You should see something like
 
-![](https://pymech.readthedocs.io/en/latest/_images/usage_37_1.png)
+![](https://pymech.readthedocs.io/en/stable/_images/usage_37_1.png)
 
 For an overview of how to use pymech, [follow the usage
-documentation](https://pymech.readthedocs.io/en/latest/usage.html).
+documentation](https://pymech.readthedocs.io/en/stable/usage.html).
 
 ## Contributing
 
 Found something that does not work? Want to add a new feature to pymech? Have a
 look at [contributing
-guidelines](https://pymech.readthedocs.io/en/latest/contributing.html).
+guidelines](https://pymech.readthedocs.io/en/stable/contributing.html).

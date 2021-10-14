@@ -43,6 +43,11 @@ Pymech could always use more documentation, whether as part of the official
 Pymech docs, in docstrings, as tutorials, or even on the web in blog posts,
 articles, and such.
 
+```{hint}
+The latest documentation built directly from unreleased version is visible at
+<https://pymech.readthedocs.io/en/latest/>
+```
+
 ```{note}
 If any of the above seems interesting, take a look how to {ref}`get-started`
 ```

@@ -1,4 +1,4 @@
-"""Module for converting exadata objects to vtk"""
+"""Module for converting :class:`pymech.core.HexaData` objects to vtk"""
 from itertools import product
 from pathlib import Path
 
@@ -22,7 +22,7 @@ __all__ = ("exa2vtk", "writevtk")
 
 # ==============================================================================
 def exa2vtk(field, downsample=False):
-    """A function for converting exadata to `Traited VTK`_ dataset. The
+    """A function for converting :class:`pymech.core.HexaData` to `Traited VTK`_ dataset. The
     returned dataset can be manipulated with libraries which accept a VTK
     object, for example Mayavi_.
 

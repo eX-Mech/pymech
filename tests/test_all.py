@@ -41,7 +41,7 @@ def test_readnek():
     assert (field.time - 0.2) < 1e-3
     representation = dedent(
         """\
-    <pymech.exadata.exadata>
+    <pymech.core.HexaData>
     Dimensions:    3
     Precision:     4 bytes
     Mesh limits:

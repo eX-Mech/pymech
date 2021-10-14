@@ -16,7 +16,7 @@ Pymech can be used for reading, editing and writing Nek5000_ and SIMSON_ meshes
 and output files. For a detailed tutorial refer to :ref:`usage
 <Usage.ipynb#usage>`.
 
-The data structure is defined by the :py:class:`pymech.core.HexaData` class, found in :ref:`exadata`.
+The data structure is defined by the :py:class:`pymech.core.HexaData` class.
 The functions for manipulating Nek5000_ files are in :ref:`neksuite`, while the
 functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 

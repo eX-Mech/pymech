@@ -1,7 +1,7 @@
 .. _exadata:
 
-exadata.py
-==========
+pymech.exadata
+===============
 
 .. deprecated:: 1.5.0
    use :mod:`pymech.core` instead

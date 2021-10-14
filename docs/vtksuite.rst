@@ -3,8 +3,8 @@
 pymech.vtksuite
 ===============
 
-This Python module contains one routine to convert from exadata to vtk data
-structure.
+This Python module contains one routine to convert from
+:class:`pymech.core.HexaData` to a VTK object.
 
 .. warning::
 

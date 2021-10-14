@@ -8,7 +8,7 @@ import sys
 from typing import Tuple, Optional
 from pydantic.dataclasses import dataclass, ValidationError
 
-import pymech.exadata as exdat
+from pymech.core import HexaData
 from pymech.log import logger
 
 
@@ -191,7 +191,7 @@ def readnek(fname):
     # ---------------------------------------------------------------------------
     #
     # initialize data structure
-    data = exdat.exadata(h.nb_dims, h.nb_elems, h.orders, h.nb_vars, 0)
+    data = HexaData(h.nb_dims, h.nb_elems, h.orders, h.nb_vars, 0)
     data.time = h.time
     data.istep = h.istep
     data.wdsz = h.wdsz
@@ -263,8 +263,8 @@ def writenek(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
-            data organised as readnek() output
+    data : :class:`pymech.core.HexaData`
+            data structure
     """
     #
     try:
@@ -507,7 +507,7 @@ def readrea(fname):
     lr1 = [2, 2, ndim - 1]
     var = [ndim, 0, 0, 0, 0]
     #
-    data = exdat.exadata(ndim, nel, lr1, var, nbc)
+    data = HexaData(ndim, nel, lr1, var, nbc)
     #
     # read geometry
     for iel in range(nel):
@@ -626,8 +626,8 @@ def writerea(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
-            data organised as in exadata.py
+    data : :class:`pymech.core.HexaData`
+            data structure
     """
     #
     try:
@@ -1072,7 +1072,7 @@ def readre2(fname):
     # the file only contains geometry
     var = [ndim, 0, 0, 0, 0]
     # allocate structure
-    data = exdat.exadata(ndim, nel, lr1, var, 1)
+    data = HexaData(ndim, nel, lr1, var, 1)
     #
     # some metadata
     data.wdsz = wdsz
@@ -1184,8 +1184,8 @@ def writere2(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
-            data organised as in exadata.py
+    data : :class:`pymech.core.HexaData`
+            data structure
     """
     #
     # ---------------------------------------------------------------------------

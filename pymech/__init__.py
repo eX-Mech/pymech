@@ -3,7 +3,7 @@
 .. autosummary::
    :toctree:
 
-   exadata
+   core
    neksuite
    simsonsuite
    vtksuite

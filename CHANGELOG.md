@@ -27,9 +27,15 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+### Added
+
+- Dataclass {class}`pymech.neksuite.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
+- Function {func}`pymech.neksuite.read_header`
+
 ### Changed
 
-- Attributes of {class}`pymech.core.Dataset` are now immutable tuples.
+- Attributes `lr1` and `var` {class}`pymech.core.Elem` are tuples instead of lists
+- Attributes of {class}`pymech.core.DataLims` are now immutable tuples.
 
 ## [1.4.1] - 2021-05-07
 

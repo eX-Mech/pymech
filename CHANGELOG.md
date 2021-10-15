@@ -32,16 +32,22 @@ Security in case of vulnerabilities.
 - Dataclass {class}`pymech.neksuite.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
 - Function {func}`pymech.neksuite.read_header`
 - Module {mod}`pymech.meshtools` for manipulating meshes
+- Xarray backend ``pymech``. See {ref}`dataset`
 
 ### Changed
 
 - Attributes `lr1` and `var` {class}`pymech.core.Elem` are tuples instead of lists
-- Attributes of {class}`pymech.core.DataLims` are now immutable tuples.
+- Attributes of {class}`pymech.core.DataLims` are now immutable tuples
+- {func}`pymech.dataset.open_mfdataset` is now a partial function. This change should be fully backwards compatible
 
 ### Deprecated
 
 - Module {ref}`exadata` is deprecated in favour of {mod}`pymech.core`.
   See {ref}`exadata` for more information on migrating your code.
+
+### Removed
+
+- Test data files from the ``pymech`` git repository. The files are now available at <https://github.com/eX-Mech/pymech-test-data/>
 
 ## [1.4.1] - 2021-05-07
 

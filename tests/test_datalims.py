@@ -2,10 +2,10 @@ import pytest
 from numpy import testing as npt
 
 
-def test_lims():
+def test_lims(test_data_dir):
     from pymech.neksuite import readnek
 
-    fld = readnek("tests/nek/channel3D_0.f00001")
+    fld = readnek(f"{test_data_dir}/nek/channel3D_0.f00001")
 
     with pytest.raises(AttributeError):
         fld.lims = ()

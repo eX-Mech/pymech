@@ -10,6 +10,9 @@ the tests::
     pip install -e '.[tests]'
     pytest -s -v
 
+The directory `tests/data` is a git submodule repository
+(https://github.com/eX-Mech/pymech-test-data.git), which houses all the data
+files required to run the test suite.
 
 Continuous Integration
 ----------------------

@@ -17,7 +17,7 @@ Read the full documentation at [Pymech doc](http://pymech.readthedocs.io/en/stab
 For some quick wins, download some sample data
 
 ```sh
-curl -LO https://github.com/eX-Mech/pymech/raw/master/tests/nek/channel3D_0.f00001
+curl -fLO https://raw.githubusercontent.com/eX-Mech/pymech-test-data/main/nek/channel3D_0.f00001
 ```
 
 Fire up a Python / IPython console and execute:

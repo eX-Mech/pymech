@@ -213,7 +213,7 @@ class HexaData:
     def __repr__(self):
         representation = dedent(
             f"""\
-        <pymech.exadata.exadata>
+        <pymech.core.HexaData>
         Dimensions:    {self.ndim}
         Precision:     {self.wdsz} bytes
         Mesh limits:\n{indent(repr(self.lims), " "*10)}
@@ -322,11 +322,11 @@ class HexaData:
 
     def merge(self, other, tol=1e-2, ignore_empty=True, ignore_all_bcs=False):
         """
-        Merges another exadata into the current one and connects it
+        Merges another :class:`pymech.core.HexaData` into the current one and connects it
 
         Parameters
         ----------
-        other: exadata
+        other: :class:`pymech.core.HexaData`
                 mesh to merge into self
 
         tol: float

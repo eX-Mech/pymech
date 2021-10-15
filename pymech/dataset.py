@@ -169,7 +169,7 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 
     Parameters
     ----------
-    elem: :class:`pymech.exadata.elem`
+    elem: :class:`pymech.core.Elem`
         A Nek5000 element.
 
     """

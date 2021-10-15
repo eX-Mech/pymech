@@ -16,7 +16,7 @@ Pymech can be used for reading, editing and writing Nek5000_ and SIMSON_ meshes
 and output files. For a detailed tutorial refer to :ref:`usage
 <Usage.ipynb#usage>`.
 
-The data structure is defined by the :py:class:`pymech.core.HexaData` class, found in :ref:`exadata`.
+The data structure is defined by the :py:class:`pymech.core.HexaData` class.
 The functions for manipulating Nek5000_ files are in :ref:`neksuite`, while the
 functions for SIMSON_ are, of course, in :ref:`simsonsuite`.
 
@@ -44,7 +44,40 @@ Optional dependencies can be installed as follows::
 
 .. _virtual environment: https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments
 
--------------------------------------------------------------------------------
+Install using conda / mamba
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In certain cases, typically:
+
+- in an OS where at least Python version |py_min_version| is unavailable, or
+- to install ``mayavi`` to make use of :mod:`pymech.vtksuite`, or
+- to use PyPy_ instead of CPython,
+
+a simple ``pip install pymech`` may not cut it.  Then, it is recommended to use conda_ (or
+mamba_) to set up the Python environment first. To install Pymech with a Python
+interpreter of your choice:
+
+.. tab:: PyPy
+
+   ::
+
+      conda create -n my-env -c conda-forge pypy pip xarray pydantic
+      conda activate my-env
+      pypy -m pip install pymech
+
+.. tab:: CPython
+
+   ::
+
+      conda create -n my-env -c conda-forge python pip
+      conda activate my-env
+      python -m pip install pymech
+
+.. _PyPy: https://www.pypy.org/
+.. _conda: https://docs.conda.io/projects/conda/en/latest/user-guide/index.html
+.. _mamba: https://mamba.readthedocs.io/en/latest/installation.html
+
+----------------------------------------------------------------------------
 
 .. toctree::
    :maxdepth: 2
@@ -55,6 +88,7 @@ Optional dependencies can be installed as follows::
    simsonsuite.rst
    vtksuite.rst
    dataset.rst
+   meshtools.rst
    usage.ipynb
 
 .. toctree::

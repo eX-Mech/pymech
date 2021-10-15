@@ -148,20 +148,23 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
 def extrude_refine(
     mesh2D, z, bc1="P", bc2="P", fun=None, funpar=None, imesh_high=0, internal_bcs=True
 ):
-    """Extrudes a 2D mesh into a 3D one, following the pattern:
-     _____ _____ _____ _____
-    |     |     |     |     |
-    |     |     |     |     |
-    |     |     |     |     |
-    |_____|_____|_____|_____|
-    |    /|\    |    /|\    |
-    |__ / | \ __|__ / | \ __| (fun (with parameter funpar) should change change sign in the mid element)
-    |  |  |  |  |  |  |  |  | (half of the mid elements are also divided in 2 in (x,y)-plane)
-    |__|__|__|__|__|__|__|__|
-    |  |  |  |  |  |  |  |  |
-    |  |  |  |  |  |  |  |  |
-    |  |  |  |  |  |  |  |  | (imesh_high is the index of mesh with higher intended discretization in z)
-    |__|__|__|__|__|__|__|__|
+    r"""Extrudes a 2D mesh into a 3D one, following the pattern
+
+    .. code-block::
+
+         _____ _____ _____ _____
+        |     |     |     |     |
+        |     |     |     |     |
+        |     |     |     |     |
+        |_____|_____|_____|_____|
+        |    /|\    |    /|\    |
+        |__ / | \ __|__ / | \ __| (fun (with parameter funpar) should change change sign in the mid element)
+        |  |  |  |  |  |  |  |  | (half of the mid elements are also divided in 2 in (x,y)-plane)
+        |__|__|__|__|__|__|__|__|
+        |  |  |  |  |  |  |  |  |
+        |  |  |  |  |  |  |  |  |
+        |  |  |  |  |  |  |  |  | (imesh_high is the index of mesh with higher intended discretization in z)
+        |__|__|__|__|__|__|__|__|
 
     The pattern is similar to "Picture Frame" of an ancient NEKTON manual (https://www.mcs.anl.gov/~fischer/Nek5000/nekmanual.pdf).
     If the mid elements have curvature, the extrusion might modify it. Do not split in regions where the value of curvature parameters is very important.
@@ -358,12 +361,15 @@ def extrude_refine(
 
 
 def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
-    """Extrudes the mid elments of the 2D mesh into a 3D one. Following the pattern:
-     _____ _____ _____ _____
-    |1   /|\   4|    /|\    |
-    |__ / | \ __|__ / | \ __| (fun (with parameter funpar) should change change sign in the mid element)
-    |0 |2 |3 | 5|  |  |  |  | (half of the mid elements are also divided in 2 in (x, y)-plane)
-    |__|__|__|__|__|__|__|__| (numbers in the figure indicate the indices (iel + 0; iel + 1; etc))
+    r"""Extrudes the mid elments of the 2D mesh into a 3D one. Following the pattern:
+
+    .. code-block::
+
+         _____ _____ _____ _____
+        |1   /|\   4|    /|\    |
+        |__ / | \ __|__ / | \ __| (fun (with parameter funpar) should change change sign in the mid element)
+        |0 |2 |3 | 5|  |  |  |  | (half of the mid elements are also divided in 2 in (x, y)-plane)
+        |__|__|__|__|__|__|__|__| (numbers in the figure indicate the indices (iel + 0; iel + 1; etc))
 
     Parameters
     ----------
@@ -1137,7 +1143,7 @@ def keep_elements(mesh: HexaData, elems, external_bc=""):
     """
     Reduce the mesh to a subset of its elements
 
-    Parameters:
+    Parameters
     ----------
     mesh : :class:`pymech.core.HexaData`
             mesh to modify
@@ -1200,7 +1206,7 @@ def exponential_refinement_parameter(l0, ltot, n, tol=1e-14):
     In a 1D exponential mesh spacing where n elements of lengths l0, alpha*l0, ..., alpha^(n-1)*l0
     add up to a total length ltot, return the parameter alpha given l0, ltot, and n.
 
-    Parameters:
+    Parameters
     ----------
     l0 : float
         the initial mesh spacing (size of the first element)
@@ -1211,8 +1217,8 @@ def exponential_refinement_parameter(l0, ltot, n, tol=1e-14):
     tol : float
         error tolerance on alpha
 
-    Returns:
-    ----------
+    Returns
+    -------
     alpha : float
         the mesh refinement parameter
     """
@@ -1281,7 +1287,7 @@ def rotate_2d(mesh, x0, y0, theta):
     """
     Rotate a mesh around an axis aligned with z passing through (x0, y0, 0) by an angle theta.
 
-    Parameters:
+    Parameters
     ----------
     mesh : :class:`pymech.core.HexaData`
         the mesh to modify in place
@@ -1326,7 +1332,7 @@ def gen_circle(
     """
     Generates a 2D circular mesh with a square at the center surrounded by an O mesh.
 
-    Parameters:
+    Parameters
     ----------
     r : float
         radius of the mesh
@@ -1378,26 +1384,26 @@ def gen_circle(
         width = 0.5 * r * (1 - s) * sqrt(2)
         # we want the size of the first element to be `square_spacing`, but it's going to be stretched by the curvature function,
         # so we need to find the length before stretching that gives the right length after stretching
-        def err_stretching(l, l_ref):
-            eta = curvature_fun(l / width)
+
+        def err_stretching(len_new, len_ref):
+            eta = curvature_fun(len_new / width)
             total_width = r * (1 - 0.5 * sqrt(2) * s)
-            l1 = l / width * ((1 - eta) * width + eta * total_width)
-            return l1 - l_ref
+            l1 = len_new / width * ((1 - eta) * width + eta * total_width)
+            return l1 - len_ref
 
         # iterate using the secant method
         l0 = 1
         l1 = 0
         f0 = err_stretching(l0, square_spacing)
         eps = 1e-12  # this value shouldn't matter very much
-        maxit = 10000
-        iter = 0
-        while abs(f0) > eps and iter < maxit:
+        max_iters = 10000
+        iters = 0
+        while abs(f0) > eps and iters < max_iters:
             f1 = err_stretching(l1, square_spacing)
-            l2 = l1 - (l1 - l0) / (f1 - f0) * f1
-            l0 = l1
-            l1 = l2
+            # Update l0 and l1
+            l0, l1 = l1, l1 - (l1 - l0) / (f1 - f0) * f1
             f0 = f1
-            iter += 1
+            iters += 1
 
         # geometric spacing progression factor using that first element size
         alpha = exponential_refinement_parameter(l1, width, no)

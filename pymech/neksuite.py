@@ -1,13 +1,152 @@
 """Module for reading and writing Nek5000 files"""
+from __future__ import annotations
+
+import io
 import struct
 import numpy as np
-import pymech.exadata as exdat
 import sys
+from typing import Tuple, Optional
+from pydantic.dataclasses import dataclass, ValidationError
 
+from pymech.core import HexaData
 from pymech.log import logger
 
 
 __all__ = ("readnek", "writenek", "readre2", "readrea", "writere2", "writerea")
+
+
+@dataclass
+class Header:
+    """Dataclass for Nek5000 field file header. This relies on the package
+    pydantic_ and its ability to do type-checking and type-coercion of the
+    header metadata.
+
+    .. _pydantic: https://pydantic-docs.helpmanual.io/
+
+    """
+
+    # get word size: single or double precision
+    wdsz: int
+    # get polynomial order
+    orders: Tuple[int, ...]
+    # get number of elements
+    nb_elems: int
+    # get number of elements in the file
+    nb_elems_file: int
+    # get current time
+    time: float
+    # get current time step
+    istep: int
+    # get file id
+    fid: int
+    # get tot number of files
+    nb_files: int
+
+    # get variables [XUPTS[01-99]]
+    variables: Optional[str] = None
+
+    # floating point precision
+    realtype: Optional[str] = None
+
+    # compute total number of points per element
+    nb_pts_elem: Optional[int] = None
+    # get number of physical dimensions
+    nb_dims: Optional[int] = None
+    # get number of variables
+    nb_vars: Optional[Tuple[int, ...]] = None
+
+    def __post_init_post_parse__(self):
+        # get word size: single or double precision
+        wdsz = self.wdsz
+        if not self.realtype:
+            if wdsz == 4:
+                self.realtype = "f"
+            elif wdsz == 8:
+                self.realtype = "d"
+            else:
+                logger.error(f"Could not interpret real type (wdsz = {wdsz})")
+
+        orders = self.orders
+        if not self.nb_pts_elem:
+            self.nb_pts_elem = np.prod(orders)
+
+        if not self.nb_dims:
+            self.nb_dims = 2 + int(orders[2] > 1)
+
+        if not self.variables and not self.nb_vars:
+            raise ValidationError("Both variables and nb_vars cannot be None", self)
+        elif self.variables:
+            self.nb_vars = self._variables_to_nb_vars()
+        elif self.nb_vars:
+            self.variables = self._nb_vars_to_variables()
+
+        logger.debug(f"Variables: {self.variables}, nb_vars: {self.nb_vars}")
+
+    def _variables_to_nb_vars(self) -> Optional[Tuple[int, ...]]:
+        # get variables [XUPTS[01-99]]
+        variables = self.variables
+        nb_dims = self.nb_dims
+
+        if not variables:
+            logger.error("Failed to convert variables to nb_vars")
+            return None
+
+        if not nb_dims:
+            logger.error("Unintialized nb_dims")
+            return None
+
+        def nb_scalars():
+            index_s = variables.index("S")
+            return int(variables[index_s + 1 :])
+
+        nb_vars = (
+            nb_dims if "X" in variables else 0,
+            nb_dims if "U" in variables else 0,
+            1 if "P" in variables else 0,
+            1 if "T" in variables else 0,
+            nb_scalars() if "S" in variables else 0,
+        )
+
+        return nb_vars
+
+    def _nb_vars_to_variables(self) -> Optional[str]:
+        nb_vars = self.nb_vars
+        if not nb_vars:
+            logger.error("Failed to convert nb_vars to variables")
+            return None
+
+        str_vars = ("X", "U", "P", "T", f"S{nb_vars[4]:02d}")
+        variables = (str_vars[i] if nb_vars[i] > 0 else "" for i in range(5))
+        return "".join(variables)
+
+    def as_bytestring(self) -> bytes:
+        header = "#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s" % (
+            self.wdsz,
+            self.orders[0],
+            self.orders[1],
+            self.orders[2],
+            self.nb_elems,
+            self.nb_elems_file,
+            self.time,
+            self.istep,
+            self.fid,
+            self.nb_files,
+            self.variables,
+        )
+        return header.ljust(132).encode("utf-8")
+
+
+def read_header(fp: io.BufferedReader) -> Header:
+    """Make a :class:`pymech.neksuite.Header` instance from a file buffer
+    opened in binary mode.
+
+    """
+    header = fp.read(132).split()
+    logger.debug(b"Header: " + b" ".join(header))
+    if len(header) < 12:
+        raise IOError("Header of the file was too short.")
+
+    return Header(header[1], header[2:5], *header[5:12])
 
 
 # ==============================================================================
@@ -31,64 +170,7 @@ def readnek(fname):
     # ---------------------------------------------------------------------------
     #
     # read header
-    header = infile.read(132).split()
-    logger.debug(b"Header: " + b" ".join(header))
-
-    # get word size: single or double precision
-    wdsz = int(header[1])
-    if wdsz == 4:
-        realtype = "f"
-    elif wdsz == 8:
-        realtype = "d"
-    else:
-        logger.error("Could not interpret real type (wdsz = %i)" % (wdsz))
-        return -2
-    #
-    # get polynomial order
-    lr1 = [int(header[2]), int(header[3]), int(header[4])]
-    #
-    # compute total number of points per element
-    npel = lr1[0] * lr1[1] * lr1[2]
-    #
-    # get number of physical dimensions
-    ndim = 2 + (lr1[2] > 1)
-    #
-    # get number of elements
-    nel = int(header[5])
-    #
-    # get number of elements in the file
-    nelf = int(header[6])
-    #
-    # get current time
-    time = float(header[7])
-    #
-    # get current time step
-    istep = int(header[8])
-    #
-    # get file id
-    #  fid = int(header[9])
-    #
-    # get tot number of files
-    #  nf = int(header[10])
-    #
-    # get variables [XUPTS[01-99]]
-    variables = header[11].decode("utf-8")
-    logger.debug(f"Variables: {variables}")
-    var = [0 for i in range(5)]
-    for v in variables:
-        if v == "X":
-            var[0] = ndim
-        elif v == "U":
-            var[1] = ndim
-        elif v == "P":
-            var[2] = 1
-        elif v == "T":
-            var[3] = 1
-        elif v == "S":
-            # For example: variables = 'XS44'
-            index_s = variables.index("S")
-            nb_scalars = int(variables[index_s + 1 :])
-            var[4] = nb_scalars
+    h = read_header(infile)
     #
     # identify endian encoding
     etagb = infile.read(4)
@@ -107,18 +189,18 @@ def readnek(fname):
         return -3
     #
     # read element map for the file
-    elmap = infile.read(4 * nelf)
-    elmap = list(struct.unpack(emode + nelf * "i", elmap))
+    elmap = infile.read(4 * h.nb_elems_file)
+    elmap = list(struct.unpack(emode + h.nb_elems_file * "i", elmap))
     #
     # ---------------------------------------------------------------------------
     # READ DATA
     # ---------------------------------------------------------------------------
     #
     # initialize data structure
-    data = exdat.exadata(ndim, nel, lr1, var, 0)
-    data.time = time
-    data.istep = istep
-    data.wdsz = wdsz
+    data = HexaData(h.nb_dims, h.nb_elems, h.orders, h.nb_vars, 0)
+    data.time = h.time
+    data.istep = h.istep
+    data.wdsz = h.wdsz
     data.elmap = np.array(elmap, dtype=np.int32)
     if emode == "<":
         data.endian = "little"
@@ -127,37 +209,37 @@ def readnek(fname):
 
     def read_file_into_data(data_var, index_var):
         """Read binary file into an array attribute of ``data.elem``"""
-        fi = infile.read(npel * wdsz)
-        fi = np.frombuffer(fi, dtype=emode + realtype, count=npel)
+        fi = infile.read(h.nb_pts_elem * h.wdsz)
+        fi = np.frombuffer(fi, dtype=emode + h.realtype, count=h.nb_pts_elem)
 
         # Replace elem array in-place with
         # array read from file after reshaping as
-        elem_shape = lr1[::-1]  # lz, ly, lx
+        elem_shape = h.orders[::-1]  # lz, ly, lx
         data_var[index_var, ...] = fi.reshape(elem_shape)
 
     #
     # read geometry
     for iel in elmap:
         el = data.elem[iel - 1]
-        for idim in range(var[0]):  # if var[0] == 0, geometry is not read
+        for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
             read_file_into_data(el.pos, idim)
     #
     # read velocity
     for iel in elmap:
         el = data.elem[iel - 1]
-        for idim in range(var[1]):  # if var[1] == 0, velocity is not read
+        for idim in range(h.nb_vars[1]):  # if 0, velocity is not read
             read_file_into_data(el.vel, idim)
     #
     # read pressure
     for iel in elmap:
         el = data.elem[iel - 1]
-        for ivar in range(var[2]):  # if var[2] == 0, pressure is not read
+        for ivar in range(h.nb_vars[2]):  # if 0, pressure is not read
             read_file_into_data(el.pres, ivar)
     #
     # read temperature
     for iel in elmap:
         el = data.elem[iel - 1]
-        for ivar in range(var[3]):  # if var[3] == 0, temperature is not read
+        for ivar in range(h.nb_vars[3]):  # if 0, temperature is not read
             read_file_into_data(el.temp, ivar)
     #
     # read scalar fields
@@ -166,7 +248,7 @@ def readnek(fname):
     # Unlike other variables, scalars are in the outer loop and elements
     # are in the inner loop
     #
-    for ivar in range(var[4]):  # if var[4] == 0, scalars are not read
+    for ivar in range(h.nb_vars[4]):  # if 0, scalars are not read
         for iel in elmap:
             el = data.elem[iel - 1]
             read_file_into_data(el.scal, ivar)
@@ -187,8 +269,8 @@ def writenek(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
-            data organised as readnek() output
+    data : :class:`pymech.core.HexaData`
+            data structure
     """
     #
     try:
@@ -201,52 +283,32 @@ def writenek(fname, data):
     # WRITE HEADER
     # ---------------------------------------------------------------------------
     #
-    # multiple files (not implemented)
-    fid = 0
-    nf = 1
-    nelf = data.nel
+    h = Header(
+        data.wdsz,
+        data.lr1,
+        data.nel,
+        data.nel,
+        data.time,
+        data.istep,
+        fid=0,
+        nb_files=1,
+        nb_vars=data.var,
+    )
+    # NOTE: multiple files (not implemented). See fid, nb_files, nb_elem_file above
     #
     # get fields to be written
-    vars = ""
-    if data.var[0] > 0:
-        vars += "X"
-    if data.var[1] > 0:
-        vars += "U"
-    if data.var[2] > 0:
-        vars += "P"
-    if data.var[3] > 0:
-        vars += "T"
-    if data.var[4] > 0:
-        # TODO: check if header for scalars are written with zeros filled as S01
-        vars += "S{:02d}".format(data.var[4])
     #
     # get word size
-    if data.wdsz == 4:
+    if h.wdsz == 4:
         logger.debug("Writing single-precision file")
-    elif data.wdsz == 8:
+    elif h.wdsz == 8:
         logger.debug("Writing double-precision file")
     else:
         logger.error("Could not interpret real type (wdsz = %i)" % (data.wdsz))
         return -2
     #
     # generate header
-    header = "#std %1i %2i %2i %2i %10i %10i %20.13E %9i %6i %6i %s" % (
-        data.wdsz,
-        data.lr1[0],
-        data.lr1[1],
-        data.lr1[2],
-        data.nel,
-        nelf,
-        data.time,
-        data.istep,
-        fid,
-        nf,
-        vars,
-    )
-    #
-    # write header
-    header = header.ljust(132)
-    outfile.write(header.encode("utf-8"))
+    outfile.write(h.as_bytestring())
     #
     # decide endianness
     if data.endian in ("big", "little"):
@@ -260,7 +322,7 @@ def writenek(fname, data):
         )
 
     def correct_endianness(a):
-        """ Return the array with the requested endianness"""
+        """Return the array with the requested endianness"""
         if byteswap:
             return a.byteswap()
         else:
@@ -451,7 +513,7 @@ def readrea(fname):
     lr1 = [2, 2, ndim - 1]
     var = [ndim, 0, 0, 0, 0]
     #
-    data = exdat.exadata(ndim, nel, lr1, var, nbc)
+    data = HexaData(ndim, nel, lr1, var, nbc)
     #
     # read geometry
     for iel in range(nel):
@@ -570,8 +632,8 @@ def writerea(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
-            data organised as in exadata.py
+    data : :class:`pymech.core.HexaData`
+            data structure
     """
     #
     try:
@@ -1016,7 +1078,7 @@ def readre2(fname):
     # the file only contains geometry
     var = [ndim, 0, 0, 0, 0]
     # allocate structure
-    data = exdat.exadata(ndim, nel, lr1, var, 1)
+    data = HexaData(ndim, nel, lr1, var, 1)
     #
     # some metadata
     data.wdsz = wdsz
@@ -1063,7 +1125,10 @@ def readre2(fname):
     for icurv in range(ncurv):
         # interpret the data
         curv = np.frombuffer(
-            buf, dtype=emode + realtype, count=ncparam, offset=icurv * ncparam * wdsz
+            buf,
+            dtype=emode + realtype,
+            count=ncparam,
+            offset=icurv * ncparam * wdsz,
         )
         iel = int(curv[0]) - 1
         iedge = int(curv[1]) - 1
@@ -1125,8 +1190,8 @@ def writere2(fname, data):
     ----------
     fname : str
             file name
-    data : exadata
-            data organised as in exadata.py
+    data : :class:`pymech.core.HexaData`
+            data structure
     """
     #
     # ---------------------------------------------------------------------------
@@ -1182,7 +1247,7 @@ def writere2(fname, data):
         )
 
     def correct_endianness(a):
-        """ Return the array with the requested endianness"""
+        """Return the array with the requested endianness"""
         if byteswap:
             return a.byteswap()
         else:

@@ -27,9 +27,20 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+### Added
+
+- Dataclass {class}`pymech.neksuite.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
+- Function {func}`pymech.neksuite.read_header`
+
 ### Changed
 
-- Attributes of {class}`pymech.core.Dataset` are now immutable tuples.
+- Attributes `lr1` and `var` {class}`pymech.core.Elem` are tuples instead of lists
+- Attributes of {class}`pymech.core.DataLims` are now immutable tuples.
+
+### Deprecated
+
+- Module {ref}`exadata` is deprecated in favour of {mod}`pymech.core`.
+  See {ref}`exadata` for more information on migrating your code.
 
 ## [1.4.1] - 2021-05-07
 
@@ -75,7 +86,7 @@ improvements.  This will be the last release to support Python 3.6 and Xarray <
   metadata -- in `writenek`
 
 ### Added
-- {meth}`pymech.core.Hexadata.merge` to merge meshes together and build proper connectivity
+- {meth}`pymech.core.HexaData.merge` to merge meshes together and build proper connectivity
 
 ## [1.3.2] - 2020-09-23
 

@@ -21,6 +21,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -46,7 +48,7 @@ jobs:
         pip install -e .[tests]
 
     - name: Run tests
-      run: pytest -s -v -n 4
+      run: pytest -s -v -n auto
 
     - name: Upload coverage
       if: ${{ success() && matrix.python-version == '3.7' }}

@@ -1,34 +1,19 @@
-import os
-import logging
 import math
 import time
-import tempfile
-from pathlib import Path
 from textwrap import dedent
 
-import pytest
 from numpy import testing as npt
 
 from pymech.log import logger
 
 
-def setup_module(module):
-    logger.setLevel(logging.DEBUG)
-
-    tmp = Path(tempfile.mkdtemp(suffix="pymech_tests"))
-    (tmp / "tests").symlink_to(Path(__file__).parent)
-    os.chdir(tmp)
-
-    logger.info(f"Test directory: {tmp}")
-
-
 # ------------------------------------------------------------------------------
 # test nek scripts
 #
-def test_readnek():
+def test_readnek(test_data_dir):
     import pymech.neksuite as ns
 
-    fname = "./tests/nek/channel3D_0.f00001"
+    fname = f"{test_data_dir}/nek/channel3D_0.f00001"
     field = ns.readnek(fname)
 
     assert field.endian == "little"
@@ -60,15 +45,15 @@ def test_readnek():
     assert repr(field).splitlines() == representation.splitlines()
 
 
-def test_writenek():
+def test_writenek(test_data_dir, tmpdir):
     import pymech.neksuite as ns
 
-    fname = "./tests/nek/channel3D_0.f00001"
+    fname = f"{test_data_dir}/nek/channel3D_0.f00001"
     time0 = time.perf_counter()
     field = ns.readnek(fname)
     time1 = time.perf_counter()
 
-    fnamew = "./test_0.f00001"
+    fnamew = f"{tmpdir}/test_0.f00001"
     status = ns.writenek(fnamew, field)
     time2 = time.perf_counter()
     logger.info(
@@ -99,14 +84,14 @@ def test_writenek():
         npt.assert_array_equal(elem.scal, elemw.scal)
 
 
-def test_writenek_big_endian():
+def test_writenek_big_endian(test_data_dir, tmpdir):
     import pymech.neksuite as ns
 
-    fname = "./tests/nek/channel3D_0.f00001"
+    fname = f"{test_data_dir}/nek/channel3D_0.f00001"
     field = ns.readnek(fname)
 
     field.endian = "big"
-    fnamew = "./test_0_big.f00001"
+    fnamew = f"{tmpdir}/test_0_big.f00001"
     status = ns.writenek(fnamew, field)
     assert status == 0
 
@@ -125,24 +110,24 @@ def test_writenek_big_endian():
         npt.assert_array_equal(elem.scal, elemw.scal)
 
 
-def test_readnek_scalars():
+def test_readnek_scalars(test_data_dir):
     import pymech.neksuite as ns
 
     # 2D statistics file
-    fname = "./tests/nek/stsabl0.f00001"
+    fname = f"{test_data_dir}/nek/stsabl0.f00001"
     field = ns.readnek(fname)
 
     ux_min, ux_max = field.lims.scal[0]
     assert math.isclose(ux_max, 5.3, abs_tol=0.1)
 
 
-def test_writenek_scalars():
+def test_writenek_scalars(test_data_dir, tmpdir):
     import pymech.neksuite as ns
 
-    fname = "./tests/nek/stsabl0.f00001"
+    fname = f"{test_data_dir}/nek/stsabl0.f00001"
     field = ns.readnek(fname)
 
-    fnamew = "./test_sts_0.f00001"
+    fnamew = f"{tmpdir}/test_sts_0.f00001"
     status = ns.writenek(fnamew, field)
 
     assert status == 0
@@ -151,10 +136,10 @@ def test_writenek_scalars():
     npt.assert_array_equal(field.lims.scal, fieldw.lims.scal)
 
 
-def test_readrea():
+def test_readrea(test_data_dir):
     import pymech.neksuite as ns
 
-    fname = "./tests/nek/2D_section_R360.rea"
+    fname = f"{test_data_dir}/nek/2D_section_R360.rea"
     field = ns.readrea(fname)
 
     assert field.lr1 == [2, 2, 1]
@@ -164,7 +149,7 @@ def test_readrea():
     assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
     assert field.elem[887].ccurv[1] == "C"
 
-    fname = "./tests/nek/m3j_bf_test.rea"
+    fname = f"{test_data_dir}/nek/m3j_bf_test.rea"
     field = ns.readrea(fname)
     assert field.elem[790].ccurv[0] == "m"
     assert abs(field.elem[790].curv[0][1] + 0.05258981) < 1e-7
@@ -183,13 +168,13 @@ def test_readrea():
     assert field.elem[799].bcs[2, 3][0] == "P"
 
 
-def test_writerea():
+def test_writerea(test_data_dir, tmpdir):
     import pymech.neksuite as ns
 
-    fname = "./tests/nek/2D_section_R360.rea"
+    fname = f"{test_data_dir}/nek/2D_section_R360.rea"
     field = ns.readrea(fname)
 
-    fnamew = "test.rea"
+    fnamew = f"{tmpdir}/test.rea"
     status = ns.writerea(fnamew, field)
 
     assert status == 0
@@ -205,7 +190,7 @@ def test_writerea():
     assert abs(field.elem[887].curv[1, 0] - 1.21664) < 1e-3
     assert field.elem[887].ccurv[1] == "C"
 
-    fname = "./tests/nek/m3j_bf_test.rea"
+    fname = f"{test_data_dir}/nek/m3j_bf_test.rea"
     fnamew = "test.rea"
 
     field = ns.readrea(fname)
@@ -232,11 +217,11 @@ def test_writerea():
     assert fieldw.elem[799].bcs[2, 3][0] == "P"
 
 
-def test_merge():
+def test_merge(test_data_dir):
     import pymech.neksuite as ns
     import copy
 
-    fname = "./tests/nek/box3d.rea"
+    fname = f"{test_data_dir}/nek/box3d.rea"
     mesh = ns.readrea(fname)
     mesh1 = copy.deepcopy(mesh)
     mesh2 = copy.deepcopy(mesh)
@@ -269,15 +254,15 @@ def test_merge():
                 assert el.bcs[ibc, iface][2] == iface + 1
 
 
-def test_readre2():
+def test_readre2(test_data_dir):
     import pymech.neksuite as ns
 
     # The .re2 has been generated with reatore2 and contains the same data
     # except for the internal boundary conditions.
     # Assuming that `readrea` is correct, this checks id the .re2 file is read correctly too.
     #
-    frea = "./tests/nek/2D_section_R360.rea"
-    fre2 = "./tests/nek/2D_section_R360.re2"
+    frea = f"{test_data_dir}/nek/2D_section_R360.rea"
+    fre2 = f"{test_data_dir}/nek/2D_section_R360.re2"
     meshrea = ns.readrea(frea)
     meshre2 = ns.readre2(fre2)
 
@@ -303,13 +288,13 @@ def test_readre2():
         npt.assert_array_equal(elw.ccurv, el.ccurv)
 
 
-def test_readre2_3d():
+def test_readre2_3d(test_data_dir):
     import pymech.neksuite as ns
 
     # same test as test_readre2(), but with a 3D mesh.
 
-    frea = "./tests/nek/box3d.rea"
-    fre2 = "./tests/nek/box3d.re2"
+    frea = f"{test_data_dir}/nek/box3d.rea"
+    fre2 = f"{test_data_dir}/nek/box3d.re2"
     meshrea = ns.readrea(frea)
     meshre2 = ns.readre2(fre2)
     # remove the 'E' conditions from the .rea data
@@ -334,11 +319,11 @@ def test_readre2_3d():
         npt.assert_array_equal(elw.ccurv, el.ccurv)
 
 
-def test_writere2():
+def test_writere2(test_data_dir, tmpdir):
     import pymech.neksuite as ns
 
-    fin = "./tests/nek/2D_section_R360.re2"
-    fout = "./test_1.re2"
+    fin = f"{test_data_dir}/nek/2D_section_R360.re2"
+    fout = f"{tmpdir}/test_1.re2"
     mesh = ns.readre2(fin)
     status = ns.writere2(fout, mesh)
 
@@ -360,11 +345,11 @@ def test_writere2():
         npt.assert_array_equal(elw.ccurv, el.ccurv)
 
 
-def test_writere2_3d():
+def test_writere2_3d(test_data_dir, tmpdir):
     import pymech.neksuite as ns
 
-    fin = "./tests/nek/box3d.re2"
-    fout = "./test_2.re2"
+    fin = f"{test_data_dir}/nek/box3d.re2"
+    fout = f"{tmpdir}/test_2.re2"
     mesh = ns.readre2(fin)
     status = ns.writere2(fout, mesh)
 
@@ -386,14 +371,14 @@ def test_writere2_3d():
         npt.assert_array_equal(elw.ccurv, el.ccurv)
 
 
-def test_generate_internal_bcs():
+def test_generate_internal_bcs(test_data_dir):
     import pymech.neksuite as ns
     import pymech.meshtools as mt
 
     # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
     # The idea is to reconstruct the internal BCs of the re2 and compare with the .rea. They should be identical.
-    frea = "./tests/nek/box3d.rea"
-    fre2 = "./tests/nek/box3d.re2"
+    frea = f"{test_data_dir}/nek/box3d.rea"
+    fre2 = f"{test_data_dir}/nek/box3d.re2"
     meshrea = ns.readrea(frea)
     meshre2 = ns.readre2(fre2)
     nconnect = mt.generate_internal_bcs(meshre2)
@@ -403,13 +388,13 @@ def test_generate_internal_bcs():
     assert meshre2.check_connectivity()
 
 
-def test_delete_internal_bcs():
+def test_delete_internal_bcs(test_data_dir):
     import pymech.neksuite as ns
     import pymech.meshtools as mt
 
     # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
-    frea = "./tests/nek/box3d.rea"
-    fre2 = "./tests/nek/box3d.re2"
+    frea = f"{test_data_dir}/nek/box3d.rea"
+    fre2 = f"{test_data_dir}/nek/box3d.re2"
     meshrea = ns.readrea(frea)
     meshre2 = ns.readre2(fre2)
     ndelete = mt.delete_internal_bcs(meshrea)
@@ -421,12 +406,12 @@ def test_delete_internal_bcs():
     assert meshrea.check_connectivity()
 
 
-def test_extrude():
+def test_extrude(test_data_dir):
     import pymech.neksuite as ns
     import pymech.meshtools as mt
     import numpy as np
 
-    fname = "./tests/nek/2D_section_R360.re2"
+    fname = f"{test_data_dir}/nek/2D_section_R360.re2"
     nz = 4
     z = np.linspace(-1, 1, nz + 1)
     mesh = ns.readre2(fname)
@@ -440,13 +425,13 @@ def test_extrude():
     assert mesh3D.check_connectivity()
 
 
-def test_extrude_refine():
+def test_extrude_refine(test_data_dir):
     import numpy as np
     import pymech.neksuite as ns
     import pymech.meshtools as mt
     from itertools import product
 
-    fnameI = "./tests/nek/box2d.re2"
+    fnameI = f"{test_data_dir}/nek/box2d.re2"
     mesh2D = ns.readre2(fnameI)
     mt.generate_internal_bcs(mesh2D)
 
@@ -500,7 +485,7 @@ def test_extrude_refine():
     assert mesh3D.check_bcs_present()
 
 
-def test_gen_circle():
+def test_gen_circle(test_data_dir):
     import pymech.meshtools as mt
 
     # try a tiny mesh
@@ -524,10 +509,10 @@ def test_gen_circle():
 # ------------------------------------------------------------------------------
 # test simson scripts
 #
-def test_readdns():
+def test_readdns(test_data_dir):
     import pymech.simsonsuite as ss
 
-    fname = "./tests/simson/channel3D_t10000v.u"
+    fname = f"{test_data_dir}/simson/channel3D_t10000v.u"
     field = ss.readdns(fname)
 
     assert field.endian == "little"
@@ -540,10 +525,10 @@ def test_readdns():
     assert (field.time - 10000.439742009798) < 1e-3
 
 
-def test_readplane():
+def test_readplane(test_data_dir):
     import pymech.simsonsuite as ss
 
-    fname = "./tests/simson/u.plane"
+    fname = f"{test_data_dir}/simson/u.plane"
     x, d, nn, ndim = ss.readplane(fname)
 
     assert (x[0][1][0] - 0.06875) < 1e-3
@@ -551,34 +536,3 @@ def test_readplane():
     assert nn[0] == 97.0
     assert nn[1] == 97.0
     assert ndim == 2
-
-
-# ------------------------------------------------------------------------------
-# test xarray dataset interface
-#
-def test_nekdataset():
-    import pymech.dataset as pd
-
-    fname = "./tests/nek/channel3D_0.f00001"
-    ds = pd.open_dataset(fname)
-
-    assert tuple(ds.dims.values()) == (64, 64, 64)
-    assert math.isclose(ds.x.max(), 2 * math.pi, abs_tol=1e-6)
-    assert math.isclose(ds.y.max(), 1.0, abs_tol=1e-6)
-    assert math.isclose(ds.z.max(), math.pi, abs_tol=1e-6)
-    assert math.isclose(ds.time, 0.2, abs_tol=1e-6)
-
-
-@pytest.mark.parametrize("file_name", ["channel3D_0.f00001", "stsabl0.f00001"])
-def test_dataset_coords(file_name):
-    """Check if the 1D coordinates match with the original 3D coordinate arrays"""
-    import pymech.dataset as pd
-
-    path = "./tests/nek/" + file_name
-    ds = pd.open_dataset(path)
-
-    dsx = ds.mean(("y", "z"))
-    dsy = ds.mean(("x", "z"))
-
-    npt.assert_allclose(ds.x.data, dsx.xmesh.data, rtol=1e-6)
-    npt.assert_allclose(ds.y.data, dsy.ymesh.data, rtol=1e-6)

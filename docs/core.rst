@@ -23,9 +23,11 @@ element(s).  The general information is constituted by:
 ``time``     float                          simulation time of the file
 ``istep``    integer                        simulation time step of the file
 ``wdsz``     integer                        word size, i.e. double or single precision file
-``endian``   string                         endianness of the file (little/big)
+``endian``   string                         endianness_ of the file (little/big)
 ``lims``     :ref:`datalims`                extrema of all quantities stored
 ==========   ============================   ===============================================
+
+.. _endianness: https://wizardzines.com/comics/little-endian/
 
 The element by element data is stored in:
 

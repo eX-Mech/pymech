@@ -2,6 +2,24 @@
 
 .. _xarray: https://xarray.pydata.org
 
+Installing ``pymech`` also registers as a ``xarray`` backend. This means
+in addition to :func:`open_dataset`, a file can be directly opened via
+``xarray`` as follows:
+
+>>> import xarray as xr
+>>> xr.open_dataset("case0.f00001")  # let xarray choose the backend / engine
+>>> xr.open_dataset("case0.f00001", engine="pymech")  # or explicitly mention the *engine*
+
+.. seealso::
+
+    `The backend API of xarray
+    <https://xarray.pydata.org/en/stable/internals/how-to-add-new-backend.html>`__
+    and the implementation :class:`PymechXarrayBackend` (:ref:`internals`)
+
+.. todo::
+
+    Opening as a object is not supported by :func:`pymech.neksuite.readnek`
+
 """
 import re
 from pathlib import Path
@@ -13,7 +31,10 @@ import xarray as xr
 from .neksuite import readnek
 
 
-__all__ = ("open_dataset", "open_mfdataset", "PymechXarrayBackend")
+__all__ = (
+    "open_dataset",
+    "open_mfdataset",
+)
 
 
 nek_ext_pattern = re.compile(
@@ -191,27 +212,6 @@ def _open_nek_dataset(path, drop_variables=None):
 
 
 class PymechXarrayBackend(xr.backends.BackendEntrypoint):
-    """Installing ``pymech`` also registers as a ``xarray`` backend. This means
-    in addition to :func:`open_dataset`, a file can be directly opened via
-    ``xarray`` as follows:
-
-    >>> import xarray as xr
-    >>> xr.open_dataset("case.f00001")
-
-    or by explicitly mentioning the *engine*:
-
-    >>> import xarray as xr
-    >>> xr.open_dataset("case0.f00001", engine="pymech")
-
-    References
-    ----------
-    `How to add a new backend
-    <https://xarray.pydata.org/en/stable/internals/how-to-add-new-backend.html#how-to-add-a-new-backend>`__
-
-    .. todo:: Opening as a object is not supported by :func:`pymech.neksuite.readnek`
-
-    """
-
     def guess_can_open(self, filename_or_obj):
         return can_open_nek_dataset(filename_or_obj)
 

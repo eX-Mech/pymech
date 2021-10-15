@@ -11,7 +11,7 @@ Internals
 
 
 :mod:`pymech.neksuite`
----------------------
+----------------------
 
 .. automodule:: pymech.neksuite
    :noindex:
@@ -24,5 +24,5 @@ Internals
 .. automodule:: pymech.dataset
    :noindex:
    :no-members:
-   :private-members: _open_nek_dataset, _NekDataStore
+   :private-members:  can_open_nek_dataset, _open_nek_dataset, _NekDataStore, PymechXarrayBackend
 

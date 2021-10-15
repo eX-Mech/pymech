@@ -3,6 +3,7 @@
 .. _xarray: https://xarray.pydata.org
 
 """
+import re
 from pathlib import Path
 from glob import glob
 
@@ -12,7 +13,30 @@ import xarray as xr
 from .neksuite import readnek
 
 
-__all__ = ("open_dataset", "open_mfdataset")
+__all__ = ("open_dataset", "open_mfdataset", "PymechXarrayBackend")
+
+
+nek_ext_pattern = re.compile(
+    r"""
+   .*          # one or more characters
+   \.          # character "."
+   f           # character "f"
+   (\d{5}|ld)  # 5 digits or the characters "ld"
+""",
+    re.VERBOSE,
+)
+
+
+def can_open_nek_dataset(path):
+    """A regular expression check of the file extension.
+
+    .. hint::
+
+        - Would not match: .f90 .f .fort .f0000
+        - Would match: .fld .f00001 .f12345
+
+    """
+    return nek_ext_pattern.match(str(path))
 
 
 def open_dataset(path, **kwargs):
@@ -27,11 +51,10 @@ def open_dataset(path, **kwargs):
             Keyword arguments passed on to the compatible open function.
 
     """
-    path = Path(path)
-    if path.suffix.startswith(".f"):
+    if can_open_nek_dataset(path):
         _open = _open_nek_dataset
     else:
-        raise NotImplementedError(f"Filetype: {path.suffix} is not supported.")
+        raise NotImplementedError(f"Filetype: {Path(path).suffix} is not supported.")
 
     return _open(path, **kwargs)
 
@@ -58,7 +81,7 @@ def open_mfdataset(
 
     .. todo::
 
-            To be removed when a backend entrypoint_ is implementated.
+        To be removed when a backend entrypoint_ is implementated.
 
     .. _implementation: https://github.com/pydata/xarray/blob/484d1ce5ff8969b6ca6fa942b344379725f33b9c/xarray/backends/api.py#L726
     .. _docs: https://xarray.pydata.org/en/v0.15.1/generated/xarray.open_mfdataset.html
@@ -118,7 +141,11 @@ def open_mfdataset(
             # Redo ordering from coordinates, ignoring how they were ordered
             # previously
             combined = xr.combine_by_coords(
-                datasets, compat=compat, data_vars=data_vars, coords=coords, join=join
+                datasets,
+                compat=compat,
+                data_vars=data_vars,
+                coords=coords,
+                join=join,
             )
         else:
             raise ValueError(
@@ -141,7 +168,7 @@ def open_mfdataset(
     return combined
 
 
-def _open_nek_dataset(path):
+def _open_nek_dataset(path, drop_variables=None):
     """Interface for converting Nek field files into xarray_ datasets."""
     field = readnek(path)
     if isinstance(field, int):
@@ -154,14 +181,51 @@ def _open_nek_dataset(path):
     ]
 
     # See: https://github.com/MITgcm/xmitgcm/pull/200
-    if xr.__version__ < "0.15.2":
-        ds = xr.combine_by_coords(elem_dsets)
-    else:
-        ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")
-
+    ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")
     ds.coords.update({"time": field.time})
 
+    if drop_variables:
+        ds = ds.drop_vars(drop_variables)
+
     return ds
+
+
+class PymechXarrayBackend(xr.backends.BackendEntrypoint):
+    """Installing ``pymech`` also registers as a ``xarray`` backend. This means
+    in addition to :func:`open_dataset`, a file can be directly opened via
+    ``xarray`` as follows:
+
+    >>> import xarray as xr
+    >>> xr.open_dataset("case.f00001")
+
+    or by explicitly mentioning the *engine*:
+
+    >>> import xarray as xr
+    >>> xr.open_dataset("case0.f00001", engine="pymech")
+
+    References
+    ----------
+    `How to add a new backend
+    <https://xarray.pydata.org/en/stable/internals/how-to-add-new-backend.html#how-to-add-a-new-backend>`__
+
+    .. todo:: Opening as a object is not supported by :func:`pymech.neksuite.readnek`
+
+    """
+
+    def guess_can_open(self, filename_or_obj):
+        return can_open_nek_dataset(filename_or_obj)
+
+    def open_dataset(
+        self,
+        filename_or_obj,
+        *,
+        drop_variables=None,
+        # other backend specific keyword arguments
+        # `chunks` and `cache` DO NOT go here, they are handled by xarray
+    ):
+        return _open_nek_dataset(filename_or_obj, drop_variables)
+
+    open_dataset_parameters = ("filename_or_obj", "drop_variables")
 
 
 class _NekDataStore(xr.backends.common.AbstractDataStore):

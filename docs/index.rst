@@ -88,6 +88,7 @@ interpreter of your choice:
    simsonsuite.rst
    vtksuite.rst
    dataset.rst
+   meshtools.rst
    usage.ipynb
 
 .. toctree::

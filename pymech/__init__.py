@@ -8,6 +8,7 @@
    simsonsuite
    vtksuite
    dataset
+   meshtools
    log
 
 """

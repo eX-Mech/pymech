@@ -56,6 +56,7 @@ extensions = [
     "sphinx.ext.autodoc",
     # 'sphinx.ext.autosummary',
     # "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     #  "sphinx.ext.coverage",
     #  "sphinx.ext.mathjax",
@@ -104,6 +105,14 @@ autodoc_default_options = {
 }
 
 autodoc_mock_imports = ["tvtk", "pymech._version"]
+
+# -- Options for Intersphinx -------------------------------------------------
+
+intersphinx_mapping = dict(
+    python=("https://docs.python.org/3", None),
+    nek=("https://nek5000.github.io/NekDoc", None),
+    xr=("https://xarray.pydata.org/en/stable/", None),
+)
 
 # -- MyST options ------------------------------------------------------------
 

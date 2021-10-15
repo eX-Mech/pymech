@@ -31,6 +31,7 @@ Security in case of vulnerabilities.
 
 - Dataclass {class}`pymech.neksuite.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
 - Function {func}`pymech.neksuite.read_header`
+- Module {mod}`pymech.meshtools` for manipulating meshes
 
 ### Changed
 

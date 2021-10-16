@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 env:
   PIP_CACHE_DIR: ~/.cache/pip
@@ -21,6 +21,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -46,7 +48,7 @@ jobs:
         pip install -e .[tests]
 
     - name: Run tests
-      run: pytest -s -v -n 4
+      run: pytest -s -v -n auto
 
     - name: Upload coverage
       if: ${{ success() && matrix.python-version == '3.7' }}
@@ -75,6 +77,8 @@ jobs:
             miniforge-variant: Mambaforge
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Cache conda
       uses: actions/cache@v2
@@ -107,4 +111,4 @@ jobs:
     - name: Run tests
       shell: bash -l {0}
       run: |
-        python -m pytest -s -v -n 4
+        python -m pytest -s -v -n auto

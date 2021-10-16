@@ -19,5 +19,14 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+intersphinx-python:
+	@python -msphinx.ext.intersphinx https://docs.python.org/3/objects.inv
+
+intersphinx-nek:
+	@python -msphinx.ext.intersphinx https://nek5000.github.io/NekDoc/objects.inv
+
+intersphinx-xr:
+	@python -msphinx.ext.intersphinx https://xarray.pydata.org/en/stable/objects.inv
+
 autobuild:
 	@sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html"

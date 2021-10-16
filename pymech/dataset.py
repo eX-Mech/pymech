@@ -1,22 +1,43 @@
-"""Interface for reading files as xarray_ datasets.
-
-.. _xarray: https://xarray.pydata.org
-
-"""
+import re
+from functools import partial
 from pathlib import Path
-from glob import glob
 
 import numpy as np
 import xarray as xr
 
 from .neksuite import readnek
 
+__all__ = (
+    "open_dataset",
+    "open_mfdataset",
+)
 
-__all__ = ("open_dataset", "open_mfdataset")
+
+nek_ext_pattern = re.compile(
+    r"""
+   .*          # one or more characters
+   \.          # character "."
+   f           # character "f"
+   (\d{5}|ld)  # 5 digits or the characters "ld"
+""",
+    re.VERBOSE,
+)
+
+
+def can_open_nek_dataset(path):
+    """A regular expression check of the file extension.
+
+    .. hint::
+
+        - Would not match: .f90 .f .fort .f0000
+        - Would match: .fld .f00001 .f12345
+
+    """
+    return nek_ext_pattern.match(str(path))
 
 
 def open_dataset(path, **kwargs):
-    """Helper function for opening a file as an xarray_ dataset.
+    """Helper function for opening a file as an :class:`xarray.Dataset`.
 
     Parameters
     ----------
@@ -27,121 +48,23 @@ def open_dataset(path, **kwargs):
             Keyword arguments passed on to the compatible open function.
 
     """
-    path = Path(path)
-    if path.suffix.startswith(".f"):
+    if can_open_nek_dataset(path):
         _open = _open_nek_dataset
     else:
-        raise NotImplementedError(f"Filetype: {path.suffix} is not supported.")
+        raise NotImplementedError(f"Filetype: {Path(path).suffix} is not supported.")
 
     return _open(path, **kwargs)
 
 
-def open_mfdataset(
-    paths,
-    chunks=None,
-    concat_dim="time",
-    compat="no_conflicts",
-    preprocess=None,
-    engine=None,
-    lock=None,
-    data_vars="all",
-    coords="different",
-    combine="nested",
-    autoclose=None,
-    parallel=False,
-    join="outer",
-    attrs_file=None,
-    **kwargs,
-):
-    """Helper function for opening multiple files as an xarray_ dataset.
-    Adapted from upstream implementation_. See docs_ for usage.
-
-    .. todo::
-
-            To be removed when a backend entrypoint_ is implementated.
-
-    .. _implementation: https://github.com/pydata/xarray/blob/484d1ce5ff8969b6ca6fa942b344379725f33b9c/xarray/backends/api.py#L726
-    .. _docs: https://xarray.pydata.org/en/v0.15.1/generated/xarray.open_mfdataset.html
-    .. _entrypoint: https://github.com/pydata/xarray/pull/3166
-
-    """
-    if isinstance(paths, str):
-        paths = sorted(glob(paths))
-    else:
-        paths = [str(p) if isinstance(p, Path) else p for p in paths]
-
-    if not paths:
-        raise OSError("no files to open")
-
-    # If combine='by_coords' then this is unnecessary, but quick.
-    # If combine='nested' then this creates a flat list which is easier to
-    # iterate over, while saving the originally-supplied structure as "ids"
-    if combine == "nested":
-        if isinstance(concat_dim, (str, xr.DataArray)) or concat_dim is None:
-            concat_dim = [concat_dim]
-
-    open_kwargs = dict()
-
-    if parallel:
-        import dask
-
-        # wrap the open_dataset, getattr, and preprocess with delayed
-        open_ = dask.delayed(open_dataset)
-        if preprocess is not None:
-            preprocess = dask.delayed(preprocess)
-    else:
-        open_ = open_dataset
-
-    datasets = [open_(p, **open_kwargs) for p in paths]
-    if preprocess is not None:
-        datasets = [preprocess(ds) for ds in datasets]
-
-    if parallel:
-        # calling compute here will return the datasets
-        # the underlying datasets will still be stored as dask arrays
-        (datasets,) = dask.compute(datasets)
-
-    # Combine all datasets, closing them in case of a ValueError
-    try:
-        if combine == "nested":
-            # Combined nested list by successive concat and merge operations
-            # along each dimension, using structure given by "ids"
-            combined = xr.combine_nested(
-                datasets,
-                concat_dim=concat_dim,
-                compat=compat,
-                data_vars=data_vars,
-                coords=coords,
-                join=join,
-            )
-        elif combine == "by_coords":
-            # Redo ordering from coordinates, ignoring how they were ordered
-            # previously
-            combined = xr.combine_by_coords(
-                datasets, compat=compat, data_vars=data_vars, coords=coords, join=join
-            )
-        else:
-            raise ValueError(
-                "{} is an invalid option for the keyword argument"
-                " ``combine``".format(combine)
-            )
-    except ValueError:
-        for ds in datasets:
-            ds.close()
-        raise
-
-    # read global attributes from the attrs_file or from the first dataset
-    if attrs_file is not None:
-        if isinstance(attrs_file, Path):
-            attrs_file = str(attrs_file)
-        combined.attrs = datasets[paths.index(attrs_file)].attrs
-    else:
-        combined.attrs = datasets[0].attrs
-
-    return combined
+open_mfdataset = partial(
+    xr.open_mfdataset, combine="nested", concat_dim="time", engine="pymech"
+)
+open_mfdataset.__doc__ = """Helper function for opening multiple files as an
+:class:`xarray.Dataset`. See :func:`xarray.open_mfdataset` for documentation on
+parameters."""
 
 
-def _open_nek_dataset(path):
+def _open_nek_dataset(path, drop_variables=None):
     """Interface for converting Nek field files into xarray_ datasets."""
     field = readnek(path)
     if isinstance(field, int):
@@ -154,14 +77,30 @@ def _open_nek_dataset(path):
     ]
 
     # See: https://github.com/MITgcm/xmitgcm/pull/200
-    if xr.__version__ < "0.15.2":
-        ds = xr.combine_by_coords(elem_dsets)
-    else:
-        ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")
-
+    ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")
     ds.coords.update({"time": field.time})
 
+    if drop_variables:
+        ds = ds.drop_vars(drop_variables)
+
     return ds
+
+
+class PymechXarrayBackend(xr.backends.BackendEntrypoint):
+    def guess_can_open(self, filename_or_obj):
+        return can_open_nek_dataset(filename_or_obj)
+
+    def open_dataset(
+        self,
+        filename_or_obj,
+        *,
+        drop_variables=None,
+        # other backend specific keyword arguments
+        # `chunks` and `cache` DO NOT go here, they are handled by xarray
+    ):
+        return _open_nek_dataset(filename_or_obj, drop_variables)
+
+    open_dataset_parameters = ("filename_or_obj", "drop_variables")
 
 
 class _NekDataStore(xr.backends.common.AbstractDataStore):

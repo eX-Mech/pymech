@@ -1,4 +1,5 @@
 from types import FunctionType
+from functools import partial
 
 
 def test_top_level():
@@ -13,4 +14,4 @@ def test_top_level():
     assert isinstance(pm.readplane, FunctionType)
     assert isinstance(pm.readdns, FunctionType)
     assert isinstance(pm.open_dataset, FunctionType)
-    assert isinstance(pm.open_mfdataset, FunctionType)
+    assert isinstance(pm.open_mfdataset, partial)

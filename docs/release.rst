@@ -12,7 +12,7 @@ Release checklist for maintainers
 
 - Ensure tests pass locally and on CI::
 
-      pytest --cov --numprocesses=4
+      pytest --numprocesses=auto
 
 - Compile documentation::
 
@@ -49,7 +49,7 @@ Release checklist for maintainers
 
 - Upload to repository::
 
-      git push --tags && git push
+      git push --atomic origin main $VERSION
 
 .. _twine: https://twine.readthedocs.io/en/latest/
 .. _TestPyPI: https://packaging.python.org/guides/using-testpypi/

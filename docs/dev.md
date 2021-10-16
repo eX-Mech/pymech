@@ -9,10 +9,10 @@ Ready to contribute? Here's how to set up Pymech for local development.
 1. Fork the `pymech` repo on GitHub.
 2. Clone your fork locally:
     ```{tab} HTTPS
-        git clone https://github.com/your_name_here/pymech.git
+        git clone --recursive https://github.com/your_name_here/pymech.git
     ```
     ```{tab} SSH
-        git clone git@github.com:your_name_here/pymech.git
+        git clone --recursive git@github.com:your_name_here/pymech.git
     ```
 3. To set up for local development, first, create a [virtual
    environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments):

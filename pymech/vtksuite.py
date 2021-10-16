@@ -53,7 +53,7 @@ def exa2vtk(field, downsample=False):
         dataset.plot()
 
     .. _MayaVi: https://docs.enthought.com/mayavi/mayavi/mlab.html
-    .. _PyVista: https://docs.pyvista.org/getting-started/simple.html
+    .. _PyVista: https://docs.pyvista.org/getting-started/index.html
 
     Parameters
     ----------

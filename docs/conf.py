@@ -80,7 +80,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "asv_bench/.asv"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -118,3 +118,26 @@ intersphinx_mapping = dict(
 
 myst_heading_anchors = 2
 myst_enable_extensions = ["amsmath", "dollarmath", "colon_fence"]
+
+
+def asv_publish():
+    import sys
+    from unittest.mock import patch
+
+    cur_dir = os.getcwd()
+    old_argv = sys.argv
+
+    try:
+        from asv.main import main
+
+        os.chdir("asv_bench")
+        sys.argv = ("asv", "publish")
+
+        with patch("sys.exit"):
+            main()
+    finally:
+        sys.argv = old_argv
+        os.chdir(cur_dir)
+
+
+asv_publish()

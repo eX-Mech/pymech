@@ -1,0 +1,9 @@
+{
+    "arch": "x86_64",
+    "cpu": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+    "machine": "archmage",
+    "num_cpu": "12",
+    "os": "Linux 5.10.74-1-lts",
+    "ram": "31.1GB",
+    "version": 1
+}

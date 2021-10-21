@@ -101,6 +101,7 @@ interpreter of your choice:
    changelog.md
    contributing.md
    thanks.md
+   Source code on GitHub <https://github.com/eX-Mech/pymech>
 
 .. Indices and tables
 

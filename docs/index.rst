@@ -97,6 +97,7 @@ interpreter of your choice:
 
    deprecations.rst
    dev.md
+   asv_bench/README.md
    changelog.md
    contributing.md
    thanks.md

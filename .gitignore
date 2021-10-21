@@ -15,6 +15,7 @@ pymech/_version.py
 .eggs
 .pytest_cache
 .coverage
+.asv
 
 # documentation (sphinx) stuff
 docs/_build

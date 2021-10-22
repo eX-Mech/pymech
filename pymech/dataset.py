@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import xarray as xr
+from xarray.core.utils import Frozen
 
 from .neksuite import readnek
 
@@ -136,7 +137,7 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
             "curvature": elem.curv,
             "curvature_type": elem.ccurv,
         }
-        return attrs
+        return Frozen(attrs)
 
     def get_variables(self):
         """Generate an xarray dataset from a single element."""
@@ -168,4 +169,4 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
                 }
             )
 
-        return data_vars
+        return Frozen(data_vars)

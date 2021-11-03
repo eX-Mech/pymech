@@ -55,7 +55,13 @@ def test_nek_ext_regex():
     assert pattern.match("case0.f12345")
 
 
-def test_xarray_backend(test_data_dir):
+def test_xarray_plugin_entrypoint():
+    plugins = xr.backends.plugins
+    assert "pymech" in plugins.list_engines()
+    assert plugins.get_backend("pymech")
+
+
+def test_xarray_open_dataset(test_data_dir):
     # With engine explicitly mentioned
     xr.open_dataset(f"{test_data_dir}/nek/channel3D_0.f00001", engine="pymech")
 

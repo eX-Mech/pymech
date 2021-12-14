@@ -1095,7 +1095,7 @@ def generate_internal_bcs(mesh, tol=1e-3):
         scales[iel] = el.smallest_edge()
 
         # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.
-        if lmin <= 0.0:
+        if scales[iel] <= 0.0:
             logger.critical(f"Detected an edge with zero length in element {iel}!")
             return -1
 

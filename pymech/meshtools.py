@@ -1091,48 +1091,70 @@ def generate_internal_bcs(mesh, tol=1e-3):
 
     # First generate a length scale for each element, equal to the smallest edge of that element.
     scales = np.zeros((mesh.nel,))
-    for (iel, (el, lmin)) in enumerate(zip(mesh.elem, scales)):
-        lmin = el.smallest_edge()
+    for (iel, el) in enumerate(mesh.elem):
+        scales[iel] = el.smallest_edge()
 
         # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.
-        if lmin <= 0.0:
+        if scales[iel] <= 0.0:
             logger.critical(f"Detected an edge with zero length in element {iel}!")
             return -1
 
-    # Now that we have the scales, we can compare the location of the faces for each pair of elements and connect them if they are close
-    nconnect = 0  # number of connections made
+    # generate lookup tables for face centers and the faces that are already connected
+    nface = 2 * mesh.ndim
+    fc = np.empty((mesh.nel, nface, 3))
+    lc = np.full((mesh.nel, nface), False, dtype=bool)
     for iel in range(mesh.nel):
         el = mesh.elem[iel]
-        lmin = scales[iel]
-        for other_iel in range(iel + 1, mesh.nel):
-            other_el = mesh.elem[other_iel]
-            other_lmin = scales[other_iel]
-            max_d = tol * min(lmin, other_lmin)
-            for iface in range(2 * mesh.ndim):
-                xf, yf, zf = el.face_center(iface)
-                for other_iface in range(2 * mesh.ndim):
-                    other_xf, other_yf, other_zf = other_el.face_center(other_iface)
-                    dist = np.sqrt(
-                        (other_xf - xf) ** 2
-                        + (other_yf - yf) ** 2
-                        + (other_zf - zf) ** 2
-                    )
-                    if dist <= max_d:
-                        for ibc in range(mesh.nbc):
-                            # increment counter for diagnostics
-                            nconnect = nconnect + 1
-                            # write the connectivity information in both directions
-                            el.bcs[ibc, iface][0] = "E"
-                            el.bcs[ibc, iface][1] = iel + 1
-                            el.bcs[ibc, iface][2] = iface + 1
-                            el.bcs[ibc, iface][3] = other_iel + 1
-                            el.bcs[ibc, iface][4] = other_iface + 1
-                            other_el.bcs[ibc, other_iface][0] = "E"
-                            other_el.bcs[ibc, other_iface][1] = other_iel + 1
-                            other_el.bcs[ibc, other_iface][2] = other_iface + 1
-                            other_el.bcs[ibc, other_iface][3] = iel + 1
-                            other_el.bcs[ibc, other_iface][4] = iface + 1
+        for iface in range(nface):
+            fc[iel,iface,:] = el.face_center(iface)
+            if el.bcs[0, iface][0] != "":
+                lc[iel,iface] = True        # mark connected faces as True
 
+    # Now that we have the scales, we can compare the location of the faces for each pair of elements and connect them if they are close
+    nconnect = 0  # number of connections made
+    for iel1 in range(mesh.nel):
+        el1   = mesh.elem[iel1]
+        lmin1 = scales[iel1]
+        for iface1 in range(nface):
+           if not lc[iel1,iface1]:              # skip if face already connected
+                xf0, yf0, zf0 = fc[iel1,iface1,:]
+                find_iel1_iface = False         # for break criterion
+                for iel2 in range(iel1 + 1, mesh.nel):
+                    el2 = mesh.elem[iel2]
+                    lmin2 = scales[iel2]
+                    max_d = tol * min(lmin1, lmin2)
+                    for iface2 in range(nface):
+                        if not lc[iel2,iface2]: # skip if face already connected
+                            xf1, yf1, zf1 = fc[iel2,iface2,:]
+                            dist = np.sqrt(
+                                  (xf1 - xf0) ** 2
+                                + (yf1 - yf0) ** 2
+                                + (zf1 - zf0) ** 2
+                            )
+                            if dist <= max_d:
+                                for ibc in range(mesh.nbc):
+                                    # increment counter for diagnostics
+                                    nconnect = nconnect + 1
+                                    # write the connectivity information in both directions
+                                    el1.bcs[ibc, iface1][0] = "E"
+                                    el1.bcs[ibc, iface1][1] = iel1 + 1
+                                    el1.bcs[ibc, iface1][2] = iface1 + 1
+                                    el1.bcs[ibc, iface1][3] = iel2 + 1
+                                    el1.bcs[ibc, iface1][4] = iface2 + 1
+                                    el2.bcs[ibc, iface2][0] = "E"
+                                    el2.bcs[ibc, iface2][1] = iel2 + 1
+                                    el2.bcs[ibc, iface2][2] = iface2 + 1
+                                    el2.bcs[ibc, iface2][3] = iel1 + 1
+                                    el2.bcs[ibc, iface2][4] = iface1 + 1
+                                # update logical arrays
+                                lc[iel1,iface1] = True
+                                lc[iel2,iface2] = True
+                                # each face of iel1 can only be connected to a single
+                                # face of another element, break loops once connected
+                                find_iel1_iface = True
+                                break
+                    if find_iel1_iface:
+                        break   # this is the long loop iel2 over all elements!
     return nconnect
 
 

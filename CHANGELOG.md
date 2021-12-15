@@ -39,6 +39,7 @@ Security in case of vulnerabilities.
 - Attributes `lr1` and `var` {class}`pymech.core.Elem` are tuples instead of lists
 - Attributes of {class}`pymech.core.DataLims` are now immutable tuples
 - {func}`pymech.dataset.open_mfdataset` is now a partial function. This change should be fully backwards compatible
+- {func}`pymech.neksuite.readnek` has a `dtype` option to set the floating point data type.
 
 ### Deprecated
 

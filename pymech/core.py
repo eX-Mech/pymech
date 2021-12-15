@@ -225,7 +225,7 @@ class Elem:
 class HexaData:
     """A class containing data related to a hexahedral mesh"""
 
-    def __init__(self, ndim, nel, lr1, var, nbc=0):
+    def __init__(self, ndim, nel, lr1, var, nbc=0, dtype="float64"):
         self.ndim = ndim
         self.nel = nel
         self.ncurv = []
@@ -236,7 +236,7 @@ class HexaData:
         self.istep = []
         self.wdsz = []
         self.endian = []
-        self.elem = [Elem(var, lr1, nbc) for _ in repeat(nel)]
+        self.elem = [Elem(var, lr1, nbc, dtype) for _ in repeat(nel)]
         self.elmap = np.linspace(1, nel, nel, dtype=np.int32)
 
     def __repr__(self):

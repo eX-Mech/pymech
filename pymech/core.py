@@ -95,28 +95,40 @@ class DataLims:
 # ==============================================================================
 class Elem:
     """A class containing one hexahedral element of Nek5000/SIMSON flow
-    field
+    field.
+
+    Parameters
+    ----------
+    var : iterable
+        Iterable of integers of size 5, indicating how many variables are to be initialized
+    lr1 : iterable
+        Iterable of integers of size 3, defining the shape of an element as ``(lx, ly, lz)``
+    nbc : int
+        Number of boundary conditions
+    dtype : str
+        Floating point data type. Typical values are 'f4' or 'float32' for
+        single precision, 'f8' or 'float64' for double precision
 
     """
 
-    def __init__(self, var, lr1, nbc):
+    def __init__(self, var, lr1, nbc, dtype="float64"):
         #                    x,y,z   lz      ly      lx
-        self.pos = np.zeros((3, lr1[2], lr1[1], lr1[0]))
+        self.pos = np.zeros((3, lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    one per edge
-        self.curv = np.zeros((12, 5))
+        self.curv = np.zeros((12, 5), dtype=dtype)
         #             curvature type
-        self.ccurv = ["" for i in range(12)]
+        self.ccurv = ["" for _ in repeat(12)]
         #                    u,v,w   lz      ly      lx
-        self.vel = np.zeros((3, lr1[2], lr1[1], lr1[0]))
+        self.vel = np.zeros((3, lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    p       lz      ly      lx
-        self.pres = np.zeros((var[2], lr1[2], lr1[1], lr1[0]))
+        self.pres = np.zeros((var[2], lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    T       lz      ly      lx
-        self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]))
+        self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    s_i     lz      ly      lx
-        self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
+        self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    list of 8 parameters, one per face
         #                    one column for velocity, one for temperature, and one for each scalar
-        self.bcs = np.zeros((nbc, 6), dtype="U3, i4, i4, f8, f8, f8, f8, f8")
+        self.bcs = np.zeros((nbc, 6), dtype="U3, i4, i4" + f", {dtype}" * 5)
 
     def __repr__(self):
         message = f"<elem centered at {self.centroid}>"

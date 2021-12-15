@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import xarray as xr
+from xarray.core.utils import Frozen
 
 from .neksuite import readnek
 
@@ -113,9 +114,10 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 
     """
 
+    axes = ("z", "y", "x")
+
     def __init__(self, elem):
         self.elem = elem
-        self.axes = ("z", "y", "x")
 
     def meshgrid_to_dim(self, mesh):
         """Reverse of np.meshgrid. This method extracts one-dimensional
@@ -135,7 +137,7 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
             "curvature": elem.curv,
             "curvature_type": elem.ccurv,
         }
-        return attrs
+        return Frozen(attrs)
 
     def get_variables(self):
         """Generate an xarray dataset from a single element."""
@@ -146,25 +148,25 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
             ax[2]: self.meshgrid_to_dim(elem.pos[0]),  # x
             ax[1]: self.meshgrid_to_dim(elem.pos[1]),  # y
             ax[0]: self.meshgrid_to_dim(elem.pos[2]),  # z
-            "xmesh": (ax, elem.pos[0]),
-            "ymesh": (ax, elem.pos[1]),
-            "zmesh": (ax, elem.pos[2]),
-            "ux": (ax, elem.vel[0]),
-            "uy": (ax, elem.vel[1]),
-            "uz": (ax, elem.vel[2]),
+            "xmesh": xr.Variable(ax, elem.pos[0]),
+            "ymesh": xr.Variable(ax, elem.pos[1]),
+            "zmesh": xr.Variable(ax, elem.pos[2]),
+            "ux": xr.Variable(ax, elem.vel[0]),
+            "uy": xr.Variable(ax, elem.vel[1]),
+            "uz": xr.Variable(ax, elem.vel[2]),
         }
         if elem.pres.size:
-            data_vars["pressure"] = ax, elem.pres[0]
+            data_vars["pressure"] = xr.Variable(ax, elem.pres[0])
 
         if elem.temp.size:
-            data_vars["temperature"] = ax, elem.temp[0]
+            data_vars["temperature"] = xr.Variable(ax, elem.temp[0])
 
         if elem.scal.size:
             data_vars.update(
                 {
-                    "s{:02d}".format(iscalar + 1): (ax, elem.scal[iscalar])
+                    "s{:02d}".format(iscalar + 1): xr.Variable(ax, elem.scal[iscalar])
                     for iscalar in range(elem.scal.shape[0])
                 }
             )
 
-        return data_vars
+        return Frozen(data_vars)

@@ -29,4 +29,4 @@ intersphinx-xr:
 	@python -msphinx.ext.intersphinx https://xarray.pydata.org/en/stable/objects.inv
 
 autobuild:
-	@sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html"
+	@sphinx-autobuild --watch ../pymech --re-ignore '_build\/.*' "$(SOURCEDIR)" "$(BUILDDIR)/html"

@@ -1,11 +1,28 @@
 """Core data structures for pymech"""
 import copy
 from textwrap import dedent, indent
+import itertools
 from itertools import product
-from functools import reduce
+from functools import reduce, partial
 
 import numpy as np
 from pymech.log import logger
+
+
+"""Repeat N times. Pythonic idiom to use when the iterated value is discarded.
+
+Example
+-------
+Instead of:
+
+>>> [0 for _ in range(10)]
+
+You could use:
+
+>>> [0 for _ in repeat(10)]
+
+"""
+repeat = partial(itertools.repeat, None)
 
 
 # ==============================================================================
@@ -207,7 +224,7 @@ class HexaData:
         self.istep = []
         self.wdsz = []
         self.endian = []
-        self.elem = [Elem(var, lr1, nbc) for i in range(nel)]
+        self.elem = [Elem(var, lr1, nbc) for _ in repeat(nel)]
         self.elmap = np.linspace(1, nel, nel, dtype=np.int32)
 
     def __repr__(self):

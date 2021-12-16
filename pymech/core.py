@@ -236,6 +236,10 @@ class HexaData:
         self.istep = []
         self.wdsz = []
         self.endian = []
+        if isinstance(dtype, type):
+            # For example np.float64 -> "float64"
+            dtype = dtype.__name__
+
         self.elem = [Elem(var, lr1, nbc, dtype) for _ in repeat(nel)]
         self.elmap = np.linspace(1, nel, nel, dtype=np.int32)
 

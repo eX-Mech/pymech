@@ -2,6 +2,7 @@ import math
 import time
 from textwrap import dedent
 
+import numpy as np
 from numpy import testing as npt
 
 from pymech.log import logger
@@ -114,11 +115,13 @@ def test_readnek_scalars(test_data_dir):
     import pymech.neksuite as ns
 
     # 2D statistics file
+    dtype = np.float32
     fname = f"{test_data_dir}/nek/stsabl0.f00001"
-    field = ns.readnek(fname)
+    field = ns.readnek(fname, dtype)
 
     ux_min, ux_max = field.lims.scal[0]
     assert math.isclose(ux_max, 5.3, abs_tol=0.1)
+    assert field.elem[0].scal.dtype == np.dtype(dtype)
 
 
 def test_writenek_scalars(test_data_dir, tmpdir):
@@ -409,7 +412,6 @@ def test_delete_internal_bcs(test_data_dir):
 def test_extrude(test_data_dir):
     import pymech.neksuite as ns
     import pymech.meshtools as mt
-    import numpy as np
 
     fname = f"{test_data_dir}/nek/2D_section_R360.re2"
     nz = 4
@@ -426,7 +428,6 @@ def test_extrude(test_data_dir):
 
 
 def test_extrude_refine(test_data_dir):
-    import numpy as np
     import pymech.neksuite as ns
     import pymech.meshtools as mt
     from itertools import product

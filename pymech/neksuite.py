@@ -157,7 +157,7 @@ def readnek(fname, dtype="float64"):
     ----------
     fname : str
         File name
-    dtype : str
+    dtype : str or type
         Floating point data type. See also :class:`pymech.core.Elem`.
     """
     #

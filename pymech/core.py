@@ -1,11 +1,28 @@
 """Core data structures for pymech"""
 import copy
 from textwrap import dedent, indent
+import itertools
 from itertools import product
-from functools import reduce
+from functools import reduce, partial
 
 import numpy as np
 from pymech.log import logger
+
+
+"""Repeat N times. Pythonic idiom to use when the iterated value is discarded.
+
+Example
+-------
+Instead of:
+
+>>> [0 for _ in range(10)]
+
+You could use:
+
+>>> [0 for _ in repeat(10)]
+
+"""
+repeat = partial(itertools.repeat, None)
 
 
 # ==============================================================================
@@ -78,28 +95,40 @@ class DataLims:
 # ==============================================================================
 class Elem:
     """A class containing one hexahedral element of Nek5000/SIMSON flow
-    field
+    field.
+
+    Parameters
+    ----------
+    var : iterable
+        Iterable of integers of size 5, indicating how many variables are to be initialized
+    lr1 : iterable
+        Iterable of integers of size 3, defining the shape of an element as ``(lx, ly, lz)``
+    nbc : int
+        Number of boundary conditions
+    dtype : str
+        Floating point data type. Typical values are 'f4' or 'float32' for
+        single precision, 'f8' or 'float64' for double precision
 
     """
 
-    def __init__(self, var, lr1, nbc):
+    def __init__(self, var, lr1, nbc, dtype="float64"):
         #                    x,y,z   lz      ly      lx
-        self.pos = np.zeros((3, lr1[2], lr1[1], lr1[0]))
+        self.pos = np.zeros((3, lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    one per edge
-        self.curv = np.zeros((12, 5))
+        self.curv = np.zeros((12, 5), dtype=dtype)
         #             curvature type
-        self.ccurv = ["" for i in range(12)]
+        self.ccurv = ["" for _ in repeat(12)]
         #                    u,v,w   lz      ly      lx
-        self.vel = np.zeros((3, lr1[2], lr1[1], lr1[0]))
+        self.vel = np.zeros((3, lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    p       lz      ly      lx
-        self.pres = np.zeros((var[2], lr1[2], lr1[1], lr1[0]))
+        self.pres = np.zeros((var[2], lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    T       lz      ly      lx
-        self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]))
+        self.temp = np.zeros((var[3], lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    s_i     lz      ly      lx
-        self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]))
+        self.scal = np.zeros((var[4], lr1[2], lr1[1], lr1[0]), dtype=dtype)
         #                    list of 8 parameters, one per face
         #                    one column for velocity, one for temperature, and one for each scalar
-        self.bcs = np.zeros((nbc, 6), dtype="U3, i4, i4, f8, f8, f8, f8, f8")
+        self.bcs = np.zeros((nbc, 6), dtype="U3, i4, i4" + f", {dtype}" * 5)
 
     def __repr__(self):
         message = f"<elem centered at {self.centroid}>"
@@ -196,7 +225,7 @@ class Elem:
 class HexaData:
     """A class containing data related to a hexahedral mesh"""
 
-    def __init__(self, ndim, nel, lr1, var, nbc=0):
+    def __init__(self, ndim, nel, lr1, var, nbc=0, dtype="float64"):
         self.ndim = ndim
         self.nel = nel
         self.ncurv = []
@@ -207,7 +236,11 @@ class HexaData:
         self.istep = []
         self.wdsz = []
         self.endian = []
-        self.elem = [Elem(var, lr1, nbc) for i in range(nel)]
+        if isinstance(dtype, type):
+            # For example np.float64 -> "float64"
+            dtype = dtype.__name__
+
+        self.elem = [Elem(var, lr1, nbc, dtype) for _ in repeat(nel)]
         self.elmap = np.linspace(1, nel, nel, dtype=np.int32)
 
     def __repr__(self):

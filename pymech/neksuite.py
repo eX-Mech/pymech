@@ -150,13 +150,15 @@ def read_header(fp: io.BufferedReader) -> Header:
 
 
 # ==============================================================================
-def readnek(fname):
+def readnek(fname, dtype="float64"):
     """A function for reading binary data from the nek5000 binary format
 
     Parameters
     ----------
     fname : str
-            file name
+        File name
+    dtype : str or type
+        Floating point data type. See also :class:`pymech.core.Elem`.
     """
     #
     try:
@@ -190,14 +192,14 @@ def readnek(fname):
     #
     # read element map for the file
     elmap = infile.read(4 * h.nb_elems_file)
-    elmap = list(struct.unpack(emode + h.nb_elems_file * "i", elmap))
+    elmap = struct.unpack(emode + h.nb_elems_file * "i", elmap)
     #
     # ---------------------------------------------------------------------------
     # READ DATA
     # ---------------------------------------------------------------------------
     #
     # initialize data structure
-    data = HexaData(h.nb_dims, h.nb_elems, h.orders, h.nb_vars, 0)
+    data = HexaData(h.nb_dims, h.nb_elems, h.orders, h.nb_vars, 0, dtype)
     data.time = h.time
     data.istep = h.istep
     data.wdsz = h.wdsz

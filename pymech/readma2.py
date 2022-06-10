@@ -1,3 +1,9 @@
+import struct
+
+import numpy as np
+from .log import logger
+
+
 def readma2(fname,ldim):
     """A function for reading binary map files (*.ma2) for nek5000.
 

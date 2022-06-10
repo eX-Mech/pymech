@@ -4,7 +4,8 @@ import numpy as np
 from .log import logger
 
 
-def readma2(fname,ldim):
+
+def readma2(fname):
     """A function for reading binary map files (*.ma2) for nek5000.
 
     The map file comtains, for each element in the mesh, the id of the MPI rank that owns it 
@@ -17,8 +18,13 @@ def readma2(fname,ldim):
     ----------
     fname : str
             file name
-    ldim  : int
-            dimension of the mesh
+
+    Return values
+    -------------
+    cell  : 2d int nparray
+            list of the vertices for each element of the mesh (in global address space)
+    procmap  : 1d int nparray
+            processor map (0-based) indicating ownership for each element of the mesh
     """
     try:
         infile = open(fname, "rb")
@@ -28,13 +34,14 @@ def readma2(fname,ldim):
     #
     # read header
     header   = infile.read(132).split()
-    nel      = int(header[1])
-    nactive  = int(header[2])
-    depth    = int(header[3])
-    d2       = int(header[4])
-    npts     = int(header[5])
-    nrnk     = int(header[6])
-    noutflow = int(header[7])
+    nel      = int(header[1])       # number of elements in mesh
+    nactive  = int(header[2])       # number of active elements (nrank - noutflow)
+    nrank    = int(header[6])       # number of unique GLL points in the mesh 
+    noutflow = int(header[7])       # number of points on outflow boundaries ('o  ')
+    npts     = int(header[5])       # npts  = (2**ldim)*nel: total number of GLL points in the mesh 
+    # these values can be computed from the others but are included in the header
+    depth    = int(header[3])       # depth = log2(nel)    : number of levels in the binary partition tree
+    d2       = int(header[4])       # d2    = 2**d         : maximum number of elements in partition tree of depth d
     # always double precision
     wdsz    = 4
     inttype = 'i'
@@ -59,11 +66,11 @@ def readma2(fname,ldim):
 
     # read the entire contents of the file
     # for each element, there are nvert vertices and a processor id
-    nvert = 2**ldim
-    buf = infile.read((nvert + 1) * wdsz * nel)
+    nvert = int(npts/nel)   # 2**ldim
+    buf   = infile.read((nvert + 1) * wdsz * nel)
     
     # processor map (0-based)
-    pmap = np.empty((nel,))
+    procmap = np.empty((nel,))
     # list of vertices for each element (in global address space)
     cell = np.empty((nel,nvert))
     for iel in range(nel):
@@ -73,10 +80,10 @@ def readma2(fname,ldim):
                 count  = nvert + 1,
                 offset = (nvert + 1) * wdsz * iel
             )
-        pmap[iel] = fi[0]
-        cell[iel,:] = fi[1:]
+        procmap[iel] = fi[0]
+        cell[iel,:]  = fi[1:]
     # close file
     infile.close()
     #
     # output
-    return pmap, cell
+    return cell, procmap

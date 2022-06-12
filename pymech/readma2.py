@@ -36,9 +36,9 @@ def readma2(fname):
     header   = infile.read(132).split()
     nel      = int(header[1])       # number of elements in mesh
     nactive  = int(header[2])       # number of active elements (nrank - noutflow)
-    nrank    = int(header[6])       # number of unique GLL points in the mesh 
+    npts     = int(header[5])       # npts  = (2**ldim)*nel: total number of element vertices in the mesh 
+    nrank    = int(header[6])       # number of unique element vertices in the mesh 
     noutflow = int(header[7])       # number of points on outflow boundaries ('o  ')
-    npts     = int(header[5])       # npts  = (2**ldim)*nel: total number of GLL points in the mesh 
     # these values can be computed from the others but are included in the header
     depth    = int(header[3])       # depth = log2(nel)    : number of levels in the binary partition tree
     d2       = int(header[4])       # d2    = 2**d         : maximum number of elements in partition tree of depth d

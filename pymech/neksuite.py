@@ -1076,7 +1076,7 @@ def readre2(fname):
     #
     # there are no GLL points here, only quad/hex vertices
     lr1 = [2, 2, ndim - 1]
-    npel = 2 ** ndim
+    npel = 2**ndim
     # the file only contains geometry
     var = [ndim, 0, 0, 0, 0]
     # allocate structure
@@ -1265,7 +1265,7 @@ def writere2(fname, data):
     # ---------------------------------------------------------------------------
     #
     # compute total number of points per element
-    npel = 2 ** ndim
+    npel = 2**ndim
 
     def write_data_to_file(a):
         """Write the geometry of an element to the output file in double precision"""

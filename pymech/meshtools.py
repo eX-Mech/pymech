@@ -930,7 +930,7 @@ def edge_mid(el, iedge):
             dmid = (
                 abs(radius)
                 - (
-                    radius ** 2
+                    radius**2
                     - (pos2[0] - pos1[0]) ** 2 / 4.0
                     - (pos2[1] - pos1[1]) ** 2 / 4.0
                 )
@@ -1020,10 +1020,10 @@ def edge_circle(el, iedge, midpoint):
 
     if area > 0.0001 * d1 * d2:
         radius = d1 * d2 * d3 / (4 * area)
-        alpha1 = d2 ** 2 * (d1 ** 2 + d3 ** 2 - d2 ** 2) / 2.0
-        alpha2 = d3 ** 2 * (d2 ** 2 + d1 ** 2 - d3 ** 2) / 2.0
-        alpha3 = d1 ** 2 * (d3 ** 2 + d2 ** 2 - d1 ** 2) / 2.0
-        center = (alpha1 * pos1 + alpha2 * midpoint + alpha3 * pos2) / (8.0 * area ** 2)
+        alpha1 = d2**2 * (d1**2 + d3**2 - d2**2) / 2.0
+        alpha2 = d3**2 * (d2**2 + d1**2 - d3**2) / 2.0
+        alpha3 = d1**2 * (d3**2 + d2**2 - d1**2) / 2.0
+        center = (alpha1 * pos1 + alpha2 * midpoint + alpha3 * pos2) / (8.0 * area**2)
         if (
             (side1[0] - side3[0]) * (side2[1] - side1[1])
             - (side1[0] - side2[0]) * (side3[1] - side1[1])
@@ -1106,30 +1106,28 @@ def generate_internal_bcs(mesh, tol=1e-3):
     for iel in range(mesh.nel):
         el = mesh.elem[iel]
         for iface in range(nface):
-            fc[iel,iface,:] = el.face_center(iface)
+            fc[iel, iface, :] = el.face_center(iface)
             if el.bcs[0, iface][0] != "":
-                lc[iel,iface] = True        # mark connected faces as True
+                lc[iel, iface] = True  # mark connected faces as True
 
     # Now that we have the scales, we can compare the location of the faces for each pair of elements and connect them if they are close
     nconnect = 0  # number of connections made
     for iel1 in range(mesh.nel):
-        el1   = mesh.elem[iel1]
+        el1 = mesh.elem[iel1]
         lmin1 = scales[iel1]
         for iface1 in range(nface):
-           if not lc[iel1,iface1]:              # skip if face already connected
-                xf0, yf0, zf0 = fc[iel1,iface1,:]
-                find_iel1_iface = False         # for break criterion
+            if not lc[iel1, iface1]:  # skip if face already connected
+                xf0, yf0, zf0 = fc[iel1, iface1, :]
+                find_iel1_iface = False  # for break criterion
                 for iel2 in range(iel1 + 1, mesh.nel):
                     el2 = mesh.elem[iel2]
                     lmin2 = scales[iel2]
                     max_d = tol * min(lmin1, lmin2)
                     for iface2 in range(nface):
-                        if not lc[iel2,iface2]: # skip if face already connected
-                            xf1, yf1, zf1 = fc[iel2,iface2,:]
+                        if not lc[iel2, iface2]:  # skip if face already connected
+                            xf1, yf1, zf1 = fc[iel2, iface2, :]
                             dist = np.sqrt(
-                                  (xf1 - xf0) ** 2
-                                + (yf1 - yf0) ** 2
-                                + (zf1 - zf0) ** 2
+                                (xf1 - xf0) ** 2 + (yf1 - yf0) ** 2 + (zf1 - zf0) ** 2
                             )
                             if dist <= max_d:
                                 for ibc in range(mesh.nbc):
@@ -1147,14 +1145,14 @@ def generate_internal_bcs(mesh, tol=1e-3):
                                     el2.bcs[ibc, iface2][3] = iel1 + 1
                                     el2.bcs[ibc, iface2][4] = iface1 + 1
                                 # update logical arrays
-                                lc[iel1,iface1] = True
-                                lc[iel2,iface2] = True
+                                lc[iel1, iface1] = True
+                                lc[iel2, iface2] = True
                                 # each face of iel1 can only be connected to a single
                                 # face of another element, break loops once connected
                                 find_iel1_iface = True
                                 break
                     if find_iel1_iface:
-                        break   # this is the long loop iel2 over all elements!
+                        break  # this is the long loop iel2 over all elements!
     return nconnect
 
 
@@ -1268,7 +1266,7 @@ def exponential_refinement_parameter(l0, ltot, n, tol=1e-14):
                 + (n - 1) * (n - 2) * (n - 3) / 24 * (x - 1) ** 3
             )
         else:
-            return log((x ** n - 1) / (x - 1) * l0 / ltot)
+            return log((x**n - 1) / (x - 1) * l0 / ltot)
 
     def err_prime(x):
         # We can further approximate the derivative of the error function around x=1

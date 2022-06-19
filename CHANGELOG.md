@@ -29,10 +29,11 @@ Security in case of vulnerabilities.
 
 ### Added
 
-- Dataclass {class}`pymech.neksuite.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
-- Function {func}`pymech.neksuite.read_header`
+- Dataclass {class}`pymech.neksuite.field.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
+- Function {func}`pymech.neksuite.field.read_header`
 - Module {mod}`pymech.meshtools` for manipulating meshes
 - Xarray backend ``pymech``. See {ref}`dataset`
+- Function {func}`pymech.neksuite.readma2`
 
 ### Changed
 
@@ -40,6 +41,7 @@ Security in case of vulnerabilities.
 - Attributes of {class}`pymech.core.DataLims` are now immutable tuples
 - {func}`pymech.dataset.open_mfdataset` is now a partial function. This change should be fully backwards compatible
 - {func}`pymech.neksuite.readnek` has a `dtype` option to set the floating point data type.
+- {mod}`pymech.neksuite` is now a sub-package with three modules.
 
 ### Deprecated
 

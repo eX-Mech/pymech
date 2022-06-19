@@ -6,52 +6,64 @@ import sys
 from typing import Optional, Tuple
 
 import numpy as np
-from pydantic.dataclasses import ValidationError, dataclass
+
+# from pydantic.dataclasses import ValidationError, dataclass
+from attrs import define, field
+
 from pymech.core import HexaData
 from pymech.log import logger
 
 
-@dataclass
+def _as_unicode(string):
+    try:
+        return string.decode()
+    except AttributeError:
+        return string
+
+
+def _as_tuple_of_ints(seq):
+    return tuple(int(s) for s in seq)
+
+
+@define
 class Header:
     """Dataclass for Nek5000 field file header. This relies on the package
-    pydantic_ and its ability to do type-checking and type-coercion of the
+    attrs_ and its ability to do type-validation and type-conversion of the
     header metadata.
 
-    .. _pydantic: https://pydantic-docs.helpmanual.io/
+    .. _attrs: https://www.attrs.org/en/stable/
 
     """
 
     # get word size: single or double precision
-    wdsz: int
+    wdsz: int = field(converter=int)
     # get polynomial order
-    orders: Tuple[int, ...]
+    orders: Tuple[int, ...] = field(converter=_as_tuple_of_ints)
     # get number of elements
-    nb_elems: int
+    nb_elems: int = field(converter=int)
     # get number of elements in the file
-    nb_elems_file: int
+    nb_elems_file: int = field(converter=int)
     # get current time
-    time: float
+    time: float = field(converter=float)
     # get current time step
-    istep: int
+    istep: int = field(converter=int)
     # get file id
-    fid: int
+    fid: int = field(converter=int)
     # get tot number of files
-    nb_files: int
+    nb_files: int = field(converter=int)
 
     # get variables [XUPTS[01-99]]
-    variables: Optional[str] = None
-
+    variables: Optional[str] = field(converter=_as_unicode, factory=bytes)
     # floating point precision
-    realtype: Optional[str] = None
-
+    realtype: Optional[str] = field(factory=str)
     # compute total number of points per element
-    nb_pts_elem: Optional[int] = None
+    nb_pts_elem: Optional[int] = field(factory=int)
     # get number of physical dimensions
-    nb_dims: Optional[int] = None
+    nb_dims: Optional[int] = field(factory=int)
     # get number of variables
-    nb_vars: Optional[Tuple[int, ...]] = None
+    nb_vars: Optional[Tuple[int, ...]] = field(factory=tuple)
 
-    def __post_init_post_parse__(self):
+    def __attrs_post_init__(self):
         # get word size: single or double precision
         wdsz = self.wdsz
         if not self.realtype:
@@ -70,7 +82,7 @@ class Header:
             self.nb_dims = 2 + int(orders[2] > 1)
 
         if not self.variables and not self.nb_vars:
-            raise ValidationError("Both variables and nb_vars cannot be None", self)
+            raise ValueError("Both variables and nb_vars cannot be None")
         elif self.variables:
             self.nb_vars = self._variables_to_nb_vars()
         elif self.nb_vars:

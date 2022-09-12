@@ -82,7 +82,7 @@ class Header:
             self.nb_dims = 2 + int(orders[2] > 1)
 
         if not self.variables and not self.nb_vars:
-            raise ValueError("Both variables and nb_vars cannot be None")
+            raise ValueError("Both variables and nb_vars cannot be uninitialized.")
         elif self.variables:
             self.nb_vars = self._variables_to_nb_vars()
         elif self.nb_vars:

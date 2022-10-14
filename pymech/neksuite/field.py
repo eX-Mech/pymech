@@ -9,7 +9,6 @@ from typing import Optional, Tuple, Union, BinaryIO
 
 import numpy as np
 
-# from pydantic.dataclasses import ValidationError, dataclass
 from attrs import define, field
 
 from pymech.core import HexaData

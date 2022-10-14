@@ -112,3 +112,8 @@ jobs:
       shell: bash -l {0}
       run: |
         python -m pytest -s -v -n auto
+
+    - name: Run mypy
+      shell: bash -l {0}
+      run: |
+        python -m mypy ./pymech --show-error-codes

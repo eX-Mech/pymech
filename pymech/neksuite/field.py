@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 import io
 import struct
 import sys
-from typing import Optional, Tuple
+from pathlib import Path
+from typing import Optional, Tuple, Union, BinaryIO
 
 import numpy as np
 
@@ -14,15 +16,19 @@ from pymech.core import HexaData
 from pymech.log import logger
 
 
-def _as_unicode(string):
-    try:
+def _as_unicode(string: StringOrBytes) -> str:
+    if isinstance(string, bytes):
         return string.decode()
-    except AttributeError:
+    else:
         return string
 
 
 def _as_tuple_of_ints(seq):
     return tuple(int(s) for s in seq)
+
+
+StringOrBytes = Union[str, bytes]
+PathLike = Union[str, os.PathLike]
 
 
 @define
@@ -52,16 +58,19 @@ class Header:
     # get tot number of files
     nb_files: int = field(converter=int)
 
+    # NOTE: field(factory=...) specifies the default value for the field.
+    # https://www.attrs.org/en/stable/init.html#defaults
+
     # get variables [XUPTS[01-99]]
-    variables: Optional[str] = field(converter=_as_unicode, factory=bytes)
+    variables: str = field(converter=_as_unicode, factory=str)
     # floating point precision
-    realtype: Optional[str] = field(factory=str)
+    realtype: str = field(factory=str)
     # compute total number of points per element
-    nb_pts_elem: Optional[int] = field(factory=int)
+    nb_pts_elem: int = field(factory=int)
     # get number of physical dimensions
-    nb_dims: Optional[int] = field(factory=int)
+    nb_dims: int = field(factory=int)
     # get number of variables
-    nb_vars: Optional[Tuple[int, ...]] = field(factory=tuple)
+    nb_vars: Tuple[int, ...] = field(factory=tuple)
 
     def __attrs_post_init__(self):
         # get word size: single or double precision
@@ -144,17 +153,26 @@ class Header:
         return header.ljust(132).encode("utf-8")
 
 
-def read_header(fp: io.BufferedReader) -> Header:
+def read_header(path_or_file_obj: Union[PathLike, BinaryIO]) -> Header:
     """Make a :class:`pymech.neksuite.Header` instance from a file buffer
     opened in binary mode.
 
     """
-    header = fp.read(132).split()
+    if isinstance(path_or_file_obj, (str, os.PathLike)):
+        with Path(path_or_file_obj).open("rb") as fp:
+            header = fp.read(132).split()
+    elif isinstance(path_or_file_obj, io.BufferedReader):
+        fp = path_or_file_obj
+        header = fp.read(132).split()
+    else:
+        raise ValueError("Should be a path or opened file object in 'rb' mode.")
+
     logger.debug(b"Header: " + b" ".join(header))
     if len(header) < 12:
         raise IOError("Header of the file was too short.")
 
-    return Header(header[1], header[2:5], *header[5:12])
+    # Relying on attrs converter to type-cast. Mypy will complain
+    return Header(header[1], header[2:5], *header[5:12])  # type: ignore[arg-type]
 
 
 # ==============================================================================

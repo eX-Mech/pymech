@@ -61,7 +61,7 @@ interpreter of your choice:
 
    ::
 
-      conda create -n my-env -c conda-forge pypy pip xarray pydantic
+      conda create -n my-env -c conda-forge pypy pip xarray
       conda activate my-env
       pypy -m pip install pymech
 

@@ -20,6 +20,12 @@ readnek() is clever enough to figure out the rest.
 The output is a single :py:class:`pymech.core.HexaData` data structure containing all
 the information that was stored in the file.
 
+.. note::
+
+    If you are only interested in the metadata (for example, the simulation
+    time) of a solution file a quicker solution would be to execute
+    :py:func:`pymech.neksuite.field.read_header`
+
 writenek
 --------
 This function writes a binary ``.f%05d`` file in the same format that *Nek5000*

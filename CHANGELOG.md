@@ -29,7 +29,7 @@ Security in case of vulnerabilities.
 
 ### Added
 
-- Dataclass {class}`pymech.neksuite.field.Header` using [`pydantic`](https://pydantic-docs.helpmanual.io/) for reading file headers
+- Dataclass {class}`pymech.neksuite.field.Header` using [`attrs`](https://www.attrs.org/en/stable/) for reading file headers
 - Function {func}`pymech.neksuite.field.read_header`
 - Module {mod}`pymech.meshtools` for manipulating meshes
 - Xarray backend ``pymech``. See {ref}`dataset`

@@ -1,0 +1,9 @@
+{
+    "arch": "x86_64",
+    "cpu": "AMD Ryzen 7 4800H with Radeon Graphics",
+    "machine": "tuxpulse",
+    "num_cpu": "16",
+    "os": "Linux 5.15.0-10033-tuxedo",
+    "ram": "16GB",
+    "version": 1
+}

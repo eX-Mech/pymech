@@ -175,7 +175,7 @@ def read_header(path_or_file_obj: Union[PathLike, BinaryIO]) -> Header:
 
 
 # ==============================================================================
-def readnek(fname, dtype="float64"):
+def readnek(fname, dtype="float64", skip_vars=()):
     """A function for reading binary data from the nek5000 binary format
 
     Parameters
@@ -184,6 +184,10 @@ def readnek(fname, dtype="float64"):
         File name
     dtype : str or type
         Floating point data type. See also :class:`pymech.core.Elem`.
+    skip_vars: tuple[str]
+        Variables to skip. Valid values to skip are ("x", "y", "z", "ux", "uy", "uz", "p", "t", "s01", "s02", ...)
+        If empty (default), does not reads all variables available.
+
     """
     #
     try:
@@ -234,9 +238,11 @@ def readnek(fname, dtype="float64"):
     elif emode == ">":
         data.endian = "big"
 
+    data_chunk_size = h.nb_pts_elem * h.wdsz
+
     def read_file_into_data(data_var, index_var):
         """Read binary file into an array attribute of ``data.elem``"""
-        fi = infile.read(h.nb_pts_elem * h.wdsz)
+        fi = infile.read(data_chunk_size)
         fi = np.frombuffer(fi, dtype=emode + h.realtype, count=h.nb_pts_elem)
 
         # Replace elem array in-place with
@@ -244,12 +250,18 @@ def readnek(fname, dtype="float64"):
         elem_shape = h.orders[::-1]  # lz, ly, lx
         data_var[index_var, ...] = fi.reshape(elem_shape)
 
+    def skip_data(multiplier=1):
+        infile.seek(data_chunk_size * multiplier)
+
     #
     # read geometry
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
-            read_file_into_data(el.pos, idim)
+    if {"x", "y", "z"}.issubset(skip_vars):
+        skip_data(h.nb_elems * h.nb_vars[0])
+    else:
+        for iel in elmap:
+            el = data.elem[iel - 1]
+            for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
+                read_file_into_data(el.pos, idim)
     #
     # read velocity
     for iel in elmap:

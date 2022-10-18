@@ -139,6 +139,18 @@ def test_writenek_scalars(test_data_dir, tmpdir):
     npt.assert_array_equal(field.lims.scal, fieldw.lims.scal)
 
 
+def test_readnek_skip_vars(test_data_dir):
+    import pymech.neksuite as ns
+
+    fname = f"{test_data_dir}/nek/channel3D_0.f00001"
+    field_all = ns.readnek(fname)
+    field_skip = ns.readnek(fname, skip_vars=("x", "y", "z"))
+
+    for elem, elemw in zip(field_all.elem, field_skip.elem):
+        npt.assert_array_equal(elem.vel, elemw.vel)
+        npt.assert_array_equal(elem.pres, elemw.pres)
+
+
 def test_readrea(test_data_dir):
     import pymech.neksuite as ns
 

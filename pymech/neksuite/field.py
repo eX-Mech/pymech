@@ -238,11 +238,11 @@ def readnek(fname, dtype="float64", skip_vars=()):
     elif emode == ">":
         data.endian = "big"
 
-    data_chunk_size = h.nb_pts_elem * h.wdsz
+    bytes_elem = h.nb_pts_elem * h.wdsz
 
     def read_file_into_data(data_var, index_var):
         """Read binary file into an array attribute of ``data.elem``"""
-        fi = infile.read(data_chunk_size)
+        fi = infile.read(bytes_elem)
         fi = np.frombuffer(fi, dtype=emode + h.realtype, count=h.nb_pts_elem)
 
         # Replace elem array in-place with
@@ -250,18 +250,23 @@ def readnek(fname, dtype="float64", skip_vars=()):
         elem_shape = h.orders[::-1]  # lz, ly, lx
         data_var[index_var, ...] = fi.reshape(elem_shape)
 
-    def skip_data(multiplier=1):
-        infile.seek(data_chunk_size * multiplier)
+    def skip_elements(nb_elements=1):
+        infile.seek(bytes_elem * nb_elements, os.SEEK_CUR)
 
     #
     # read geometry
-    if {"x", "y", "z"}.issubset(skip_vars):
-        skip_data(h.nb_elems * h.nb_vars[0])
+    geometry_vars = "x", "y", "z"
+    if set(geometry_vars).issubset(skip_vars):
+        skip_elements(h.nb_elems * h.nb_vars[0])
     else:
         for iel in elmap:
             el = data.elem[iel - 1]
             for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
-                read_file_into_data(el.pos, idim)
+                if geometry_vars[idim] in skip_vars:
+                    skip_elements()
+                else:
+                    read_file_into_data(el.pos, idim)
+    # TODO: skip velocity, pressure and scalars
     #
     # read velocity
     for iel in elmap:

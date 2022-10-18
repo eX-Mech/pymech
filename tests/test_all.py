@@ -144,11 +144,18 @@ def test_readnek_skip_vars(test_data_dir):
 
     fname = f"{test_data_dir}/nek/channel3D_0.f00001"
     field_all = ns.readnek(fname)
-    field_skip = ns.readnek(fname, skip_vars=("x", "y", "z"))
+    field_skip_geom = ns.readnek(fname, skip_vars=("x", "y", "z"))
+    field_skip_ux_uy = ns.readnek(fname, skip_vars=("ux", "uy"))
 
-    for elem, elemw in zip(field_all.elem, field_skip.elem):
-        npt.assert_array_equal(elem.vel, elemw.vel)
-        npt.assert_array_equal(elem.pres, elemw.pres)
+    for elem, elem_skip_geom, elem_skip_ux_uy in zip(
+        field_all.elem, field_skip_geom.elem, field_skip_ux_uy.elem
+    ):
+        npt.assert_array_equal(elem.vel, elem_skip_geom.vel)
+        npt.assert_array_equal(elem.pres, elem_skip_geom.pres)
+        npt.assert_array_equal(elem.scal, elem_skip_geom.scal)
+        npt.assert_array_equal(elem.pos, elem_skip_ux_uy.pos)
+        npt.assert_array_equal(elem.pres, elem_skip_ux_uy.pres)
+        npt.assert_array_equal(elem.scal, elem_skip_ux_uy.scal)
 
 
 def test_readrea(test_data_dir):

@@ -4,6 +4,7 @@ from textwrap import dedent
 
 import numpy as np
 from numpy import testing as npt
+import pytest
 
 from pymech.log import logger
 
@@ -156,6 +157,11 @@ def test_readnek_skip_vars(test_data_dir):
         npt.assert_array_equal(elem.pos, elem_skip_ux_uy.pos)
         npt.assert_array_equal(elem.pres, elem_skip_ux_uy.pres)
         npt.assert_array_equal(elem.scal, elem_skip_ux_uy.scal)
+        with pytest.raises(AssertionError):
+            npt.assert_array_equal(elem.pos, elem_skip_geom.pos)
+
+        with pytest.raises(AssertionError):
+            npt.assert_array_equal(elem.vel, elem_skip_ux_uy.vel)
 
 
 def test_readrea(test_data_dir):

@@ -165,6 +165,23 @@ def test_readnek_skip_vars(test_data_dir):
             npt.assert_array_equal(elem.vel, elem_skip_ux_uy.vel)
 
 
+def test_readnek_skip_scalars(test_data_dir):
+    import pymech.neksuite as ns
+
+    fname = f"{test_data_dir}/nek/stsabl0.f00001"
+    field_all = ns.readnek(fname)
+    field_skip = ns.readnek(fname, skip_vars=("s02, s04"))
+    for elem, elem_skip in zip(field_all.elem, field_skip.elem):
+        npt.assert_array_equal(elem.scal[0], elem_skip.scal[0])
+        with pytest.raises(AssertionError):
+            npt.assert_array_equal(elem.scal[1], elem_skip.scal[1])  # s02
+
+        npt.assert_array_equal(elem.scal[2], elem_skip.scal[2])
+
+        with pytest.raises(AssertionError):
+            npt.assert_array_equal(elem.scal[3], elem_skip.scal[3])  # s04
+
+
 def test_readrea(test_data_dir):
     import pymech.neksuite as ns
 

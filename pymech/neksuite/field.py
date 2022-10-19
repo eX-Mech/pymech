@@ -259,7 +259,6 @@ def readnek(fname, dtype="float64", skip_vars=()):
     geometry_vars = "x", "y", "z"
     nb_vars = h.nb_vars[0]
     skip_condition = tuple(geometry_vars[idim] in skip_vars for idim in range(nb_vars))
-    # breakpoint()
     if nb_vars:
         if all(skip_condition):  # :nb_vars
             skip_elements(h.nb_elems * nb_vars)
@@ -297,27 +296,49 @@ def readnek(fname, dtype="float64", skip_vars=()):
 
     #
     # read pressure
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for ivar in range(h.nb_vars[2]):  # if 0, pressure is not read
-            read_file_into_data(el.pres, ivar)
+    nb_vars = h.nb_vars[2]
+    skip_condition = any({"p", "pressure"}.intersection(skip_vars))
+    if nb_vars:
+        if skip_condition:
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for ivar in range(nb_vars):
+                    read_file_into_data(el.pres, ivar)
+
     #
     # read temperature
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for ivar in range(h.nb_vars[3]):  # if 0, temperature is not read
-            read_file_into_data(el.temp, ivar)
+    nb_vars = h.nb_vars[3]
+    skip_condition = any({"t", "temperature"}.intersection(skip_vars))
+    if nb_vars:
+        if skip_condition:
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for ivar in range(nb_vars):
+                    read_file_into_data(el.temp, ivar)
     #
     # read scalar fields
     #
-    # NOTE: This is not a bug!
-    # Unlike other variables, scalars are in the outer loop and elements
-    # are in the inner loop
-    #
-    for ivar in range(h.nb_vars[4]):  # if 0, scalars are not read
-        for iel in elmap:
-            el = data.elem[iel - 1]
-            read_file_into_data(el.scal, ivar)
+    nb_vars = h.nb_vars[4]
+    scalar_vars = tuple(f"s{i:02d}" for i in range(1, nb_vars + 1))
+    skip_condition = tuple(scalar_vars[ivar] in skip_vars for ivar in range(nb_vars))
+    if nb_vars:
+        if all(skip_condition):
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            # NOTE: This is not a bug!
+            # Unlike other variables, scalars are in the outer loop and elements
+            # are in the inner loop
+            for ivar in range(nb_vars):
+                if skip_condition[ivar]:
+                    skip_elements(h.nb_elems)
+                else:
+                    for iel in elmap:
+                        el = data.elem[iel - 1]
+                        read_file_into_data(el.scal, ivar)
     #
     #
     # close file

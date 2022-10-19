@@ -185,8 +185,10 @@ def readnek(fname, dtype="float64", skip_vars=()):
     dtype : str or type
         Floating point data type. See also :class:`pymech.core.Elem`.
     skip_vars: tuple[str]
-        Variables to skip. Valid values to skip are ("x", "y", "z", "ux", "uy", "uz", "p", "t", "s01", "s02", ...)
-        If empty (default), does not reads all variables available.
+        Variables to skip. Valid values to skip are ``("x", "y", "z", "ux",
+        "uy", "uz", "pressure", "temperature", "s01", "s02", ...)``.  It also
+        accept some extra values ``("vx", "vy", "vz", "p", "t")``.  If empty
+        (default), it reads all variables available in the file.
 
     """
     #
@@ -253,26 +255,46 @@ def readnek(fname, dtype="float64", skip_vars=()):
     def skip_elements(nb_elements=1):
         infile.seek(bytes_elem * nb_elements, os.SEEK_CUR)
 
-    #
     # read geometry
     geometry_vars = "x", "y", "z"
-    if set(geometry_vars).issubset(skip_vars):
-        skip_elements(h.nb_elems * h.nb_vars[0])
-    else:
-        for iel in elmap:
-            el = data.elem[iel - 1]
-            for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
-                if geometry_vars[idim] in skip_vars:
-                    skip_elements()
-                else:
-                    read_file_into_data(el.pos, idim)
-    # TODO: skip velocity, pressure and scalars
-    #
+    nb_vars = h.nb_vars[0]
+    skip_condition = tuple(geometry_vars[idim] in skip_vars for idim in range(nb_vars))
+    # breakpoint()
+    if nb_vars:
+        if all(skip_condition):  # :nb_vars
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for idim in range(nb_vars):
+                    if skip_condition[idim]:
+                        skip_elements()
+                    else:
+                        read_file_into_data(el.pos, idim)
+
     # read velocity
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for idim in range(h.nb_vars[1]):  # if 0, velocity is not read
-            read_file_into_data(el.vel, idim)
+    velocity_vars1 = "ux", "uy", "uz"
+    velocity_vars2 = "vx", "vy", "vz"
+    nb_vars = h.nb_vars[1]
+    skip_condition1 = tuple(
+        velocity_vars1[idim] in skip_vars for idim in range(nb_vars)
+    )
+    skip_condition2 = tuple(
+        velocity_vars2[idim] in skip_vars for idim in range(nb_vars)
+    )
+
+    if nb_vars:
+        if all(skip_condition1) or all(skip_condition2):
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for idim in range(nb_vars):
+                    if skip_condition1[idim] or skip_condition2[idim]:
+                        skip_elements()
+                    else:
+                        read_file_into_data(el.vel, idim)
+
     #
     # read pressure
     for iel in elmap:

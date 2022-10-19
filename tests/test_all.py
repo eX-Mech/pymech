@@ -144,6 +144,7 @@ def test_readnek_skip_vars(test_data_dir):
     import pymech.neksuite as ns
 
     fname = f"{test_data_dir}/nek/channel3D_0.f00001"
+
     field_all = ns.readnek(fname)
     field_skip_geom = ns.readnek(fname, skip_vars=("x", "y", "z"))
     field_skip_ux_uy = ns.readnek(fname, skip_vars=("ux", "uy"))

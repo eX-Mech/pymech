@@ -260,7 +260,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
     nb_vars = h.nb_vars[0]
     skip_condition = tuple(geometry_vars[idim] in skip_vars for idim in range(nb_vars))
     if nb_vars:
-        if all(skip_condition):  # :nb_vars
+        if all(skip_condition):
             skip_elements(h.nb_elems * nb_vars)
         else:
             for iel in elmap:

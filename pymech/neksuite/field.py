@@ -175,7 +175,7 @@ def read_header(path_or_file_obj: Union[PathLike, BinaryIO]) -> Header:
 
 
 # ==============================================================================
-def readnek(fname, dtype="float64"):
+def readnek(fname, dtype="float64", skip_vars=()):
     """A function for reading binary data from the nek5000 binary format
 
     Parameters
@@ -184,6 +184,12 @@ def readnek(fname, dtype="float64"):
         File name
     dtype : str or type
         Floating point data type. See also :class:`pymech.core.Elem`.
+    skip_vars: tuple[str]
+        Variables to skip. Valid values to skip are ``("x", "y", "z", "ux",
+        "uy", "uz", "pressure", "temperature", "s01", "s02", ...)``.  It also
+        accept some extra values ``("vx", "vy", "vz", "p", "t")``.  If empty
+        (default), it reads all variables available in the file.
+
     """
     #
     try:
@@ -234,9 +240,11 @@ def readnek(fname, dtype="float64"):
     elif emode == ">":
         data.endian = "big"
 
+    bytes_elem = h.nb_pts_elem * h.wdsz
+
     def read_file_into_data(data_var, index_var):
         """Read binary file into an array attribute of ``data.elem``"""
-        fi = infile.read(h.nb_pts_elem * h.wdsz)
+        fi = infile.read(bytes_elem)
         fi = np.frombuffer(fi, dtype=emode + h.realtype, count=h.nb_pts_elem)
 
         # Replace elem array in-place with
@@ -244,41 +252,93 @@ def readnek(fname, dtype="float64"):
         elem_shape = h.orders[::-1]  # lz, ly, lx
         data_var[index_var, ...] = fi.reshape(elem_shape)
 
-    #
+    def skip_elements(nb_elements=1):
+        infile.seek(bytes_elem * nb_elements, os.SEEK_CUR)
+
     # read geometry
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for idim in range(h.nb_vars[0]):  # if 0, geometry is not read
-            read_file_into_data(el.pos, idim)
-    #
+    geometry_vars = "x", "y", "z"
+    nb_vars = h.nb_vars[0]
+    skip_condition = tuple(geometry_vars[idim] in skip_vars for idim in range(nb_vars))
+    if nb_vars:
+        if all(skip_condition):
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for idim in range(nb_vars):
+                    if skip_condition[idim]:
+                        skip_elements()
+                    else:
+                        read_file_into_data(el.pos, idim)
+
     # read velocity
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for idim in range(h.nb_vars[1]):  # if 0, velocity is not read
-            read_file_into_data(el.vel, idim)
+    velocity_vars1 = "ux", "uy", "uz"
+    velocity_vars2 = "vx", "vy", "vz"
+    nb_vars = h.nb_vars[1]
+    skip_condition1 = tuple(
+        velocity_vars1[idim] in skip_vars for idim in range(nb_vars)
+    )
+    skip_condition2 = tuple(
+        velocity_vars2[idim] in skip_vars for idim in range(nb_vars)
+    )
+
+    if nb_vars:
+        if all(skip_condition1) or all(skip_condition2):
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for idim in range(nb_vars):
+                    if skip_condition1[idim] or skip_condition2[idim]:
+                        skip_elements()
+                    else:
+                        read_file_into_data(el.vel, idim)
+
     #
     # read pressure
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for ivar in range(h.nb_vars[2]):  # if 0, pressure is not read
-            read_file_into_data(el.pres, ivar)
+    nb_vars = h.nb_vars[2]
+    skip_condition = any({"p", "pressure"}.intersection(skip_vars))
+    if nb_vars:
+        if skip_condition:
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for ivar in range(nb_vars):
+                    read_file_into_data(el.pres, ivar)
+
     #
     # read temperature
-    for iel in elmap:
-        el = data.elem[iel - 1]
-        for ivar in range(h.nb_vars[3]):  # if 0, temperature is not read
-            read_file_into_data(el.temp, ivar)
+    nb_vars = h.nb_vars[3]
+    skip_condition = any({"t", "temperature"}.intersection(skip_vars))
+    if nb_vars:
+        if skip_condition:
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            for iel in elmap:
+                el = data.elem[iel - 1]
+                for ivar in range(nb_vars):
+                    read_file_into_data(el.temp, ivar)
     #
     # read scalar fields
     #
-    # NOTE: This is not a bug!
-    # Unlike other variables, scalars are in the outer loop and elements
-    # are in the inner loop
-    #
-    for ivar in range(h.nb_vars[4]):  # if 0, scalars are not read
-        for iel in elmap:
-            el = data.elem[iel - 1]
-            read_file_into_data(el.scal, ivar)
+    nb_vars = h.nb_vars[4]
+    scalar_vars = tuple(f"s{i:02d}" for i in range(1, nb_vars + 1))
+    skip_condition = tuple(scalar_vars[ivar] in skip_vars for ivar in range(nb_vars))
+    if nb_vars:
+        if all(skip_condition):
+            skip_elements(h.nb_elems * nb_vars)
+        else:
+            # NOTE: This is not a bug!
+            # Unlike other variables, scalars are in the outer loop and elements
+            # are in the inner loop
+            for ivar in range(nb_vars):
+                if skip_condition[ivar]:
+                    skip_elements(h.nb_elems)
+                else:
+                    for iel in elmap:
+                        el = data.elem[iel - 1]
+                        read_file_into_data(el.scal, ivar)
     #
     #
     # close file

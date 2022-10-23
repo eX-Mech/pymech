@@ -31,5 +31,37 @@
         "version": "4247c82d15af70d066d71b05656858fa8f9088d8df24e2be77eb30b987a05a4b",
         "warmup_time": -1
     },
+    "bench_readnek.ReadnekSuite.time_read_skip_geom": {
+        "code": "class ReadnekSuite:\n    def time_read_skip_geom(self):\n        readnek(self.file, skip_vars=(\"x\", \"y\", \"z\"))\n\nclass Channel3D:\n    def setup(self):\n        self.file = test_data / \"nek\" / \"channel3D_0.f00001\"",
+        "min_run_count": 2,
+        "name": "bench_readnek.ReadnekSuite.time_read_skip_geom",
+        "number": 0,
+        "param_names": [],
+        "params": [],
+        "repeat": 0,
+        "rounds": 2,
+        "sample_time": 0.01,
+        "timeout": 60.0,
+        "type": "time",
+        "unit": "seconds",
+        "version": "648b33626bd1d331af4b0fee647b9027cc35a0fd5f0c607992ab741bbdd04a2f",
+        "warmup_time": -1
+    },
+    "bench_readnek.ReadnekSuite.time_read_skip_ux_uy": {
+        "code": "class ReadnekSuite:\n    def time_read_skip_ux_uy(self):\n        readnek(self.file, skip_vars=(\"ux\", \"uy\"))\n\nclass Channel3D:\n    def setup(self):\n        self.file = test_data / \"nek\" / \"channel3D_0.f00001\"",
+        "min_run_count": 2,
+        "name": "bench_readnek.ReadnekSuite.time_read_skip_ux_uy",
+        "number": 0,
+        "param_names": [],
+        "params": [],
+        "repeat": 0,
+        "rounds": 2,
+        "sample_time": 0.01,
+        "timeout": 60.0,
+        "type": "time",
+        "unit": "seconds",
+        "version": "0bb71373a40c99ef4da0c0c9a421ad39ec214e15dd62c479e00faefb798856cb",
+        "warmup_time": -1
+    },
     "version": 2
 }

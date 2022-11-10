@@ -31,7 +31,7 @@ except ImportError:
     formatter = logging.Formatter("%(levelname)s: %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.info("Disabling color, you really want to install colorlog.")
+    logger.info("Disabling coloured logs; if needed you should `pip install rich`.")
 
 
 if bool(os.getenv("PYMECH_DEBUG")):

@@ -15,6 +15,7 @@ For coloured logging::
 """
 import os
 import logging
+from typing import Union
 
 logger = logging.getLogger("pymech")
 
@@ -23,13 +24,15 @@ try:
     # Set a nice colored output
     from rich.logging import RichHandler
 
-    handler = RichHandler()
-    logger.addHandler(handler)
+    handler: Union[RichHandler, logging.StreamHandler] = RichHandler()
 except ImportError:
     # No color available, use default config
-    logging.basicConfig(format="%(levelname)s: %(message)s")
-    logger.info("Disabling color, you really want to install colorlog.")
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    handler.setFormatter(formatter)
+    logger.info("Disabling coloured logs; if needed you should `pip install rich`.")
 
+logger.addHandler(handler)
 
 if bool(os.getenv("PYMECH_DEBUG")):
     logger.setLevel(logging.DEBUG)

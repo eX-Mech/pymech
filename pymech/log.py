@@ -27,7 +27,10 @@ try:
     logger.addHandler(handler)
 except ImportError:
     # No color available, use default config
-    logging.basicConfig(format="%(levelname)s: %(message)s")
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
     logger.info("Disabling color, you really want to install colorlog.")
 
 

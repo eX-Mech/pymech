@@ -19,12 +19,22 @@ def _check_channel_dset(ds):
     assert math.isclose(ds.time, 0.2, abs_tol=1e-6)
 
 
-def test_nekdataset(test_data_dir):
+def test_channel_dataset(test_data_dir):
     import pymech.dataset as pd
 
     fname = f"{test_data_dir}/nek/channel3D_0.f00001"
     ds = pd.open_dataset(fname)
     _check_channel_dset(ds)
+
+
+def test_phill_dataset(test_data_dir):
+    import pymech.dataset as pd
+
+    fname = f"{test_data_dir}/nek/phill0.f00010"
+    with pytest.raises(
+        NotImplementedError, match="currently works only with cartesian box meshes"
+    ):
+        pd.open_dataset(fname)
 
 
 @pytest.mark.parametrize("file_name", ["channel3D_0.f00001", "stsabl0.f00001"])

@@ -73,9 +73,18 @@ def _open_nek_dataset(path, drop_variables=None):
 
     elements = field.elem
     elem_stores = [_NekDataStore(elem) for elem in elements]
-    elem_dsets = [
-        xr.Dataset.load_store(store).set_coords(store.axes) for store in elem_stores
-    ]
+    try:
+        elem_dsets = [
+            xr.Dataset.load_store(store).set_coords(store.axes) for store in elem_stores
+        ]
+    except ValueError as err:
+        raise NotImplementedError(
+            "Opening dataset failed because you probably tried to open a field file "
+            "with an unsupported mesh. "
+            "The `pymech.open_dataset` function currently works only with cartesian "
+            "box meshes. For more details on this, see "
+            "https://github.com/eX-Mech/pymech/issues/31"
+        ) from err
 
     # See: https://github.com/MITgcm/xmitgcm/pull/200
     ds = xr.combine_by_coords(elem_dsets, combine_attrs="drop")

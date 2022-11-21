@@ -66,7 +66,10 @@ parameters."""
 
 
 def _open_nek_dataset(path, drop_variables=None):
-    """Interface for converting Nek field files into xarray_ datasets."""
+    """Interface for converting Nek field files into xarray_ datasets.
+
+    .. _xarray: https://docs.xarray.dev/en/stable/
+    """
     field = readnek(path)
     if isinstance(field, int):
         raise OSError(f"Failed to load {path}")

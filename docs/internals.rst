@@ -10,14 +10,6 @@ Internals
 .. automodule:: pymech.log
 
 
-:mod:`pymech.neksuite`
-----------------------
-
-.. automodule:: pymech.neksuite
-   :noindex:
-   :no-members:
-   :private-members: Header, read_header
-
 :mod:`pymech.dataset`
 ---------------------
 

@@ -82,10 +82,12 @@ the newer, binary ``.re2`` mesh files. *New in pymech 1.4.0.*
 
 .. _neksuite-contents:
 
-Contents of neksuite.py
------------------------
+Contents of neksuite
+--------------------
 
-.. automodule:: pymech.neksuite
+.. automodule:: pymech.neksuite.field
+.. automodule:: pymech.neksuite.mesh
+.. automodule:: pymech.neksuite.map
 
 .. note::
 

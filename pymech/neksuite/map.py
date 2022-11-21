@@ -18,11 +18,11 @@ def readma2(fname):
     fname : str
             file name
 
-    Return values
-    -------------
-    cell  : 2d int nparray
+    Returns
+    -------
+    cell  : 2d int ndarray
             list of the vertices for each element of the mesh (in global address space)
-    procmap  : 1d int nparray
+    procmap  : 1d int ndarray
             processor map (0-based) indicating ownership for each element of the mesh
     """
     try:

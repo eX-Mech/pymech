@@ -70,9 +70,14 @@ extensions = [
 source_suffix = {
     ".rst": "restructuredtext",
     ".ipynb": "myst-nb",
-    ".myst": "myst-nb",
+    ".myst.md": "myst-nb",
 }
-jupyter_execute_notebooks = "off"
+nb_execution_mode = "cache"
+nb_execution_in_temp = True
+nb_execution_raise_on_error = True
+nb_execution_show_tb = True
+nb_execution_timeout = 600
+nb_merge_streams = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

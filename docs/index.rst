@@ -14,7 +14,7 @@ This is the documentation for pymech_, a Python suite of routines for Nek5000_ a
 
 Pymech can be used for reading, editing and writing Nek5000_ and SIMSON_ meshes
 and output files. For a detailed tutorial refer to :ref:`usage
-<Usage.ipynb#usage>`.
+<Usage.myst.md#usage>`.
 
 The data structure is defined by the :py:class:`pymech.core.HexaData` class.
 The functions for manipulating Nek5000_ files are in :ref:`neksuite`, while the
@@ -89,7 +89,7 @@ interpreter of your choice:
    vtksuite.rst
    dataset.rst
    meshtools.rst
-   usage.ipynb
+   usage.myst.md
 
 .. toctree::
    :maxdepth: 1

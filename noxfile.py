@@ -88,7 +88,7 @@ def sync(session):
     if BUILD_SYSTEM == "poetry":
         poetry_install(session, "--sync", "--with=dev")
     else:
-        pip_sync(session, ["dev"])
+        pip_sync(session, "dev")
 
 
 @no_venv_session
@@ -402,9 +402,11 @@ def release_upload(session):
     # https://twine.readthedocs.io/en/latest/#environment-variables
     env = {"TWINE_USERNAME": "__token__"}
 
-    if "testpypi" in args and (api_token := os.getenv("TEST_PYPI_TOKEN")):
-        env["TWINE_PASSWORD"] = api_token
-    elif api_token := os.getenv("PYPI_TOKEN"):
-        env["TWINE_PASSWORD"] = api_token
+    test_pypi_token = os.getenv("TEST_PYPI_TOKEN")
+    pypi_token = os.getenv("PYPI_TOKEN")
+    if "testpypi" in args and test_pypi_token:
+        env["TWINE_PASSWORD"] = test_pypi_token
+    elif pypi_token:
+        env["TWINE_PASSWORD"] = pypi_token
 
     session.run("twine", "upload", *args, "dist/*", env=env)

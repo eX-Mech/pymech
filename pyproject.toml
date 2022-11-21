@@ -1,0 +1,36 @@
+[build-system]
+requires = [
+    "setuptools>=49.5.0",
+    "wheel",
+    "setuptools_scm[toml]>=7.0.0",
+    ]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "pymech/_version.py"
+
+[tool.coverage.run]
+source = ["pymech", "./tests"]
+data_file = ".coverage/coverage"
+omit = [
+    "*/try_*.py",
+    "*/_old_*.py"
+]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "if __name__ == .__main__.:",
+    'if "sphinx" in sys.modules:',
+    "raise FileNotFoundError",
+    "raise NotImplementedError",
+    "raise ValueError",
+    "except KeyError:",
+    "except ImportError:",
+    "except AttributeError:",
+    "except NotImplementedError:",
+    "except StopIteration:",
+]
+
+[tool.coverage.html]
+directory = ".coverage/html"

@@ -11,7 +11,7 @@ on:
       - published
 
 env:
-  FORCE_COLOR: true
+  FORCE_COLOR: 1
 
 jobs:
   tests:

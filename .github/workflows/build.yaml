@@ -52,7 +52,7 @@ jobs:
     - name: Upload coverage
       if: ${{ success() && matrix.python-version == '3.7' }}
       run: |
-        pip install coveralls
+        pip install coveralls coverage[toml]
         coveralls --service=github
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

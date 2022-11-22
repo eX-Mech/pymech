@@ -16,7 +16,9 @@ cloudpickle==2.2.0
 commonmark==0.9.1
     # via rich
 coverage[toml]==6.5.0
-    # via pytest-cov
+    # via
+    #   pymech (setup.cfg)
+    #   pytest-cov
 dask==2022.2.0
     # via pymech (setup.cfg)
 exceptiongroup==1.0.4

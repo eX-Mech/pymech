@@ -16,7 +16,6 @@ from pathlib import Path
 import re
 import shlex
 import shutil
-import subprocess
 
 import nox
 
@@ -306,8 +305,8 @@ def download_testpypi(session, dist_type):
     (Path.cwd() / "dist").mkdir(exist_ok=True)
     session.chdir("./dist")
 
-    git_tags = subprocess.check_output(
-        ["git", "tag", "--list", "--sort=version:refname"], text=True
+    git_tags = session.run(
+        "git", "tag", "--list", "--sort=version:refname", external=True, silent=True
     )
     latest_version = git_tags.splitlines()[-1]
     spec = f"{PACKAGE}=={latest_version}"

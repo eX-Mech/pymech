@@ -161,7 +161,9 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    # This is required because asv (air speed velocity) needs this
     - name: Fetch main
+      if: github.event_name == "pull_request"
       run: git fetch origin $GITHUB_BASE_REF:main $GITHUB_REF:pr
 
     - name: Set up Python

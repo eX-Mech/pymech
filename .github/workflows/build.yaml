@@ -47,6 +47,7 @@ jobs:
     - name: Run tests
       run: |
         nox --session tests-cov -- -v --cov-report=xml
+        nox --session tests-cov-vtk -- -v --cov-report=xml
 
     - name: Run mypy
       run: |

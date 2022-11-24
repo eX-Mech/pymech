@@ -25,7 +25,7 @@ Security in case of vulnerabilities.
 
 -->
 
-## [Unreleased]
+## [1.5.0] - 2022-11-24
 
 ### Added
 
@@ -47,6 +47,7 @@ Security in case of vulnerabilities.
 
 - Module {ref}`exadata` is deprecated in favour of {mod}`pymech.core`.
   See {ref}`exadata` for more information on migrating your code.
+- Function {func}`pymech.vtksuite.exa2vtk` is deprecated in favour of {func}`pymech.vtksuite.hexa2vtk`.
 
 ### Removed
 

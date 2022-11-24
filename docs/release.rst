@@ -22,7 +22,7 @@ Manual method (not recommended)
    For demonstration's sake, we assume that the next version is ``$VERSION``
    and the package name is ``$PACKAGE``.
 
-- Install nox:
+- Install nox::
 
       pip install nox
 

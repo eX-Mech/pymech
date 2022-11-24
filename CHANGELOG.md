@@ -29,6 +29,10 @@ Security in case of vulnerabilities.
 
 ### Added
 
+- New extra dependency groups for install as `pip install pymech[opt]` and `pip
+  install pymech[vtk]` respectively. There is also a `[full]` group which
+  implies both `[opt]` and `[vtk]`.
+- {doc}`asv_bench/README` in documentation.
 - Dataclass {class}`pymech.neksuite.field.Header` using [`attrs`](https://www.attrs.org/en/stable/) for reading file headers
 - Function {func}`pymech.neksuite.field.read_header`
 - Module {mod}`pymech.meshtools` for manipulating meshes
@@ -52,6 +56,10 @@ Security in case of vulnerabilities.
 ### Removed
 
 - Test data files from the ``pymech`` git repository. The files are now available at <https://github.com/eX-Mech/pymech-test-data/>
+
+### Fixed
+
+- Logging configuration which does not break other loggers.
 
 ## [1.4.1] - 2021-05-07
 

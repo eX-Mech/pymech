@@ -29,6 +29,8 @@ Security in case of vulnerabilities.
 
 ### Added
 
+
+- [Citeable in Zenodo](https://zenodo.org/badge/latestdoi/50511298)!
 - New extra dependency groups for install as `pip install pymech[opt]` and `pip
   install pymech[vtk]` respectively. There is also a `[full]` group which
   implies both `[opt]` and `[vtk]`.

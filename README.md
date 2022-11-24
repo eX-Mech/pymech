@@ -5,8 +5,9 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/eX-Mech/pymech/main.svg)](https://results.pre-commit.ci/latest/github/eX-Mech/pymech/main)
 [![Coverage Status](https://coveralls.io/repos/github/eX-Mech/pymech/badge.svg)](https://coveralls.io/github/eX-Mech/pymech)
 [![Documentation Status](https://readthedocs.org/projects/pymech/badge/?version=latest)](http://pymech.readthedocs.org/en/stable/)
+[![DOI](https://zenodo.org/badge/50511298.svg)](https://zenodo.org/badge/latestdoi/50511298)
 
-A Python suite of routines for *Nek5000* and *Simson*. Install with:
+A Python suite of routines for [Nek5000] and [SIMSON]. Install with:
 
 ```
 pip install pymech
@@ -45,3 +46,6 @@ documentation](https://pymech.readthedocs.io/en/stable/usage.html).
 Found something that does not work? Want to add a new feature to pymech? Have a
 look at [contributing
 guidelines](https://pymech.readthedocs.io/en/stable/contributing.html).
+
+[Nek5000]: https://nek5000.mcs.anl.gov/
+[SIMSON]: https://github.com/KTH-Nek5000/SIMSON/

@@ -164,7 +164,8 @@ jobs:
 
     # This is required because asv (air speed velocity) needs this
     - name: Fetch main
-      run: git fetch origin $GITHUB_BASE_REF
+      if: github.ref != 'refs/heads/main'
+      run: git fetch origin $GITHUB_BASE_REF:main $GITHUB_REF:pr
 
     - name: Set up Python
       uses: actions/setup-python@v4

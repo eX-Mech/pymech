@@ -32,7 +32,7 @@ authors:
     given-names: Jacopo
     orcid: https://orcid.org/0000-0003-3211-4347
 
-# doi: 10.5281/zenodo.???
+doi: 10.5281/zenodo.7358961
 date-released: 2022-11-24
 license: GPL-3.0-or-later
 repository-code: "https://github.com/eX-Mech/pymech"

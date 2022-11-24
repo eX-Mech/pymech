@@ -25,7 +25,7 @@ Security in case of vulnerabilities.
 
 -->
 
-## [1.5.0] - 2022-11-24
+## [1.5.0] - 2022-11-25
 
 ### Added
 

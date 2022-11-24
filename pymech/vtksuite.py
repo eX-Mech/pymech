@@ -1,4 +1,5 @@
 """Module for converting :class:`pymech.core.HexaData` objects to vtk"""
+import os
 from itertools import product
 from pathlib import Path
 
@@ -188,8 +189,9 @@ def writevtk(fname, data):
     """
     ext = ".vtp"
     fname = Path(fname)
-    if not fname.suffix != ext:
+    if fname.suffix != ext:
+        logger.info(f"Renaming {fname} with extension .vtp")
         fname = fname.with_suffix(ext)
 
     vtk_dataset = exa2vtk(data)
-    write_data(vtk_dataset, fname)
+    write_data(vtk_dataset, os.fspath(fname))

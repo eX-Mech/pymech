@@ -2,6 +2,7 @@
 import os
 from itertools import product
 from pathlib import Path
+from warnings import warn
 
 import numpy as np
 
@@ -23,11 +24,27 @@ __all__ = ("exa2vtk", "writevtk")
 
 # ==============================================================================
 def exa2vtk(field, downsample=False):
+    warn(
+        (
+            "Function pymech.vtksuite.exa2vtk is now pymech.vtksuite.hexa2vtk. "
+            "This module is kept for backwards "
+            "compatibility and would disappear in version 2.0.0"
+        ),
+        DeprecationWarning,
+    )
+    return hexa2vtk(field, downsample)
+
+
+def hexa2vtk(field, downsample=False):
     """A function for converting :class:`pymech.core.HexaData` to `Traited VTK`_ dataset. The
     returned dataset can be manipulated with libraries which accept a VTK
     object, for example Mayavi_.
 
     .. _Traited VTK: https://docs.enthought.com/mayavi/tvtk/README.html
+
+    .. todo::
+
+        Try https://github.com/pyvista/pyvista-xarray
 
     Example
     -------
@@ -193,5 +210,5 @@ def writevtk(fname, data):
         logger.info(f"Renaming {fname} with extension .vtp")
         fname = fname.with_suffix(ext)
 
-    vtk_dataset = exa2vtk(data)
+    vtk_dataset = hexa2vtk(data)
     write_data(vtk_dataset, os.fspath(fname))

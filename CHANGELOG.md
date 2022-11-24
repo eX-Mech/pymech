@@ -25,10 +25,14 @@ Security in case of vulnerabilities.
 
 -->
 
-## [Unreleased]
+## [1.5.0] - 2022-11-24
 
 ### Added
 
+- New extra dependency groups for install as `pip install pymech[opt]` and `pip
+  install pymech[vtk]` respectively. There is also a `[full]` group which
+  implies both `[opt]` and `[vtk]`.
+- {doc}`asv_bench/README` in documentation.
 - Dataclass {class}`pymech.neksuite.field.Header` using [`attrs`](https://www.attrs.org/en/stable/) for reading file headers
 - Function {func}`pymech.neksuite.field.read_header`
 - Module {mod}`pymech.meshtools` for manipulating meshes
@@ -47,10 +51,15 @@ Security in case of vulnerabilities.
 
 - Module {ref}`exadata` is deprecated in favour of {mod}`pymech.core`.
   See {ref}`exadata` for more information on migrating your code.
+- Function {func}`pymech.vtksuite.exa2vtk` is deprecated in favour of {func}`pymech.vtksuite.hexa2vtk`.
 
 ### Removed
 
 - Test data files from the ``pymech`` git repository. The files are now available at <https://github.com/eX-Mech/pymech-test-data/>
+
+### Fixed
+
+- Logging configuration which does not break other loggers.
 
 ## [1.4.1] - 2021-05-07
 
@@ -135,7 +144,8 @@ writing
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.4.1...HEAD
+[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/eX-Mech/pymech/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/eX-Mech/pymech/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/eX-Mech/pymech/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/eX-Mech/pymech/compare/1.3.2...1.3.3

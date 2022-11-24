@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Pymech: A Python software suite for Nek5000 and SIMSON"
+version: 1.5.0
+abstract: |
+  "Pymech provides a set of high level Python functions which empowers users
+  of computational fluid dynamics solvers Nek5000 and SIMSON. It acts as a bridge
+  between these Fortran solvers and the scientific Python world. Its key
+  functionalities include input from and output to the solvers' binary file
+  formats, mesh manipulation, necessary tools for creating initial condition
+  files, writing post-processing algorithms and performing other exploratory
+  works."
+
+authors:
+  - family-names: Mohanan
+    given-names: Ashwin Vishnu
+    orcid: https://orcid.org/0000-0002-2979-6327
+
+  - family-names: Chauvat
+    given-names: Guillaume
+    orcid: https://orcid.org/0000-0001-9401-0514
+
+  - family-names: Kliene
+    given-names: Vitor Gabriel
+    orcid: https://orcid.org/0000-0001-9360-7300
+
+  - family-names: Fabbiane
+    given-names: Nicolò
+    orcid: https://orcid.org/0000-0003-0010-489X
+
+  - family-names: Canton
+    given-names: Jacopo
+    orcid: https://orcid.org/0000-0003-3211-4347
+
+# doi: ????/zenodo.????
+# date-released: 2022-11-2?
+license: GPL-3.0-or-later
+repository-code: "https://github.com/eX-Mech/pymech"

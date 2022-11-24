@@ -5,7 +5,7 @@ from ..log import logger
 
 
 def readma2(fname):
-    """A function for reading binary map files (*.ma2) for nek5000.
+    """A function for reading binary map files (``*.ma2``) for nek5000.
 
     The map file comtains, for each element in the mesh, the id of the MPI rank that owns it
     followed by the ids of the vertices of the element in the global address space.
@@ -35,26 +35,26 @@ def readma2(fname):
     header = infile.read(132).split()
     nel = int(header[1])
 
-    #: number of active elements (nrank - noutflow)
+    # number of active elements (nrank - noutflow)
     # nactive = int(header[2])
 
-    #: total number of element vertices in the mesh
+    # total number of element vertices in the mesh
     # npts  = (2**ldim)*nel
     npts = int(header[5])
 
-    #: number of unique element vertices in the mesh
+    # number of unique element vertices in the mesh
     # nrank = int(header[6])
 
-    #: number of points on outflow boundaries ('o  ')
+    # number of points on outflow boundaries ('o  ')
     # noutflow = int(header[7])
 
     # NOTE: these values can be computed from the others but are included in the
     # header
-    #: number of levels in the binary partition tree
+    # number of levels in the binary partition tree
     # depth = log2(nel)
     # depth = int(header[3])
 
-    #: maximum number of elements in partition tree of depth d
+    # maximum number of elements in partition tree of depth d
     # d2    = 2**d
     # d2 = int(header[4])
     # always double precision

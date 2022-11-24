@@ -273,7 +273,7 @@ def docs(session):
     """Build documentation using Sphinx."""
     source, output = _prepare_docs_session(session)
     session.run(
-        "python", "-m", "sphinx", "-b", "html", source, output
+        "python", "-m", "sphinx", "-b", "html", *session.posargs, source, output
     )  # Same as sphinx-build
     print("Build finished.")
     print(f"file://{output}/index.html")

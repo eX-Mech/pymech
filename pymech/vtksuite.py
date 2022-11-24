@@ -42,6 +42,10 @@ def hexa2vtk(field, downsample=False):
 
     .. _Traited VTK: https://docs.enthought.com/mayavi/tvtk/README.html
 
+    .. todo::
+
+        Try https://github.com/pyvista/pyvista-xarray
+
     Example
     -------
     This also requires you to have a GUI toolkit installed: either PyQt4,

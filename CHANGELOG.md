@@ -144,7 +144,8 @@ writing
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.4.1...HEAD
+[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/eX-Mech/pymech/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/eX-Mech/pymech/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/eX-Mech/pymech/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/eX-Mech/pymech/compare/1.3.2...1.3.3

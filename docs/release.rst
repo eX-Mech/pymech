@@ -1,56 +1,56 @@
 Release checklist for maintainers
 =================================
 
+Via GitHub Actions
+------------------
+
+- Update :doc:`changelog` with version comparison links and detailed description
+- Update version and date in ``CITATION.cff``.
+- Make a `new release`_.
+- Inspect upload in TestPyPI_.
+- Execute manual `deploy workflow`_ to download from TestPyPI_, run tests and
+  publish to PyPI_.
+
+.. _new release: https://github.com/eX-Mech/pymech/releases/new
+.. _deploy workflow: https://github.com/eX-Mech/pymech/actions/workflows/deploy.yaml
+
+Manual method (not recommended)
+-------------------------------
+
 .. note::
 
    For demonstration's sake, we assume that the next version is ``$VERSION``
    and the package name is ``$PACKAGE``.
 
-- Install in development mode::
+- Install nox:
 
-      pip install -e '.[dev]'
+      pip install nox
 
 - Ensure tests pass locally and on CI::
 
-      pytest --numprocesses=auto
+      nox -s tests
 
 - Compile documentation::
 
-      cd docs/
-      make html
+      nox -s docs
 
-- Commit changes and tag a release::
+- Commit changes and make an annotated tag::
 
       git commit
-      git tag $VERSION
+      git tag -a $VERSION
 
-- Prepare source distribution package and wheel::
+- Build and upload to TestPyPI_::
 
-      python setup.py sdist bdist_wheel
+      nox -s testpypi
 
-- Verify the package with twine_::
+- Download, test and upload to PyPI_::
 
-      twine check dist/*
-
-- Upload to TestPyPI_ and verify::
-
-      twine upload --repository testpypi dist/*
-      cd /tmp
-      python -m venv testpypi
-      source testpypi/bin/activate
-      pip install \
-          --index-url https://test.pypi.org/simple \
-          --extra-index-url https://pypi.org/simple \
-          $PACKAGE
-
-- Upload to PyPI_ with twine_::
-
-      twine upload dist/*
+      nox -s pypi
 
 - Upload to repository::
 
-      git push --atomic origin main $VERSION
+      git push --follow-tags --atomic origin main
 
 .. _twine: https://twine.readthedocs.io/en/latest/
-.. _TestPyPI: https://packaging.python.org/guides/using-testpypi/
-.. _PyPI: https://pypi.org/
+.. _TestPyPI: https://test.pypi.org/project/pymech/
+.. _PyPI: https://pypi.org/project/pymech/

@@ -32,7 +32,7 @@ TEST_ENV_VARS = {}
 if os.getenv("CI"):
     TEST_ENV_VARS["PYTEST_ADDOPTS"] = "--color=yes"
 
-EXTRA_REQUIRES = ("main", "full", "docs", "tests", "types", "dev")
+EXTRA_REQUIRES = ("main", "vtk", "docs", "tests", "types", "dev")
 
 no_venv_session = partial(nox.session, venv_backend="none")
 nox.options.sessions = ["tests", "types"]
@@ -120,11 +120,14 @@ def pip_compile(session, extra):
     if extra == "main":
         in_extra = ""
         in_file = ""
-        out_file = req / "main.txt"
+    if extra in ("vtk",):
+        in_extra = f"--extra {extra}"
+        in_file = ""
     else:
         in_extra = f"--extra {extra}"
         in_file = req / "vcs_packages.in"
-        out_file = req / f"{extra}.txt"
+
+    out_file = req / f"{extra}.txt"
 
     session.run(
         *shlex.split(
@@ -180,6 +183,23 @@ def tests(session):
     session.run(
         *pytest_cmd,
         *session.posargs,
+        env=TEST_ENV_VARS,
+    )
+
+
+@nox.session(name="tests-cov-vtk")
+def tests_cov_vtk(session):
+    """Execute unit-tests using pytest+pytest-cov+VTK dependencies"""
+    pytest_cmd = install_with_tests(session, ["-r", "requirements/vtk.txt"])
+    session.run(
+        *pytest_cmd,
+        "--cov",
+        "--cov-append",
+        "--cov-config=pyproject.toml",
+        "--no-cov-on-fail",
+        "--cov-report=term-missing",
+        *session.posargs,
+        "tests/test_vtk.py",
         env=TEST_ENV_VARS,
     )
 

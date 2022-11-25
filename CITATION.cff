@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "Pymech: A Python software suite for Nek5000 and SIMSON"
-version: 1.5.0
+version: 1.5.0rc2
 abstract: |
   Pymech provides a set of high level Python functions which empowers users
   of computational fluid dynamics solvers Nek5000 and SIMSON. It acts as a bridge

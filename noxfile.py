@@ -329,7 +329,7 @@ def download_testpypi(session, dist_type):
     session.chdir("./dist")
 
     git_tags = session.run(
-        "git", "tag", "--list", "--sort=version:refname", external=True, silent=True
+        "git", "tag", "--list", "--sort=committerdate", external=True, silent=True
     )
     latest_version = git_tags.splitlines()[-1]
     spec = f"{PACKAGE}=={latest_version}"

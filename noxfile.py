@@ -53,9 +53,12 @@ def poetry_install(session, *args):
     run_ext(session, "python -m poetry install " + " ".join(args))
 
 
-def pip_install(session, filename):
+def pip_install(session, filename, *args):
     """Install with dependencies pinned in requirements/*.txt"""
-    run_ext(session, f"python -m pip install -r requirements/{filename}.txt")
+    run_ext(
+        session,
+        f"python -m pip install -r requirements/{filename}.txt " + " ".join(args),
+    )
 
 
 def pip_sync(session, filename):
@@ -69,7 +72,7 @@ def install(session):
     if BUILD_SYSTEM == "poetry":
         poetry_install(session)
     else:
-        pip_install(session, "main")
+        pip_install(session, "main", ".")
 
 
 @no_venv_session

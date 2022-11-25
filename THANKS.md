@@ -9,6 +9,7 @@
 
 ## Contributors
 
+- Pierre Augier [@paugier](https://github.com/paugier/)
 - Simon Kern [@Simkern](https://github.com/Simkern/)
 - Timofey Mukha [@timofeymukha](https://github.com/timofeymukha)
 - Vitor Kleine

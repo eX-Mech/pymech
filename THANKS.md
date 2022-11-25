@@ -9,5 +9,6 @@
 
 ## Contributors
 
+- Simon Kern [@Simkern](https://github.com/Simkern/)
 - Timofey Mukha [@timofeymukha](https://github.com/timofeymukha)
 - Vitor Kleine

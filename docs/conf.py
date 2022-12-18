@@ -14,11 +14,8 @@ import os
 import sys
 from datetime import date
 
-try:
-    from importlib import metadata
-except ImportError:
-    # Running on pre-3.8 Python; use importlib-metadata package
-    import importlib_metadata as metadata
+
+from importlib import metadata
 
 
 sys.path.insert(0, os.path.abspath(".."))

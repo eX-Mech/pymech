@@ -1345,7 +1345,6 @@ def gen_circle(
     curvature_fun=None,
     bl_fun=None,
     var=[2, 2, 1, 0, 0],
-    nbc=1,
     bc=["W"],
     internal_bcs=True,
 ):
@@ -1388,6 +1387,7 @@ def gen_circle(
     # dimension constants for mesh / elements generation
     lr1 = [2, 2, 1]  # the mesh is 2D so lz1 = 1
     ndim = 2
+    nbc = len(bc)
 
     # default curvature function
     if curvature_fun is None:
@@ -1510,7 +1510,8 @@ def gen_circle(
     if internal_bcs:
         build_connectivity(box_square, ns, ns)
     # boundary conditions: dummy BCs to signal that the faces should be glued
-    apply_bcs(box_square, ns, ns, ["con"], ["con"], ["con"], ["con"])
+    connectivity_bc = ["con"] * nbc
+    apply_bcs(box_square, ns, ns, connectivity_bc, connectivity_bc, connectivity_bc, connectivity_bc)
 
     # Box 2: quarter-O
     nel_o = no * ns
@@ -1580,7 +1581,7 @@ def gen_circle(
     if internal_bcs:
         build_connectivity(box_o, no, ns)
     # boundary conditions: dummy BCs on the faces to be connected, external BC on the right face
-    apply_bcs(box_o, no, ns, ["con"], bc, ["con"], ["con"])
+    apply_bcs(box_o, no, ns, connectivity_bc, bc, connectivity_bc, connectivity_bc)
     # add circular curvature for external faces
     for j in range(ns):
         el = box_o.elem[elnum(no - 1, j, no, ns)]

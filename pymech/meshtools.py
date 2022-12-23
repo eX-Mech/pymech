@@ -1511,7 +1511,15 @@ def gen_circle(
         build_connectivity(box_square, ns, ns)
     # boundary conditions: dummy BCs to signal that the faces should be glued
     connectivity_bc = ["con"] * nbc
-    apply_bcs(box_square, ns, ns, connectivity_bc, connectivity_bc, connectivity_bc, connectivity_bc)
+    apply_bcs(
+        box_square,
+        ns,
+        ns,
+        connectivity_bc,
+        connectivity_bc,
+        connectivity_bc,
+        connectivity_bc,
+    )
 
     # Box 2: quarter-O
     nel_o = no * ns

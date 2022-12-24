@@ -549,6 +549,23 @@ def test_gen_circle(test_data_dir):
     assert mesh.check_connectivity()
     assert mesh.nel == 8100
 
+def test_cylinder(test_data_dir):
+    import pymech.meshtools as mt
+    import numpy as np
+
+    # test making a cylinder using `gen_circle` and `extrude`
+    # with a temperature field
+    mesh = mt.gen_circle(1, 0.5, 9, 2, bc=["W", "I"])
+    assert mesh.nbc == 2
+    z = np.linspace(-1, 1, 5)
+    # with default (periodic) boundary conditions
+    mesh3D = mt.extrude(mesh, z)
+    assert mesh3D.nbc == 2
+    mesh3D.elem[0].bcs[1, 4][0] == "P"
+    # with custom boundary conditions
+    mesh3D = mt.extrude(mesh, z, bc1=["W", "t"], bc2=["W", "t"])
+    assert mesh3D.elem[0].bcs[1, 4][0] == "t"
+
 
 # ------------------------------------------------------------------------------
 # test simson scripts

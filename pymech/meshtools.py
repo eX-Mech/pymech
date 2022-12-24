@@ -164,7 +164,7 @@ def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
 
 # ==============================================================================
 def extrude_refine(
-    mesh2D, z, bc1="P", bc2="P", fun=None, funpar=None, imesh_high=0, internal_bcs=True
+    mesh2D, z, bc1=None, bc2=None, fun=None, funpar=None, imesh_high=0, internal_bcs=True
 ):
     r"""Extrudes a 2D mesh into a 3D one, following the pattern
 
@@ -193,8 +193,10 @@ def extrude_refine(
            2D mesh structure to extrude
     z : float array
         list of z values of the  most refined zones of the extruded mesh
-    bc : str
-         the boundary condition to use at the ends
+    bc1: str list
+           A list of boundary conditions to use at the first end, one string per field. Defaults to periodic.
+    bc2: str list
+           A list of boundary conditions to use at the other end, one string per field. Defaults to periodic.
     fun: function
          list of functions that define the splitting lines for different discretization meshes (default: empty, in which case the simple extrusion function `extrude` is called instead)
     funpar: list
@@ -202,6 +204,12 @@ def extrude_refine(
     imesh_high : int
                  index of fun that defines the mesh with higher discretization. Example: 0, is the most internal mesh; 1 is the second most internal mesh, etc (default: the most internal mesh, imesh_high=0)
     """
+
+    # Set periodic boundary conditions by default if nothing else is requested
+    if bc1 is None:
+        bc1 = ["P"] * mesh.nbc
+    if bc2 is None:
+        bc2 = ["P"] * mesh.nbc
 
     # Consistency checks: Initial grid
     if mesh2D.ndim != 2:
@@ -214,11 +222,14 @@ def extrude_refine(
         logger.critical("The mesh to extrude must contain (x, y) geometry")
         return -3
     # Consistency checks: Periodic boundary condition
-    if (bc1 == "P" and bc2 != "P") or (bc1 != "P" and bc2 == "P"):
-        logger.critical(
-            "Inconsistent boundary conditions: one end is 'P' but the other isn't"
-        )
-        return -4
+    for bc1_field, bc2_field in zip(bc1, bc2):
+        if (bc1_field == "P" and bc2_field != "P") or (
+            bc1_field != "P" and bc2_field == "P"
+        ):
+            logger.critical(
+                "Inconsistent boundary conditions: one end is 'P' but the other isn't"
+            )
+            return -4
 
     # Consistency checks: Functions that define the splitting lines
     nsplit = len(fun)
@@ -395,8 +406,10 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
            2D mesh structure to extrude
     z : float
         list of z values of the nodes of the elements of the extruded mesh in the high discretization region (len(z)-1 must be divide by 4)
-    bc : str
-         the boundary condition to use at the ends
+    bc1: str list
+           A list of boundary conditions to use at the first end, one string per field.
+    bc2: str list
+           A list of boundary conditions to use at the other end, one string per field.
     fun : function
           function that define the splitting lines for different discretization meshes
     funpar : not defined, depends on the function
@@ -415,11 +428,14 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
     if mesh.var[0] < 2:
         logger.critical("The mesh to extrude must contain (x, y) geometry")
         return -3
-    if (bc1 == "P" and bc2 != "P") or (bc1 != "P" and bc2 == "P"):
-        logger.critical(
-            "Inconsistent boundary conditions: one end is 'P' but the other isn't"
-        )
-        return -4
+    for bc1_field, bc2_field in zip(bc1, bc2):
+        if (bc1_field == "P" and bc2_field != "P") or (
+            bc1_field != "P" and bc2_field == "P"
+        ):
+            logger.critical(
+                "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
+            )
+            return -4
 
     nz = len(z) - 1
     z1 = np.zeros((nz, 1))
@@ -834,16 +850,16 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
     for i in range(0, 6 * nel2d, 6):
         for ibc in range(nbc):
             i1 = i + nel3d - 6 * nel2d + 5
-            mesh3d.elem[i].bcs[ibc, 4][0] = bc1
+            mesh3d.elem[i].bcs[ibc, 4][0] = bc1[ibc]
             mesh3d.elem[i].bcs[ibc, 4][1] = i + 1
             mesh3d.elem[i].bcs[ibc, 4][2] = 5
-            mesh3d.elem[i + 1].bcs[ibc, 4][0] = bc1
+            mesh3d.elem[i + 1].bcs[ibc, 4][0] = bc1[ibc]
             mesh3d.elem[i + 1].bcs[ibc, 4][1] = i + 1 + 1
             mesh3d.elem[i + 1].bcs[ibc, 4][2] = 5
-            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2
+            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2[ibc]
             mesh3d.elem[i1].bcs[ibc, 5][1] = i1 + 1
             mesh3d.elem[i1].bcs[ibc, 5][2] = 6
-            mesh3d.elem[i1 - 1].bcs[ibc, 5][0] = bc2
+            mesh3d.elem[i1 - 1].bcs[ibc, 5][0] = bc2[ibc]
             mesh3d.elem[i1 - 1].bcs[ibc, 5][1] = i1 - 1 + 1
             mesh3d.elem[i1 - 1].bcs[ibc, 5][2] = 6
 

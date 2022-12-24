@@ -873,12 +873,12 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
             mesh3d.elem[i1 - 1].bcs[ibc, 5][4] = 0.0
 
             # fix the matching faces for the periodic conditions
-            if bc1 == "P":
+            if bc1[ibc] == "P":
                 mesh3d.elem[i].bcs[ibc, 4][3] = i1 + 1
                 mesh3d.elem[i].bcs[ibc, 4][4] = 6
                 mesh3d.elem[i + 1].bcs[ibc, 4][3] = i1 - 1 + 1
                 mesh3d.elem[i + 1].bcs[ibc, 4][4] = 6
-            if bc2 == "P":
+            if bc2[ibc] == "P":
                 mesh3d.elem[i1].bcs[ibc, 5][3] = i + 1
                 mesh3d.elem[i1].bcs[ibc, 5][4] = 5
                 mesh3d.elem[i1 - 1].bcs[ibc, 5][3] = i + 1 + 1

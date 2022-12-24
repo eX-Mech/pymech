@@ -9,7 +9,7 @@ from pymech.log import logger
 
 
 # ==============================================================================
-def extrude(mesh: HexaData, z, bc1=["P"], bc2=["P"], internal_bcs=True):
+def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
     """Extrudes a 2D mesh into a 3D one
 
     Parameters
@@ -23,13 +23,19 @@ def extrude(mesh: HexaData, z, bc1=["P"], bc2=["P"], internal_bcs=True):
     z :  float 1d array
            z coordinates at which to extrude the mesh
     bc1: str list
-           A list of boundary conditions to use at the first end, one string per field
+           A list of boundary conditions to use at the first end, one string per field. Defaults to periodic.
     bc2: str list
-           A list of boundary conditions to use at the other end, one string per field
+           A list of boundary conditions to use at the other end, one string per field. Defaults to periodic.
     internal_bcs : bool
            if True, build mesh connectivity using internal 'E' boundary conditions
            (note that those are not used by Nek5000 and will not be written to binary .re2 files).
     """
+
+    # Set periodic boundary conditions by default if nothing else is requested
+    if bc1 is None:
+        bc1 = ["P"] * mesh.nbc
+    if bc2 is None:
+        bc2 = ["P"] * mesh.nbc
 
     if mesh.ndim != 2:
         logger.critical("The mesh to extrude must be 2D")
@@ -140,9 +146,15 @@ def extrude(mesh: HexaData, z, bc1=["P"], bc2=["P"], internal_bcs=True):
             if bc1[ibc] == "P":
                 mesh3d.elem[i].bcs[ibc, 4][3] = i1 + 1
                 mesh3d.elem[i].bcs[ibc, 4][4] = 6
+            else:
+                mesh3d.elem[i].bcs[ibc, 4][3] = 0
+                mesh3d.elem[i].bcs[ibc, 4][4] = 0
             if bc2[ibc] == "P":
                 mesh3d.elem[i1].bcs[ibc, 5][3] = i + 1
                 mesh3d.elem[i1].bcs[ibc, 5][4] = 5
+            else:
+                mesh3d.elem[i1].bcs[ibc, 5][3] = 0
+                mesh3d.elem[i1].bcs[ibc, 5][4] = 0
 
     # return the extruded mesh
     return mesh3d

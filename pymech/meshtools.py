@@ -48,7 +48,9 @@ def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
         return -3
     # Is it possible to have periodic conditions for only some of the fields? If not, we should check for it too.
     for bc1_field, bc2_field in zip(bc1, bc2):
-        if (bc1_field == "P" and bc2_field != "P") or (bc1_field != "P" and bc2_field == "P"):
+        if (bc1_field == "P" and bc2_field != "P") or (
+            bc1_field != "P" and bc2_field == "P"
+        ):
             logger.critical(
                 "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
             )
@@ -1527,7 +1529,15 @@ def gen_circle(
         build_connectivity(box_square, ns, ns)
     # boundary conditions: dummy BCs to signal that the faces should be glued
     connectivity_bc = ["con"] * nbc
-    apply_bcs(box_square, ns, ns, connectivity_bc, connectivity_bc, connectivity_bc, connectivity_bc)
+    apply_bcs(
+        box_square,
+        ns,
+        ns,
+        connectivity_bc,
+        connectivity_bc,
+        connectivity_bc,
+        connectivity_bc,
+    )
 
     # Box 2: quarter-O
     nel_o = no * ns

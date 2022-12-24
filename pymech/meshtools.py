@@ -9,7 +9,7 @@ from pymech.log import logger
 
 
 # ==============================================================================
-def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
+def extrude(mesh: HexaData, z, bc1=["P"], bc2=["P"], internal_bcs=True):
     """Extrudes a 2D mesh into a 3D one
 
     Parameters
@@ -22,8 +22,10 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
            max value of the z coordinate to extrude to
     z :  float 1d array
            z coordinates at which to extrude the mesh
-    bc1, bc2 : str
-           the boundary conditions to use at each end
+    bc1: str list
+           A list of boundary conditions to use at the first end, one string per field
+    bc2: str list
+           A list of boundary conditions to use at the other end, one string per field
     internal_bcs : bool
            if True, build mesh connectivity using internal 'E' boundary conditions
            (note that those are not used by Nek5000 and will not be written to binary .re2 files).
@@ -38,11 +40,13 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
     if mesh.var[0] < 2:
         logger.critical("The mesh to extrude must contain (x, y) geometry")
         return -3
-    if (bc1 == "P" and bc2 != "P") or (bc1 != "P" and bc2 == "P"):
-        logger.critical(
-            "Inconsistent boundary conditions: one end is 'P' but the other isn't"
-        )
-        return -4
+    # Is it possible to have periodic conditions for only some of the fields? If not, we should check for it too.
+    for bc1_field, bc2_field in zip(bc1, bc2):
+        if (bc1_field == "P" and bc2_field != "P") or (bc1_field != "P" and bc2_field == "P"):
+            logger.critical(
+                "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
+            )
+            return -4
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
@@ -126,17 +130,17 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
     for i in range(nel2d):
         for ibc in range(nbc):
             i1 = i + (nz - 1) * nel2d  # index of the face on the zmax side
-            mesh3d.elem[i].bcs[ibc, 4][0] = bc1
+            mesh3d.elem[i].bcs[ibc, 4][0] = bc1[ibc]
             mesh3d.elem[i].bcs[ibc, 4][1] = i + 1
             mesh3d.elem[i].bcs[ibc, 4][2] = 5
-            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2
+            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2[ibc]
             mesh3d.elem[i1].bcs[ibc, 5][1] = i1 + 1
             mesh3d.elem[i1].bcs[ibc, 5][2] = 6
             # fix the matching faces for the periodic conditions
-            if bc1 == "P":
+            if bc1[ibc] == "P":
                 mesh3d.elem[i].bcs[ibc, 4][3] = i1 + 1
                 mesh3d.elem[i].bcs[ibc, 4][4] = 6
-            if bc2 == "P":
+            if bc2[ibc] == "P":
                 mesh3d.elem[i1].bcs[ibc, 5][3] = i + 1
                 mesh3d.elem[i1].bcs[ibc, 5][4] = 5
 

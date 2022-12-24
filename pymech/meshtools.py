@@ -214,9 +214,9 @@ def extrude_refine(
 
     # Set periodic boundary conditions by default if nothing else is requested
     if bc1 is None:
-        bc1 = ["P"] * mesh.nbc
+        bc1 = ["P"] * mesh2D.nbc
     if bc2 is None:
-        bc2 = ["P"] * mesh.nbc
+        bc2 = ["P"] * mesh2D.nbc
 
     # Consistency checks: Initial grid
     if mesh2D.ndim != 2:

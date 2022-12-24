@@ -549,6 +549,7 @@ def test_gen_circle(test_data_dir):
     assert mesh.check_connectivity()
     assert mesh.nel == 8100
 
+
 def test_cylinder(test_data_dir):
     import pymech.meshtools as mt
     import numpy as np

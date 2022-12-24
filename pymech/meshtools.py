@@ -164,7 +164,14 @@ def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
 
 # ==============================================================================
 def extrude_refine(
-    mesh2D, z, bc1=None, bc2=None, fun=None, funpar=None, imesh_high=0, internal_bcs=True
+    mesh2D,
+    z,
+    bc1=None,
+    bc2=None,
+    fun=None,
+    funpar=None,
+    imesh_high=0,
+    internal_bcs=True,
 ):
     r"""Extrudes a 2D mesh into a 3D one, following the pattern
 

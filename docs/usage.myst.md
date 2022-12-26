@@ -198,5 +198,5 @@ We can for example extrude the disc into a cylinder with isothermal walls at the
 z = [-1, -0.9, -0.7, -0.5, -0.25, 0, 0.25, 0.5, 0.7, 0.9, 1]
 bcs_ends = ['W', 't']
 # bc1 denotes the boundary conditions at z = -1, and bc2 at z = +1
-cylinder_mesh = mt.extrude(circle_mesh, z, bc1=bcs_ends, bc2=bcs_ends)
+cylinder_mesh = mt.extrude(disc_mesh, z, bc1=bcs_ends, bc2=bcs_ends)
 ```

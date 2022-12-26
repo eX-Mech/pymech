@@ -647,15 +647,17 @@ def test_map2D(test_data_dir):
     def refinement_function(x, y):
         iy = ny * y / ymax
         return (x, l0 * iy**alpha)
+
     box = mt.map2D(box, refinement_function, curvature=False, boundary_curvature=False)
     box.check_connectivity()
-    assert box.elem[0].ccurv == ['', '', '', '', '', '', '', '', '', '', '', '']
-    assert box.elem[25].ccurv == ['', '', '', '', '', '', '', '', '', '', '', '']
+    assert box.elem[0].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+    assert box.elem[25].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
 
     # and now with curvature activated on the boundary only
     box = mt.map2D(box, refinement_function, curvature=False)
-    assert box.elem[0].ccurv == ['m', '', '', 'm', '', '', '', '', '', '', '', '']
-    assert box.elem[25].ccurv == ['', '', '', '', '', '', '', '', '', '', '', '']
+    assert box.elem[0].ccurv == ["m", "", "", "m", "", "", "", "", "", "", "", ""]
+    assert box.elem[25].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+
 
 # ------------------------------------------------------------------------------
 # test simson scripts

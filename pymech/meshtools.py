@@ -1822,7 +1822,8 @@ def gen_circle(
 def map2D(
     mesh: HexaData,
     transformation,
-    internal_curvature=True,
+    curvature=True,
+    boundary_curvature=True,
 ):
     """
     Applies a coordinate transformation to a 2D mesh, returning the transformed mesh.
@@ -1835,8 +1836,10 @@ def map2D(
         the mesh to transform, will not be modified.
     transformation : (float, float) -> (float float) function
         the coordinate transformation to apply. It must be a valid right-handed transformation (the determinant of its Jacobian must be positive on the mesh domain).
-    internal_curvature : bool
-        specifies whether to apply curvature to the internal faces. The boundary faces and the faces that are already curved in the original mesh will always be curved. True by default.
+    curvature : bool
+        specifies whether to apply curvature to all faces. The faces that are already curved in the original mesh will always be curved. Curvature can still be applied on the boundaries when this is `False` if `boundary_curvature` is set to `True`. True by default.
+    boundary_curvature: bool
+        specifies whether to apply curvature to boundary faces by setting midpoints. `True` by default.
 
     Returns
     -------
@@ -1859,10 +1862,10 @@ def map2D(
         # Several scenarios are possible:
         # - the edge is curved with a midpoint. In this case, we update the midpoint.
         # - the edge is curved with a circle arc ("C"). In this case, we transform this into a midpoint curvature and update it, because there is no guarantee that the image of a circle by the transformation is a circle.
-        # - the edge is a boundary edge or an internal edge with internal_curvature=True. then we generate a new midpoint at the image of the centre of the original edge.
+        # - the edge is a boundary edge and boundary_curvature=True or any edge and curvature=True. then we generate a new midpoint at the image of the centre of the original edge.
         # otherwise, leave the edge without curvature.
         for iedge in range(4):
-            if internal_curvature or el.ccurv[iedge] != "" or el.bcs[0][iedge][0] not in ["", "E"]:
+            if curvature or el.ccurv[iedge] != "" or (boundary_curvature and el.bcs[0][iedge][0] not in ["", "E"]):
                 mapped_el.ccurv[iedge] = "m"
                 xm, ym, _ = edge_mid(el, iedge)
                 mapped_xm, mapped_ym = transformation(xm, ym)

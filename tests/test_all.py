@@ -593,6 +593,7 @@ def test_gen_box(test_data_dir):
     assert box.check_connectivity()
     assert box.nbc == 2
 
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

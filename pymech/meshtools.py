@@ -1373,12 +1373,13 @@ def rotate_2d(mesh, x0, y0, theta):
 
 # =================================================================================
 
+
 def gen_box(
     nx: int,
     ny: int,
     xmin: float,
     xmax: float,
-    ymin:float,
+    ymin: float,
     ymax: float,
     var=[2, 2, 1, 0, 0],
     bcs_xmin=None,
@@ -1417,7 +1418,7 @@ def gen_box(
     if var[1] > 0:
         nbc += 1
     if var[3] > 0:
-        nbc +=1
+        nbc += 1
     nbc += var[4]
 
     # set default periodic boundary conditions
@@ -1441,6 +1442,7 @@ def gen_box(
     # indexing in each block, 0-indexed
     def elnum(i, j, ni, nj):
         return i + ni * j
+
     for i, j in product(range(nx), range(ny)):
         # coordinates of corners
         x0 = xmin + lx * i / nx

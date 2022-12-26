@@ -16,12 +16,8 @@ def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
     ----------
     mesh : :class:`pymech.core.HexaData`
            2D mesh structure to extrude
-    zmin : float
-           min value of the z coordinate to extrude to
-    zmax : float
-           max value of the z coordinate to extrude to
     z :  float 1d array
-           z coordinates at which to extrude the mesh
+           z coordinates at which to extrude the mesh, in increasing order
     bc1: str list
            A list of boundary conditions to use at the first end, one string per field. Defaults to periodic.
     bc2: str list

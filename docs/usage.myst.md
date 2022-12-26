@@ -159,3 +159,37 @@ It is also worth knowing that it is possible to:
 - Open a multiple files into a single dataset using {any}`pymech.dataset.open_mfdataset`, optionally in parallel.
 
 Read the [xarray documentation](https://xarray.pydata.org/en/stable/quick-overview.html) to see how to use them.
+
+## {class}`pymech.meshtools`
+
+This class helps working with Nek5000 meshes.
+It can modify existing meshes and generate new ones.
+
+### 2D Mesh generation
+
+Pymech lets you generate a disc mesh. The following example generates a disc domain with a temperature field
+
+```{code-cell} ipython3
+import pymech.meshtools as mt
+
+# the disc will have radius 1
+radius = 1
+# centre box of 5×5 elements
+n_centre = 5
+# four side boxes of 6×5 elements
+n_bl = 6
+# the diagonal of the centre box will be half of the disc diametre 
+s_param = 0.5
+# (x, y), (vx, vy), p, t, no passive scalars
+variables = [2, 2, 1, 1, 0]
+# boundary conditions: adiabatic wall
+bcs = ['W', 'I']
+# generate the mesh
+disc_mesh = mt.gen_circle(radius, s_param, n_centre, n_bl, var=variables, bc=bcs)
+```
+
+### Extrusion
+
+Pymech can extrude 2D meshes into 3D ones.
+
+### Mesh generation

@@ -1373,6 +1373,169 @@ def rotate_2d(mesh, x0, y0, theta):
 
 # =================================================================================
 
+def gen_box(
+    nx: int,
+    ny: int,
+    xmin: float,
+    xmax: float,
+    ymin:float,
+    ymax: float,
+    var=[2, 2, 1, 0, 0],
+    bcs_xmin=None,
+    bcs_xmax=None,
+    bcs_ymin=None,
+    bcs_ymax=None,
+    internal_bcs=True,
+):
+    """
+    generates a rectangular box of nx×ny elements in [xmin, xmax]×[ymin, ymax].
+    Boundary conditions can optionally be scpecified for each side.
+
+    Parameters
+    ----------
+    nx : float
+          number of spectral elements in the x direction
+    ny : float
+          number of spectral elements in the y direction
+    xmin, xmax, ymin, ymax : float
+          bounds pof the box in the x and y directions
+    var : int list
+          optional, the list of fields to include in the mesh (velocity, pressure, temperature, passive scalars).
+          Defaults to only velocity and pressure.
+    bcs_xmin, bcs_xmax, bcs_ymin, bcs_ymax : str lists
+          optional, lists of boundary conditions for each of the sides of the box.
+          Each argument must be either `None` or a list of boundary conditions, one for each field present in the mesh except pressure. If `None`, it defaults to periodic boundary conditions for all fields.
+    internal_bcs : bool
+          Optional, specifies whether to build the connectivity boundary conditions between internal elements. Default is `True`.
+    """
+
+    lr1 = [2, 2, 1]  # the mesh is 2D so lz1 = 1
+    ndim = 2
+    nel = nx * ny
+    # count the number of boundary conditions required
+    nbc = 0
+    if var[1] > 0:
+        nbc += 1
+    if var[3] > 0:
+        nbc +=1
+    nbc += var[4]
+
+    # set default periodic boundary conditions
+    if bcs_xmin is None:
+        bcs_xmin = ["P"] * nbc
+    if bcs_xmax is None:
+        bcs_xmax = ["P"] * nbc
+    if bcs_ymin is None:
+        bcs_ymin = ["P"] * nbc
+    if bcs_ymax is None:
+        bcs_ymax = ["P"] * nbc
+
+    box = HexaData(ndim, nel, lr1, var, nbc=nbc)
+    # box dimensions
+    lx = xmax - xmin
+    if lx <= 0:
+        raise ValueError(f"xmax must be greater than xmin, but xmax - xmin = {lx:9e}")
+    ly = ymax - ymin
+    if ly <= 0:
+        raise ValueError(f"ymax must be greater than ymin, but ymax - ymin = {ly:9e}")
+    # indexing in each block, 0-indexed
+    def elnum(i, j, ni, nj):
+        return i + ni * j
+    for i, j in product(range(nx), range(ny)):
+        # coordinates of corners
+        x0 = xmin + lx * i / nx
+        x1 = xmin + lx * (i + 1) / nx
+        y0 = ymin + ly * j / ny
+        y1 = ymin + ly * (j + 1) / ny
+        # assign the coordinates
+        el = box.elem[elnum(i, j, nx, ny)]
+        el.pos[0, 0, :, 0] = x0
+        el.pos[0, 0, :, 1] = x1
+        el.pos[1, 0, 0, :] = y0
+        el.pos[1, 0, 1, :] = y1
+    # connectivity
+    if internal_bcs:
+        for ibc, i, j in product(range(nbc), range(nx), range(ny)):
+            el = box.elem[elnum(i, j, nx, ny)]
+            # bottom face
+            if j != 0:
+                el.bcs[ibc, 0][0] = "E"
+                el.bcs[ibc, 0][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 0][2] = 1
+                el.bcs[ibc, 0][3] = elnum(i, j - 1, nx, ny) + 1
+                el.bcs[ibc, 0][4] = 3
+            # right face
+            if i != nx - 1:
+                el.bcs[ibc, 1][0] = "E"
+                el.bcs[ibc, 1][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 1][2] = 2
+                el.bcs[ibc, 1][3] = elnum(i + 1, j, nx, ny) + 1
+                el.bcs[ibc, 1][4] = 4
+            # top face
+            if j != ny - 1:
+                el.bcs[ibc, 2][0] = "E"
+                el.bcs[ibc, 2][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 2][2] = 3
+                el.bcs[ibc, 2][3] = elnum(i, j + 1, nx, ny) + 1
+                el.bcs[ibc, 2][4] = 1
+            # left face
+            if i != 0:
+                el.bcs[ibc, 3][0] = "E"
+                el.bcs[ibc, 3][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 3][2] = 4
+                el.bcs[ibc, 3][3] = elnum(i - 1, j, nx, ny) + 1
+                el.bcs[ibc, 3][4] = 2
+
+    # Apply boundary conditions
+    for ibc in range(nbc):
+        for i in range(nx):
+            # bottom face
+            j = 0
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_ymin[ibc]
+            el.bcs[ibc, 0][0] = bc
+            el.bcs[ibc, 0][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 0][2] = 1
+            if bc == "P":
+                el.bcs[ibc, 0][3] = elnum(i, ny - 1, nx, ny) + 1
+                el.bcs[ibc, 0][4] = 3
+            # top face
+            j = ny - 1
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_ymax[ibc]
+            el.bcs[ibc, 2][0] = bc
+            el.bcs[ibc, 2][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 2][2] = 3
+            if bc == "P":
+                el.bcs[ibc, 2][3] = elnum(i, 0, nx, ny) + 1
+                el.bcs[ibc, 2][4] = 1
+        for j in range(ny):
+            # left face
+            i = 0
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_xmin[ibc]
+            el.bcs[ibc, 3][0] = bc
+            el.bcs[ibc, 3][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 3][2] = 4
+            if bc == "P":
+                el.bcs[ibc, 3][3] = elnum(nx - 1, j, nx, ny) + 1
+                el.bcs[ibc, 3][4] = 2
+            # right face
+            i = nx - 1
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_xmin[ibc]
+            el.bcs[ibc, 1][0] = bc
+            el.bcs[ibc, 1][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 1][2] = 2
+            if bc == "P":
+                el.bcs[ibc, 1][3] = elnum(0, j, nx, ny) + 1
+                el.bcs[ibc, 1][4] = 4
+
+    return box
+
+
+# =================================================================================
+
 
 def gen_circle(
     r: float,

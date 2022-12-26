@@ -1865,7 +1865,11 @@ def map2D(
         # - the edge is a boundary edge and boundary_curvature=True or any edge and curvature=True. then we generate a new midpoint at the image of the centre of the original edge.
         # otherwise, leave the edge without curvature.
         for iedge in range(4):
-            if curvature or el.ccurv[iedge] != "" or (boundary_curvature and el.bcs[0][iedge][0] not in ["", "E"]):
+            if (
+                curvature
+                or el.ccurv[iedge] != ""
+                or (boundary_curvature and el.bcs[0][iedge][0] not in ["", "E"])
+            ):
                 mapped_el.ccurv[iedge] = "m"
                 xm, ym, _ = edge_mid(el, iedge)
                 mapped_xm, mapped_ym = transformation(xm, ym)

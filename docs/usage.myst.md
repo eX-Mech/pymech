@@ -183,13 +183,23 @@ s_param = 0.5
 # (x, y), (vx, vy), p, t, no passive scalars
 variables = [2, 2, 1, 1, 0]
 # boundary conditions: adiabatic wall
-bcs = ['W', 'I']
+bcs_sides = ['W', 'I']
 # generate the mesh
-disc_mesh = mt.gen_circle(radius, s_param, n_centre, n_bl, var=variables, bc=bcs)
+disc_mesh = mt.gen_circle(radius, s_param, n_centre, n_bl, var=variables, bc=bcs_sides)
 ```
 
 ### Extrusion
 
 Pymech can extrude 2D meshes into 3D ones.
+
+We can for example extrude the disc into a cylinder with isothermal walls at the top and bottom:
+```{code-cell} ipython3
+
+# extrude in ten elements vertically between -1 and +1
+z = [-1, -0.9, -0.7, -0.5, -0.25, 0, 0.25, 0.5, 0.7, 0.9, 1]
+bcs_ends = ['W', 't']
+# bc1 denotes the boundary conditions at z = -1, and bc2 at z = +1
+cylinder_mesh = mt.extrude(circle_mesh, z, bc1=bcs_ends, bc2=bcs_ends)
+```
 
 ### Mesh generation

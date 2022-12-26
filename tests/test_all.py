@@ -593,6 +593,25 @@ def test_gen_box(test_data_dir):
     assert box.check_connectivity()
     assert box.nbc == 2
 
+def test_map2D(test_data_dir):
+    import pymech.meshtools as mt
+
+    # make a very twisted mesh and check that it ends up the way we want
+    def mapping(x, y):
+        print(x, y)
+        return (2 * x + 0.2 * y + 0.1 * math.sin(math.pi * y), 1.2 * y - 0.1 * x - 0.2 * math.sin(2 * math.pi * x))
+
+    n_centre = 5
+    n_bl = 6
+    s_param = 0.5
+    radius = 1
+    circle_mesh = mt.gen_circle(radius, s_param, n_centre, n_bl, var=[2, 2, 1, 1, 0], bc=['W', 'I'])
+    circle_mesh = mt.map2D(circle_mesh, mapping)
+    assert circle_mesh.check_connectivity()
+    math.isclose(circle_mesh.elem[35].curv[0, 0], 1.4794589904304334)
+    math.isclose(circle_mesh.elem[35].curv[3, 1], -0.2516125141385187)
+    assert circle_mesh.elem[38].ccurv == ['m', 'm', 'm', 'm', '', '', '', '', '', '', '', '']
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

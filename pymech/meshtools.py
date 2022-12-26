@@ -1378,7 +1378,7 @@ def gen_box(
     ny: int,
     xmin: float,
     xmax: float,
-    ymin:float,
+    ymin: float,
     ymax: float,
     var=[2, 2, 1, 0, 0],
     bcs_xmin=None,
@@ -1417,7 +1417,7 @@ def gen_box(
     if var[1] > 0:
         nbc += 1
     if var[3] > 0:
-        nbc +=1
+        nbc += 1
     nbc += var[4]
 
     # set default periodic boundary conditions
@@ -1438,9 +1438,11 @@ def gen_box(
     ly = ymax - ymin
     if ly <= 0:
         raise ValueError(f"ymax must be greater than ymin, but ymax - ymin = {ly:9e}")
+
     # indexing in each block, 0-indexed
     def elnum(i, j, ni, nj):
         return i + ni * j
+
     for i, j in product(range(nx), range(ny)):
         # coordinates of corners
         x0 = xmin + lx * i / nx
@@ -1811,3 +1813,57 @@ def gen_circle(
     box_square.merge(box_o, ignore_all_bcs=not internal_bcs)
 
     return box_square
+
+
+# =================================================================================
+
+
+def map2D(
+    mesh: HexaData,
+    transformation,
+    internal_curvature=True,
+):
+    """
+    Applies a coordinate transformation to a 2D mesh, returning the transformed mesh.
+    The faces are curved to second-order accuracy by setting the midpoints according to the transformation.
+
+
+    Parameters
+    ----------
+    mesh : :class:`pymech.core.HexaData`
+        the mesh to transform, will not be modified.
+    transformation : (float, float) -> (float float) function
+        the coordinate transformation to apply. It must be a valid right-handed transformation (the determinant of its Jacobian must be positive on the mesh domain).
+    internal_curvature : bool
+        specifies whether to apply curvature to the internal faces. The boundary faces and the faces that are already curved in the original mesh will always be curved. True by default.
+
+    Returns
+    -------
+    mapped_mesh : :class:`pymech.core.HexaData`
+        the transformed mesh
+    """
+
+    mapped_mesh = copy.deepcopy(mesh)
+    for el, mapped_el in zip(mesh.elem, mapped_mesh.elem):
+        # map the vertices of the elements. This is the easy part.
+        # we might want to use vectorisation here but the input function might not support it
+        for ix, iy in product(range(2), range(2)):
+            x = el.pos[0, 0, ix, iy]
+            y = el.pos[1, 0, ix, iy]
+            mapped_x, mapped_y = transformation(x, y)
+            mapped_el.pos[0, 0, ix, iy] = mapped_x
+            mapped_el.pos[1, 0, ix, iy] = mapped_y
+
+        # Now, fix the curvature.
+        # Several scenarios are possible:
+        # - the edge is curved with a midpoint. In this case, we update the midpoint.
+        # - the edge is curved with a circle arc ("C"). In this case, we transform this into a midpoint curvature and update it, because there is no guarantee that the image of a circle by the transformation is a circle.
+        # - the edge is a boundary edge or an internal edge with internal_curvature=True. then we generate a new midpoint at the image of the centre of the original edge.
+        # otherwise, leave the edge without curvature.
+        for iedge in range(4):
+            if internal_curvature or el.ccurv[iedge] != "" or el.bcs[0][iedge][0] not in ["", "E"]:
+                mapped_el.ccurv[iedge] = "m"
+                xm, ym, _ = edge_mid(el, iedge)
+                mapped_xm, mapped_ym = transformation(xm, ym)
+                mapped_el.curv[iedge, 0:2] = mapped_xm, mapped_ym
+    return mapped_mesh

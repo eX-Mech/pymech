@@ -192,11 +192,12 @@ disc_mesh = mt.gen_circle(radius, s_param, n_centre, n_bl, var=variables, bc=bcs
 
 Pymech can extrude 2D meshes into 3D ones.
 
-We can for example extrude the disc into a cylinder with isothermal walls at the top and bottom:
+We can for example extrude the disc into a cylinder with velocity and temperature inlet at the bottom and outflow at the top:
 ```{code-cell} ipython3
 # extrude in ten elements vertically between -1 and +1
 z = [-1, -0.9, -0.7, -0.5, -0.25, 0, 0.25, 0.5, 0.7, 0.9, 1]
-bcs_ends = ['W', 't']
+bc_inflow = ['v', 't']
+bc_outflow = ['O', 'I']
 # bc1 denotes the boundary conditions at z = -1, and bc2 at z = +1
-cylinder_mesh = mt.extrude(disc_mesh, z, bc1=bcs_ends, bc2=bcs_ends)
+cylinder_mesh = mt.extrude(disc_mesh, z, bc1=bc_inflow, bc2=bc_outflow)
 ```

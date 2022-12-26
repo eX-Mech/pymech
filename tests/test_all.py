@@ -612,6 +612,7 @@ def test_map2D(test_data_dir):
     math.isclose(circle_mesh.elem[35].curv[3, 1], -0.2516125141385187)
     assert circle_mesh.elem[38].ccurv == ['m', 'm', 'm', 'm', '', '', '', '', '', '', '', '']
 
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

@@ -1,6 +1,24 @@
 import wx
 from wx import glcanvas
-from OpenGL.GL import glViewport, glMatrixMode, glClearColor, glClear, glLoadIdentity, glOrtho, glEnable, glLineWidth, glBegin, glEnd, glColor, glVertex3fv, GL_PROJECTION, GL_COLOR_BUFFER_BIT, GL_LINE_SMOOTH, GL_MODELVIEW, GL_LINES
+from OpenGL.GL import (
+    glViewport,
+    glMatrixMode,
+    glClearColor,
+    glClear,
+    glLoadIdentity,
+    glOrtho,
+    glEnable,
+    glLineWidth,
+    glBegin,
+    glEnd,
+    glColor,
+    glVertex3fv,
+    GL_PROJECTION,
+    GL_COLOR_BUFFER_BIT,
+    GL_LINE_SMOOTH,
+    GL_MODELVIEW,
+    GL_LINES,
+)
 from math import sqrt, atan2, asin, cos, sin
 
 
@@ -9,21 +27,25 @@ class MeshFrame(wx.Frame):
     A frame to display meshes
     """
 
-    def __init__(self,
-                 mesh,
-                 parent,
-                 id,
-                 title,
-                 pos=wx.DefaultPosition,
-                 size=wx.DefaultSize,
-                 style=wx.DEFAULT_FRAME_STYLE,
-                 name='frame'
-                 ):
+    def __init__(
+        self,
+        mesh,
+        parent,
+        id,
+        title,
+        pos=wx.DefaultPosition,
+        size=wx.DefaultSize,
+        style=wx.DEFAULT_FRAME_STYLE,
+        name="frame",
+    ):
         super(MeshFrame, self).__init__(parent, id, title, pos, size, style, name)
         self.GLinitialized = False
-        attribList = (glcanvas.WX_GL_RGBA,  # RGBA
-                      glcanvas.WX_GL_DOUBLEBUFFER,  # Double Buffered
-                      glcanvas.WX_GL_DEPTH_SIZE, 24)  # 24 bit
+        attribList = (
+            glcanvas.WX_GL_RGBA,  # RGBA
+            glcanvas.WX_GL_DOUBLEBUFFER,  # Double Buffered
+            glcanvas.WX_GL_DEPTH_SIZE,
+            24,
+        )  # 24 bit
 
         # Create the canvas
         self.canvas = glcanvas.GLCanvas(self, attribList=attribList)
@@ -129,14 +151,7 @@ class MeshFrame(wx.Frame):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(
-            xmin,
-            xmax,
-            ymin,
-            ymax,
-            -1,
-            1
-        )
+        glOrtho(xmin, xmax, ymin, ymax, -1, 1)
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
@@ -144,7 +159,9 @@ class MeshFrame(wx.Frame):
     def OnDraw(self, *args, **kwargs):
         "Draw the window."
         glClear(GL_COLOR_BUFFER_BIT)
-        glEnable(GL_LINE_SMOOTH)  # this doesn't seem to be doing anything? It would be nice to have antialiasing
+        glEnable(
+            GL_LINE_SMOOTH
+        )  # this doesn't seem to be doing anything? It would be nice to have antialiasing
         glLineWidth(1.0)
         glBegin(GL_LINES)
         glColor(0, 0, 0)
@@ -177,19 +194,21 @@ class MeshFrame(wx.Frame):
             first_point = current_point
             for iface in range(4):
                 j0, i0 = vertex_indices(iface)
-                if el.ccurv[iface] == '':
-                    self.vertices.append((
-                        el.pos[0, 0, j0, i0],
-                        el.pos[1, 0, j0, i0],
-                        0.,
-                    ))
+                if el.ccurv[iface] == "":
+                    self.vertices.append(
+                        (
+                            el.pos[0, 0, j0, i0],
+                            el.pos[1, 0, j0, i0],
+                            0.0,
+                        )
+                    )
                     if iface < 3:
                         next_point = current_point + 1
                     else:
                         next_point = first_point
                     self.edges.append((current_point, next_point))
                     current_point += 1
-                elif el.ccurv[iface] == 'm':
+                elif el.ccurv[iface] == "m":
                     # we should draw a parabola passing through the current vertex, the midpoint, and the next vertex.
                     x0, y0 = el.pos[0:2, 0, j0, i0]
                     xm, ym = el.curv[iface][0:2]
@@ -216,17 +235,19 @@ class MeshFrame(wx.Frame):
                             next_point = current_point + 1
                         self.edges.append((current_point, next_point))
                         current_point += 1
-                elif el.ccurv[iface] == 'C':
+                elif el.ccurv[iface] == "C":
                     # draw a circle of given radius passing through the next vertex and the current one
                     # first, find the distance between the midpoint of the segment ((x0, y0), (x1, y1)) and the center (xc, yc) of the circle
-                    radius = el.curv[iface][0]  # this can be positive or negative depending on direction
+                    radius = el.curv[iface][
+                        0
+                    ]  # this can be positive or negative depending on direction
                     x0, y0 = el.pos[0:2, 0, j0, i0]
                     j1, i1 = vertex_indices((iface + 1) % 4)
                     x1, y1 = el.pos[0:2, 0, j1, i1]
                     # length of the segment
                     ls2 = (x1 - x0) ** 2 + (y1 - y0) ** 2
                     try:
-                        dist = radius * sqrt(1 - ls2 / (4 * radius ** 2))
+                        dist = radius * sqrt(1 - ls2 / (4 * radius**2))
                     except ValueError:
                         raise ValueError("the radius of the curved edge is too small")
                     # midpoint of the edge

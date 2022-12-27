@@ -30,6 +30,17 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+### Added
+
+- New function {func}`pymech.meshtools.gen_box` to generate box meshes
+- New function {func}`pymech.meshtools.map2D` to apply 2D coordinate transformations to meshes
+- {mod}`pymech.meshtools` examples in the documentation
+
+### Changed
+
+- Support for multiple fields with different boundary conditions in several {mod}`pymech.meshtools` functions 
+
+
 ## [1.5.0] - 2022-11-25
 
 ### Added

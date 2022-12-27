@@ -1526,7 +1526,7 @@ def gen_box(
             # right face
             i = nx - 1
             el = box.elem[elnum(i, j, nx, ny)]
-            bc = bcs_xmin[ibc]
+            bc = bcs_xmax[ibc]
             el.bcs[ibc, 1][0] = bc
             el.bcs[ibc, 1][1] = elnum(i, j, nx, ny) + 1
             el.bcs[ibc, 1][2] = 2

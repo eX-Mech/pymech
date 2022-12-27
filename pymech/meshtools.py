@@ -34,23 +34,19 @@ def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
         bc2 = ["P"] * mesh.nbc
 
     if mesh.ndim != 2:
-        logger.critical("The mesh to extrude must be 2D")
-        return -1
+        raise ValueError("The mesh to extrude must be 2D")
     if mesh.lr1 != [2, 2, 1]:
-        logger.critical("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
-        return -2
+        raise ValueError("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
     if mesh.var[0] < 2:
-        logger.critical("The mesh to extrude must contain (x, y) geometry")
-        return -3
+        raise ValueError("The mesh to extrude must contain (x, y) geometry")
     # Is it possible to have periodic conditions for only some of the fields? If not, we should check for it too.
     for bc1_field, bc2_field in zip(bc1, bc2):
         if (bc1_field == "P" and bc2_field != "P") or (
             bc1_field != "P" and bc2_field == "P"
         ):
-            logger.critical(
+            raise ValueError(
                 "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
             )
-            return -4
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
@@ -216,31 +212,26 @@ def extrude_refine(
 
     # Consistency checks: Initial grid
     if mesh2D.ndim != 2:
-        logger.critical("The mesh to extrude must be 2D")
-        return -1
+        raise ValueError("The mesh to extrude must be 2D")
     if mesh2D.lr1 != [2, 2, 1]:
-        logger.critical("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
-        return -2
+        raise ValueError("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
     if mesh2D.var[0] < 2:
-        logger.critical("The mesh to extrude must contain (x, y) geometry")
-        return -3
+        raise ValueError("The mesh to extrude must contain (x, y) geometry")
     # Consistency checks: Periodic boundary condition
     for bc1_field, bc2_field in zip(bc1, bc2):
         if (bc1_field == "P" and bc2_field != "P") or (
             bc1_field != "P" and bc2_field == "P"
         ):
-            logger.critical(
+            raise ValueError(
                 "Inconsistent boundary conditions: one end is 'P' but the other isn't"
             )
-            return -4
 
     # Consistency checks: Functions that define the splitting lines
     nsplit = len(fun)
     if funpar is not None and len(funpar) != nsplit:
-        logger.critical(
+        raise ValueError(
             f"The length of funpar ({len(funpar)}) must match the length of par ({nsplit})!"
         )
-        return -5
 
     # number of elements in the z direction
     nz = len(z) - 1
@@ -249,10 +240,9 @@ def extrude_refine(
     if (nz % 2 ** abs(imesh_high + 1) != 0) or (
         nz % 2 ** abs(nsplit - imesh_high + 1) != 0
     ):
-        logger.critical(
+        raise ValueError(
             f"Inconsistent elements to extrude: the number of elements ({nz}) must be a multiple of {max([2**abs(imesh_high + 1), 2**abs(nsplit - imesh_high + 1)])}"
         )
-        return -10
 
     # If fun is not defined, there is no splitting to be done. Call simple extrusion and end routine
     if fun is None:
@@ -342,10 +332,9 @@ def extrude_refine(
             z_mid = z_local
 
         if n_mid % 4 != 0:
-            logger.critical(
+            raise ValueError(
                 f"Inconsistent elements to extrude: n ({n_mid}) is not a multiple of 4."
             )
-            return -11
 
         meshes3D.append(
             extrude(
@@ -423,22 +412,18 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
 
     # Consistency checks: Initial grid
     if mesh.ndim != 2:
-        logger.critical("The mesh to extrude must be 2D")
-        return -1
+        raise ValueError("The mesh to extrude must be 2D")
     if mesh.lr1 != [2, 2, 1]:
-        logger.critical("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
-        return -2
+        raise ValueError("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
     if mesh.var[0] < 2:
-        logger.critical("The mesh to extrude must contain (x, y) geometry")
-        return -3
+        raise ValueError("The mesh to extrude must contain (x, y) geometry")
     for bc1_field, bc2_field in zip(bc1, bc2):
         if (bc1_field == "P" and bc2_field != "P") or (
             bc1_field != "P" and bc2_field == "P"
         ):
-            logger.critical(
+            raise ValueError(
                 "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
             )
-            return -4
 
     nz = len(z) - 1
     z1 = np.zeros((nz, 1))
@@ -447,8 +432,7 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
     z2 = z[1 : nz + 1]
 
     if nz % 4 != 0:
-        logger.critical("Inconsistent elements to extrude: nz must be divided by 4")
-        return -5
+        raise ValueError("Inconsistent elements to extrude: nz must be divided by 4")
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
@@ -502,25 +486,22 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
                     rvec[jj, ii] = fun(xvec[jj, ii], yvec[jj, ii], funpar)
                     if rvec[jj, ii] <= 0.0:
                         if iindex_lo > 1:
-                            logger.critical(
+                            raise ValueError(
                                 "Mid element not consistent. Criteria must divide elements with 2 points on each side."
                             )
-                            return -11
                         index_lo[iindex_lo, :] = [jj, ii]
                         iindex_lo += 1
                     else:
                         if iindex_hi > 1:
-                            logger.critical(
+                            raise ValueError(
                                 "Mid element not consistent. Criteria must divide elements with 2 points on each side."
                             )
-                            return -11
                         index_hi[iindex_hi, :] = [jj, ii]
                         iindex_hi += 1
             if (iindex_lo != 2) or (iindex_hi != 2):
-                logger.critical(
+                raise ValueError(
                     "Mid element not consistent. Criteria must divide elements with 2 points on each side."
                 )
-                return -11
 
             # find the indices of edges, for curvature and boundary condition
             #
@@ -1133,8 +1114,7 @@ def generate_internal_bcs(mesh, tol=1e-3):
 
         # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.
         if scales[iel] <= 0.0:
-            logger.critical(f"Detected an edge with zero length in element {iel}!")
-            return -1
+            raise ValueError(f"Detected an edge with zero length in element {iel}!")
 
     # generate lookup tables for face centers and the faces that are already connected
     nface = 2 * mesh.ndim
@@ -1223,8 +1203,7 @@ def keep_elements(mesh: HexaData, elems, external_bc=""):
     current_offset = 0
     for iel in elems:
         if iel >= mesh.nel:
-            logger.critical(f"invalid element number {iel} for nel = {mesh.nel}")
-            return
+            raise ValueError(f"invalid element number {iel} for nel = {mesh.nel}")
         current_offset += iel - last_iel - 1
         offsets[iel] = current_offset
         last_iel = iel

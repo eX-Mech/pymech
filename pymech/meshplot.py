@@ -45,7 +45,10 @@ class MeshFrame(wx.Frame):
 
         # view parameters
         self.margins = 0.05
-        self.setLimits(mesh)  # sets xmin, xmax, ymin, ymax
+        # sets self.mesh_limits
+        self.setLimits(mesh)
+        # current limits
+        self.limits = self.mesh_limits
         
         # and a status bar
         #self.CreateStatusBar()
@@ -104,15 +107,32 @@ class MeshFrame(wx.Frame):
 
     def OnReshape(self, width, height):
         """Reshape the OpenGL viewport based on the dimensions of the window."""
-        glViewport(0, 0, width, height)
 
+        xmin = self.limits[0]
+        xmax = self.limits[1]
+        ymin = self.limits[2]
+        ymax = self.limits[3]
+        # check whether the view is limited by width or height, and scale accordingly
+        lx = xmax - xmin
+        ly = ymax - ymin
+        if lx / width > ly / height:
+            y0 = 0.5 * (ymin + ymax)
+            dy = height / width * lx / 2
+            ymin = y0 - dy
+            ymax = y0 + dy
+        else:
+            x0 = 0.5 * (xmin + xmax)
+            dx = width / height * ly / 2
+            xmin = x0 - dx
+            xmax = x0 + dx
+        glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         glOrtho(
-            self.limits[0],
-            self.limits[1],
-            self.limits[2],
-            self.limits[3],
+            xmin,
+            xmax,
+            ymin,
+            ymax,
             -1,
             1
         )
@@ -171,7 +191,7 @@ class MeshFrame(wx.Frame):
         ymin, ymax = mesh.lims.pos[1]
         lx = xmax - xmin
         ly = ymax - ymin
-        self.limits = [
+        self.mesh_limits = [
             xmin - self.margins * lx,
             xmax + self.margins * lx,
             ymin - self.margins * ly,

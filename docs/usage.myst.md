@@ -212,7 +212,7 @@ alpha = mt.exponential_refinement_parameter(l0, ymax, ny)
 # maps (x, y) -> (x', y')
 def refinement_function(x, y):
     iy = ny * y / ymax
-    return (x, l0 * iy**alpha)
+    return (x, l0 * (1 - alpha**iy)/(1 - alpha))
 
 # This mapping doesn't introduce any curvature, so we don't need to encode any new curvature in the mesh
 box = mt.map2D(box, refinement_function, curvature=False, boundary_curvature=False)

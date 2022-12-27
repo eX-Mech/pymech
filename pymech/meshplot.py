@@ -1,9 +1,8 @@
 import wx
 from wx import glcanvas
-import OpenGL
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL.GL import glViewport, glMatrixMode, glClearColor, glClear, glLoadIdentity, glOrtho, glEnable, glLineWidth, glBegin, glEnd, glColor, glVertex3fv, GL_PROJECTION, GL_COLOR_BUFFER_BIT, GL_LINE_SMOOTH, GL_MODELVIEW, GL_LINES
 from math import sqrt, atan2, asin, cos, sin
+
 
 class MeshFrame(wx.Frame):
     """
@@ -19,12 +18,12 @@ class MeshFrame(wx.Frame):
                  size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE,
                  name='frame'
-    ):
+                 ):
         super(MeshFrame, self).__init__(parent, id, title, pos, size, style, name)
         self.GLinitialized = False
-        attribList = (glcanvas.WX_GL_RGBA, # RGBA
-                      glcanvas.WX_GL_DOUBLEBUFFER, # Double Buffered
-                      glcanvas.WX_GL_DEPTH_SIZE, 24) # 24 bit
+        attribList = (glcanvas.WX_GL_RGBA,  # RGBA
+                      glcanvas.WX_GL_DOUBLEBUFFER,  # Double Buffered
+                      glcanvas.WX_GL_DEPTH_SIZE, 24)  # 24 bit
 
         # Create the canvas
         self.canvas = glcanvas.GLCanvas(self, attribList=attribList)
@@ -35,9 +34,8 @@ class MeshFrame(wx.Frame):
         self.canvas.Bind(wx.EVT_SIZE, self.processSizeEvent)
         self.canvas.Bind(wx.EVT_PAINT, self.processPaintEvent)
 
-
         # create a menu bar
-        #self.makeMenuBar()
+        # self.makeMenuBar()
 
         # mesh display properties
         self.curve_points = 12
@@ -53,10 +51,10 @@ class MeshFrame(wx.Frame):
         self.setLimits(mesh)
         # current limits
         self.limits = self.mesh_limits
-        
+
         # and a status bar
-        #self.CreateStatusBar()
-        #self.SetStatusText("initialised")
+        # self.CreateStatusBar()
+        # self.SetStatusText("initialised")
 
     # Canvas Proxy Methods
 
@@ -76,7 +74,7 @@ class MeshFrame(wx.Frame):
 
     def processEraseBackgroundEvent(self, event):
         """Process the erase background event."""
-        pass # Do nothing, to avoid flashing on MSWin
+        pass  # Do nothing, to avoid flashing on MSWin
 
     def processSizeEvent(self, event):
         """Process the resize event."""
@@ -101,8 +99,7 @@ class MeshFrame(wx.Frame):
 
         self.OnDraw()
         event.Skip()
-        
-    
+
     # GLFrame OpenGL Event Handlers
 
     def OnInitGL(self):

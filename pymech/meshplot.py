@@ -136,7 +136,7 @@ class MeshFrame(wx.Frame):
         The centre (xcp, ycp) is given in pixels, not in mesh units.
         """
 
-        factor = self.zoom_factor ** increment
+        factor = self.zoom_factor**increment
         xmin, xmax, ymin, ymax = self.limits
         size = self.GetGLExtents()
         # get the centre location in mesh units
@@ -204,9 +204,7 @@ class MeshFrame(wx.Frame):
         # initialise
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         gl.glClearColor(1, 1, 1, 1)
-        gl.glEnable(
-            gl.GL_LINE_SMOOTH
-        )
+        gl.glEnable(gl.GL_LINE_SMOOTH)
         gl.glLineWidth(1.0)
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glColor(0, 0, 0)

@@ -1,24 +1,6 @@
 import wx
 from wx import glcanvas
-from OpenGL.GL import (
-    glViewport,
-    glMatrixMode,
-    glClearColor,
-    glClear,
-    glLoadIdentity,
-    glOrtho,
-    glEnable,
-    glLineWidth,
-    glBegin,
-    glEnd,
-    glColor,
-    glVertex3fv,
-    GL_PROJECTION,
-    GL_COLOR_BUFFER_BIT,
-    GL_LINE_SMOOTH,
-    GL_MODELVIEW,
-    GL_LINES,
-)
+import OpenGL.GL as gl
 from math import sqrt, atan2, asin, cos, sin
 
 
@@ -126,7 +108,7 @@ class MeshFrame(wx.Frame):
 
     def OnInitGL(self):
         """Initialize OpenGL for use in the window."""
-        glClearColor(1, 1, 1, 1)
+        gl.glClearColor(1, 1, 1, 1)
 
     def OnReshape(self, width, height):
         """Reshape the OpenGL viewport based on the dimensions of the window."""
@@ -148,27 +130,27 @@ class MeshFrame(wx.Frame):
             dx = width / height * ly / 2
             xmin = x0 - dx
             xmax = x0 + dx
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(xmin, xmax, ymin, ymax, -1, 1)
+        gl.glViewport(0, 0, width, height)
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.glOrtho(xmin, xmax, ymin, ymax, -1, 1)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+        gl.glLoadIdentity()
 
     def OnDraw(self, *args, **kwargs):
         "Draw the window."
-        glClear(GL_COLOR_BUFFER_BIT)
-        glEnable(
-            GL_LINE_SMOOTH
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glEnable(
+            gl.GL_LINE_SMOOTH
         )  # this doesn't seem to be doing anything? It would be nice to have antialiasing
-        glLineWidth(1.0)
-        glBegin(GL_LINES)
-        glColor(0, 0, 0)
+        gl.glLineWidth(1.0)
+        gl.glBegin(gl.GL_LINES)
+        gl.glColor(0, 0, 0)
         for edge in self.edges:
             for vertex in edge:
-                glVertex3fv(self.vertices[vertex])
-        glEnd()
+                gl.glVertex3fv(self.vertices[vertex])
+        gl.glEnd()
 
         self.SwapBuffers()
 

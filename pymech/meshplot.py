@@ -1,6 +1,7 @@
 import wx
 from wx import glcanvas
 import OpenGL.GL as gl
+import numpy as np
 from math import sqrt, atan2, asin, cos, sin
 import time
 
@@ -47,10 +48,12 @@ class MeshFrame(wx.Frame):
         self.curve_points = 12
 
         # data to be drawn
-        self.vertex_data = []
-        self.colour_data = []
+        self.vertex_data = np.array([])
+        self.colour_data = np.array([])
         self.num_vertices = 0
         self.buildMesh(mesh)
+        self.vertex_buffer = 0
+        self.colour_buffer = 0
 
         # view parameters
         # relative margins to display around the mesh in the default view
@@ -154,6 +157,7 @@ class MeshFrame(wx.Frame):
 
     def OnInitGL(self):
         """Initialize OpenGL for use in the window."""
+        self.createBuffers(1)
         gl.glClearColor(1, 1, 1, 1)
 
     def updateLimits(self, width, height):
@@ -184,22 +188,36 @@ class MeshFrame(wx.Frame):
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
 
+    def createBuffers(self, id):
+        # new vertex buffer
+        self.vertex_buffer = gl.glGenBuffers(id)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
+        # send the vertex data to the buffer
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_data, gl.GL_STATIC_DRAW)
+        # unbind the buffer
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+
     def OnDraw(self, *args, **kwargs):
         "Draw the window."
 
         t1 = time.perf_counter()
+        # initialise
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClearColor(1, 1, 1, 1)
         gl.glEnable(
             gl.GL_LINE_SMOOTH
         )
         gl.glLineWidth(1.0)
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-        gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-        gl.glVertexPointer(3, gl.GL_DOUBLE, 0, self.vertex_data)
-        gl.glColorPointer(4, gl.GL_DOUBLE, 0, self.colour_data)
+        gl.glColor(0, 0, 0)
+        # load buffers
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
+        gl.glVertexPointer(3, gl.GL_DOUBLE, 0, 0)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+        # draw the mesh
         gl.glDrawArrays(gl.GL_LINES, 0, self.num_vertices)
+        # finalise
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         t2 = time.perf_counter()
 
         self.SwapBuffers()
@@ -315,13 +333,15 @@ class MeshFrame(wx.Frame):
 
         # put everything into a buffer that OpenGL can read
         self.num_vertices = 2 * len(edges)
-        self.colour_data = [0 for _ in range(4 * self.num_vertices)]
+        self.colour_data = np.array([0 for _ in range(4 * self.num_vertices)])
+        vertex_data = []
         for edge in edges:
             for vertex in edge:
                 x, y, z = vertices[vertex]
-                self.vertex_data.append(x)
-                self.vertex_data.append(y)
-                self.vertex_data.append(z)
+                vertex_data.append(x)
+                vertex_data.append(y)
+                vertex_data.append(z)
+        self.vertex_data = np.array(vertex_data)
 
     def setLimits(self, mesh):
         """

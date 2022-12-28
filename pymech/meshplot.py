@@ -47,8 +47,9 @@ class MeshFrame(wx.Frame):
         self.curve_points = 12
 
         # data to be drawn
-        self.vertices = []
-        self.edges = []
+        self.vertex_data = []
+        self.colour_data = []
+        self.num_vertices = 0
         self.buildMesh(mesh)
 
         # view parameters
@@ -187,26 +188,22 @@ class MeshFrame(wx.Frame):
         "Draw the window."
 
         t1 = time.perf_counter()
-        t_tot = 0
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         gl.glEnable(
             gl.GL_LINE_SMOOTH
-        )  # this doesn't seem to be doing anything? It would be nice to have antialiasing
+        )
         gl.glLineWidth(1.0)
-        gl.glBegin(gl.GL_LINES)
-        gl.glColor(0, 0, 0)
-        for edge in self.edges:
-            for vertex in edge:
-                x, y, z = self.vertices[vertex]
-                t_tmp = time.perf_counter()
-                gl.glVertex3f(x, y, z)
-                t_tot += time.perf_counter() - t_tmp
-        gl.glEnd()
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glEnableClientState(gl.GL_COLOR_ARRAY)
+        gl.glVertexPointer(3, gl.GL_DOUBLE, 0, self.vertex_data)
+        gl.glColorPointer(4, gl.GL_DOUBLE, 0, self.colour_data)
+        gl.glDrawArrays(gl.GL_LINES, 0, self.num_vertices)
+        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         t2 = time.perf_counter()
-        
+
         self.SwapBuffers()
-        t3 = time.perf_counter()
-        print(f"time: draw {t2 - t1:.6e}, GL: {t_tot:.6e}, swap {t3 - t2:.6e}")
+        print(f"time: draw {t2 - t1:.6e}")
 
     def buildMesh(self, mesh):
         """
@@ -226,12 +223,14 @@ class MeshFrame(wx.Frame):
 
         current_point = 0
         first_point = 0
+        vertices = []
+        edges = []
         for el in mesh.elem:
             first_point = current_point
             for iface in range(4):
                 j0, i0 = vertex_indices(iface)
                 if el.ccurv[iface] == "":
-                    self.vertices.append(
+                    vertices.append(
                         (
                             el.pos[0, 0, j0, i0],
                             el.pos[1, 0, j0, i0],
@@ -242,7 +241,7 @@ class MeshFrame(wx.Frame):
                         next_point = current_point + 1
                     else:
                         next_point = first_point
-                    self.edges.append((current_point, next_point))
+                    edges.append((current_point, next_point))
                     current_point += 1
                 elif el.ccurv[iface] == "m":
                     # we should draw a parabola passing through the current vertex, the midpoint, and the next vertex.
@@ -264,12 +263,12 @@ class MeshFrame(wx.Frame):
                             - ym * 4 * tp * (tp - 1)
                             + y1 * 2 * tp * (tp - 0.5)
                         )
-                        self.vertices.append((xp, yp, 0))
+                        vertices.append((xp, yp, 0))
                         if iface == 3 and ipt == self.curve_points - 1:
                             next_point = first_point
                         else:
                             next_point = current_point + 1
-                        self.edges.append((current_point, next_point))
+                        edges.append((current_point, next_point))
                         current_point += 1
                 elif el.ccurv[iface] == "C":
                     # draw a circle of given radius passing through the next vertex and the current one
@@ -306,13 +305,23 @@ class MeshFrame(wx.Frame):
                         theta = theta_min + 2 * dtheta * itheta / self.curve_points
                         xp = xc + abs(radius) * cos(theta)
                         yp = yc + abs(radius) * sin(theta)
-                        self.vertices.append((xp, yp, 0))
+                        vertices.append((xp, yp, 0))
                         if iface == 3 and itheta == self.curve_points - 1:
                             next_point = first_point
                         else:
                             next_point = current_point + 1
-                        self.edges.append((current_point, next_point))
+                        edges.append((current_point, next_point))
                         current_point += 1
+
+        # put everything into a buffer that OpenGL can read
+        self.num_vertices = 2 * len(edges)
+        self.colour_data = [0 for _ in range(4 * self.num_vertices)]
+        for edge in edges:
+            for vertex in edge:
+                x, y, z = vertices[vertex]
+                self.vertex_data.append(x)
+                self.vertex_data.append(y)
+                self.vertex_data.append(z)
 
     def setLimits(self, mesh):
         """

@@ -2,6 +2,7 @@ import wx
 from wx import glcanvas
 import OpenGL.GL as gl
 from math import sqrt, atan2, asin, cos, sin
+import time
 
 
 class MeshFrame(wx.Frame):
@@ -37,6 +38,7 @@ class MeshFrame(wx.Frame):
         self.canvas.Bind(wx.EVT_ERASE_BACKGROUND, self.processEraseBackgroundEvent)
         self.canvas.Bind(wx.EVT_SIZE, self.processSizeEvent)
         self.canvas.Bind(wx.EVT_PAINT, self.processPaintEvent)
+        self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.processMouseWheelEvent)
 
         # create a menu bar
         # self.makeMenuBar()
@@ -50,7 +52,10 @@ class MeshFrame(wx.Frame):
         self.buildMesh(mesh)
 
         # view parameters
+        # relative margins to display around the mesh in the default view
         self.margins = 0.05
+        # when zooming in by one step, the field of view is multiplied by this value
+        self.zoom_factor = 0.95
         # sets self.mesh_limits
         self.setLimits(mesh)
         # current limits
@@ -88,7 +93,7 @@ class MeshFrame(wx.Frame):
             self.canvas.SetCurrent(self.context)
 
             size = self.GetGLExtents()
-            self.OnReshape(size.width, size.height)
+            self.updateLimits(size.width, size.height)
             self.canvas.Refresh(False)
         event.Skip()
 
@@ -104,13 +109,53 @@ class MeshFrame(wx.Frame):
         self.OnDraw()
         event.Skip()
 
+    def processMouseWheelEvent(self, event):
+        """
+        Processes mouse wheel events.
+        Zooms when the vertical mouse wheel is used.
+        """
+
+        # vertical or horizontal wheel axis
+        axis = event.GetWheelAxis()
+        # logical context for the mouse position
+        dc = wx.ClientDC(self)
+        # position of the pointer in pixels in the window frame
+        xcp, ycp = event.GetLogicalPosition(dc).Get()
+        increment = event.GetWheelRotation() / event.GetWheelDelta()
+        if axis == wx.MOUSE_WHEEL_VERTICAL:
+            self.zoom(xcp, ycp, increment)
+
+    def zoom(self, xcp, ycp, increment):
+        """
+        Zooms around the given centre proportionally to the increment.
+        Zooms in if `increment` is positive, out if it is negative.
+        The centre (xcp, ycp) is given in pixels, not in mesh units.
+        """
+
+        factor = self.zoom_factor ** increment
+        xmin, xmax, ymin, ymax = self.limits
+        size = self.GetGLExtents()
+        # get the centre location in mesh units
+        # xcp is 0 on the left, ycp is zero on the top
+        xc = xmin + (xmax - xmin) * xcp / size.width
+        yc = ymax - (ymax - ymin) * ycp / size.height
+        # update the limits
+        xmin = xc + factor * (xmin - xc)
+        xmax = xc + factor * (xmax - xc)
+        ymin = yc + factor * (ymin - yc)
+        ymax = yc + factor * (ymax - yc)
+        self.limits = [xmin, xmax, ymin, ymax]
+        size = self.GetGLExtents()
+        self.updateLimits(size.width, size.height)
+        self.OnDraw()
+
     # GLFrame OpenGL Event Handlers
 
     def OnInitGL(self):
         """Initialize OpenGL for use in the window."""
         gl.glClearColor(1, 1, 1, 1)
 
-    def OnReshape(self, width, height):
+    def updateLimits(self, width, height):
         """Reshape the OpenGL viewport based on the dimensions of the window."""
 
         xmin = self.limits[0]
@@ -140,6 +185,9 @@ class MeshFrame(wx.Frame):
 
     def OnDraw(self, *args, **kwargs):
         "Draw the window."
+
+        t1 = time.perf_counter()
+        t_tot = 0
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         gl.glEnable(
             gl.GL_LINE_SMOOTH
@@ -149,10 +197,16 @@ class MeshFrame(wx.Frame):
         gl.glColor(0, 0, 0)
         for edge in self.edges:
             for vertex in edge:
-                gl.glVertex3fv(self.vertices[vertex])
+                x, y, z = self.vertices[vertex]
+                t_tmp = time.perf_counter()
+                gl.glVertex3f(x, y, z)
+                t_tot += time.perf_counter() - t_tmp
         gl.glEnd()
-
+        t2 = time.perf_counter()
+        
         self.SwapBuffers()
+        t3 = time.perf_counter()
+        print(f"time: draw {t2 - t1:.6e}, GL: {t_tot:.6e}, swap {t3 - t2:.6e}")
 
     def buildMesh(self, mesh):
         """

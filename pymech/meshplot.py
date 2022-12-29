@@ -64,6 +64,7 @@ class MeshFrame(wx.Frame):
         self.setLimits(mesh)
         # current limits
         self.limits = self.mesh_limits.copy()
+        self.target_limits = self.mesh_limits.copy()
 
         # and a status bar
         # self.CreateStatusBar()
@@ -136,8 +137,9 @@ class MeshFrame(wx.Frame):
         The centre (xcp, ycp) is given in pixels, not in mesh units.
         """
 
-        factor = self.zoom_factor**increment
+        factor = self.zoom_factor ** increment
         xmin, xmax, ymin, ymax = self.limits
+        xmin_t, xmax_t, ymin_t, ymax_t = self.target_limits
         size = self.GetGLExtents()
         # get the centre location in mesh units
         # xcp is 0 on the left, ycp is zero on the top
@@ -148,7 +150,12 @@ class MeshFrame(wx.Frame):
         xmax = xc + factor * (xmax - xc)
         ymin = yc + factor * (ymin - yc)
         ymax = yc + factor * (ymax - yc)
+        xmin_t = xc + factor * (xmin_t - xc)
+        xmax_t = xc + factor * (xmax_t - xc)
+        ymin_t = yc + factor * (ymin_t - yc)
+        ymax_t = yc + factor * (ymax_t - yc)
         self.limits = [xmin, xmax, ymin, ymax]
+        self.target_limits = [xmin_t, xmax_t, ymin_t, ymax_t]
         size = self.GetGLExtents()
         self.updateLimits(size.width, size.height)
         self.OnDraw()
@@ -163,10 +170,10 @@ class MeshFrame(wx.Frame):
     def updateLimits(self, width, height):
         """Update the view limits based on the dimensions of the window."""
 
-        xmin = self.limits[0]
-        xmax = self.limits[1]
-        ymin = self.limits[2]
-        ymax = self.limits[3]
+        xmin = self.target_limits[0]
+        xmax = self.target_limits[1]
+        ymin = self.target_limits[2]
+        ymax = self.target_limits[3]
         # check whether the view is limited by width or height, and scale accordingly
         lx = xmax - xmin
         ly = ymax - ymin

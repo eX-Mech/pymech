@@ -63,7 +63,7 @@ class MeshFrame(wx.Frame):
         # sets self.mesh_limits
         self.setLimits(mesh)
         # current limits
-        self.limits = self.mesh_limits
+        self.limits = self.mesh_limits.copy()
 
         # and a status bar
         # self.CreateStatusBar()
@@ -161,7 +161,7 @@ class MeshFrame(wx.Frame):
         gl.glClearColor(1, 1, 1, 1)
 
     def updateLimits(self, width, height):
-        """Reshape the OpenGL viewport based on the dimensions of the window."""
+        """Update the view limits based on the dimensions of the window."""
 
         xmin = self.limits[0]
         xmax = self.limits[1]
@@ -180,6 +180,7 @@ class MeshFrame(wx.Frame):
             dx = width / height * ly / 2
             xmin = x0 - dx
             xmax = x0 + dx
+        self.limits = [xmin, xmax, ymin, ymax]
         gl.glViewport(0, 0, width, height)
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()

@@ -157,7 +157,7 @@ class MeshFrame(wx.Frame):
 
     def OnInitGL(self):
         """Initialize OpenGL for use in the window."""
-        self.createBuffers(1)
+        self.createBuffers()
         gl.glClearColor(1, 1, 1, 1)
 
     def updateLimits(self, width, height):
@@ -188,9 +188,9 @@ class MeshFrame(wx.Frame):
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
 
-    def createBuffers(self, id):
+    def createBuffers(self):
         # new vertex buffer
-        self.vertex_buffer = gl.glGenBuffers(id)
+        self.vertex_buffer = gl.glGenBuffers(1)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
         # send the vertex data to the buffer
         gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_data, gl.GL_STATIC_DRAW)
@@ -203,6 +203,7 @@ class MeshFrame(wx.Frame):
         t1 = time.perf_counter()
         # initialise
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
         gl.glClearColor(1, 1, 1, 1)
         gl.glEnable(gl.GL_LINE_SMOOTH)
         gl.glLineWidth(1.0)
@@ -210,7 +211,7 @@ class MeshFrame(wx.Frame):
         gl.glColor(0, 0, 0)
         # load buffers
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
-        gl.glVertexPointer(3, gl.GL_DOUBLE, 0, 0)
+        gl.glVertexPointer(3, gl.GL_DOUBLE, 0, None)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
         # draw the mesh
         gl.glDrawArrays(gl.GL_LINES, 0, self.num_vertices)

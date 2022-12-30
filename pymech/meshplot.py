@@ -75,7 +75,7 @@ class MeshFrame(wx.Frame):
 
         # motion state
         self.moving = False
-        self.motion_origin = (0., 0.)
+        self.motion_origin = (0.0, 0.0)
 
         # and a status bar
         # self.CreateStatusBar()

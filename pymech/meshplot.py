@@ -53,12 +53,28 @@ class MeshFrame(wx.Frame):
 
         # mesh display properties
         self.curve_points = 12
+        # colours of the edges depending on their boundary conditions
+        self.bc_colours = {
+            "": (0.0, 0.0, 0.0, 1.0),
+            "E": (0.0, 0.0, 0.0, 1.0),
+            "W": (0.0, 0.0, 0.8, 1.0),
+            "v": (0.3, 0.3, 1.0, 1.0),
+            "O": (0.8, 0.0, 0.0, 1.0),
+            "o": (1.0, 0.2, 0.2, 1.0),
+            "ON": (0.8, 0.4, 0.0, 1.0),
+            "on": (1.0, 0.6, 0.0, 1.0),
+            "T": (0.0, 0.8, 0.0, 1.0),
+            "t": (0.3, 1.0, 0.3, 1.0),
+            "I": (0.95, 0.1, 0.6, 1.0),
+        }
 
         # data to be drawn
         self.vertex_data = np.array([])
         self.colour_data = np.array([])
+        self.edge_bcs = []
         self.num_vertices = 0
         self.buildMesh(mesh)
+        self.colour_edges(0)
         self.vertex_buffer = 0
         self.colour_buffer = 0
 
@@ -201,8 +217,8 @@ class MeshFrame(wx.Frame):
         """
         Process actions that should be done when there is a middle click
         """
+
         # enable view motion mode
-        print("middle down")
         self.moving = True
         # store the position of the click to track how much we're moving the view
         xcp, ycp = event.GetLogicalPosition(self.dc).Get()
@@ -212,7 +228,7 @@ class MeshFrame(wx.Frame):
         """
         Process actions that should be done when the middle mouse button is released
         """
-        print("middle up")
+
         # stop dragging the view
         self.moving = False
 
@@ -269,11 +285,15 @@ class MeshFrame(wx.Frame):
         gl.glLoadIdentity()
 
     def createBuffers(self):
-        # new vertex buffer
+        # new vertex and colour buffers
         self.vertex_buffer = gl.glGenBuffers(1)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
+        self.colour_buffer = gl.glGenBuffers(1)
         # send the vertex data to the buffer
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
         gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_data, gl.GL_STATIC_DRAW)
+        # same for colour
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.colour_buffer)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.colour_data, gl.GL_STATIC_DRAW)
         # unbind the buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
 
@@ -287,15 +307,18 @@ class MeshFrame(wx.Frame):
         gl.glEnable(gl.GL_LINE_SMOOTH)
         gl.glLineWidth(1.0)
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-        gl.glColor(0, 0, 0)
+        gl.glEnableClientState(gl.GL_COLOR_ARRAY)
         # load buffers
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertex_buffer)
         gl.glVertexPointer(3, gl.GL_DOUBLE, 0, None)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.colour_buffer)
+        gl.glColorPointer(4, gl.GL_FLOAT, 0, None)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
         # draw the mesh
         gl.glDrawArrays(gl.GL_LINES, 0, self.num_vertices)
         # finalise
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
 
         self.SwapBuffers()
 
@@ -322,6 +345,9 @@ class MeshFrame(wx.Frame):
         for el in mesh.elem:
             first_point = current_point
             for iface in range(4):
+                current_bcs = []
+                for ibc in range(mesh.nbc):
+                    current_bcs.append(el.bcs[ibc, iface][0])
                 j0, i0 = vertex_indices(iface)
                 if el.ccurv[iface] == "":
                     vertices.append(
@@ -336,6 +362,7 @@ class MeshFrame(wx.Frame):
                     else:
                         next_point = first_point
                     edges.append((current_point, next_point))
+                    self.edge_bcs.append(current_bcs)
                     current_point += 1
                 elif el.ccurv[iface] == "m":
                     # we should draw a parabola passing through the current vertex, the midpoint, and the next vertex.
@@ -363,6 +390,7 @@ class MeshFrame(wx.Frame):
                         else:
                             next_point = current_point + 1
                         edges.append((current_point, next_point))
+                        self.edge_bcs.append(current_bcs)
                         current_point += 1
                 elif el.ccurv[iface] == "C":
                     # draw a circle of given radius passing through the next vertex and the current one
@@ -405,11 +433,11 @@ class MeshFrame(wx.Frame):
                         else:
                             next_point = current_point + 1
                         edges.append((current_point, next_point))
+                        self.edge_bcs.append(current_bcs)
                         current_point += 1
 
-        # put everything into a buffer that OpenGL can read
+        # put the vertex data into a buffer that OpenGL can read
         self.num_vertices = 2 * len(edges)
-        self.colour_data = np.array([0 for _ in range(4 * self.num_vertices)])
         vertex_data = []
         for edge in edges:
             for vertex in edge:
@@ -418,6 +446,28 @@ class MeshFrame(wx.Frame):
                 vertex_data.append(y)
                 vertex_data.append(z)
         self.vertex_data = np.array(vertex_data)
+
+    def colour_edges(self, ibc):
+        colour_data = []
+        for bcs in self.edge_bcs:
+            try:
+                bc = bcs[ibc]
+            except IndexError:
+                raise ValueError(f"no boundary condition defined for field {ibc}")
+            try:
+                cr, cg, cb, ca = self.bc_colours[bc]
+            except KeyError:
+                # should probably log an error here too
+                cr, cg, cb, ca = (0.0, 0.0, 0.0, 1.0)
+                print(f"unknow BC type: {bc}")
+            # We need to add a colour for each vertex of the edge!
+            # They are the same colour, so we pu the same data twice
+            for _ in range(2):
+                colour_data.append(cr)
+                colour_data.append(cg)
+                colour_data.append(cb)
+                colour_data.append(ca)
+        self.colour_data = np.array(colour_data, dtype=np.float32)
 
     def setLimits(self, mesh):
         """

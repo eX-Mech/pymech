@@ -159,7 +159,7 @@ class MeshFrame(wx.Frame):
         The centre (xcp, ycp) is given in pixels, not in mesh units.
         """
 
-        factor = self.zoom_factor ** increment
+        factor = self.zoom_factor**increment
         xmin, xmax, ymin, ymax = self.limits
         xmin_t, xmax_t, ymin_t, ymax_t = self.target_limits
         # get the centre location in mesh units

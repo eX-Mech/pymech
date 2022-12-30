@@ -40,6 +40,14 @@ class MeshFrame(wx.Frame):
         self.canvas.Bind(wx.EVT_SIZE, self.processSizeEvent)
         self.canvas.Bind(wx.EVT_PAINT, self.processPaintEvent)
         self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.processMouseWheelEvent)
+        self.canvas.Bind(wx.EVT_LEFT_DOWN, self.processLeftDownEvent)
+        self.canvas.Bind(wx.EVT_LEFT_UP, self.processLeftUpEvent)
+        self.canvas.Bind(wx.EVT_MOTION, self.processMotionEvent)
+        self.canvas.Bind(wx.EVT_MIDDLE_UP, self.processMiddleUpEvent)
+        self.canvas.Bind(wx.EVT_MIDDLE_DOWN, self.processMiddleDownEvent)
+
+        # wx context
+        self.dc = wx.ClientDC(self)
 
         # create a menu bar
         # self.makeMenuBar()
@@ -65,6 +73,10 @@ class MeshFrame(wx.Frame):
         # current limits
         self.limits = self.mesh_limits.copy()
         self.target_limits = self.mesh_limits.copy()
+
+        # motion state
+        self.moving = False
+        self.motion_origin = (0., 0.)
 
         # and a status bar
         # self.CreateStatusBar()
@@ -97,8 +109,8 @@ class MeshFrame(wx.Frame):
             self.Show()
             self.canvas.SetCurrent(self.context)
 
-            size = self.GetGLExtents()
-            self.updateLimits(size.width, size.height)
+            # update the view limits
+            self.updateLimits()
             self.canvas.Refresh(False)
         event.Skip()
 
@@ -122,13 +134,24 @@ class MeshFrame(wx.Frame):
 
         # vertical or horizontal wheel axis
         axis = event.GetWheelAxis()
-        # logical context for the mouse position
-        dc = wx.ClientDC(self)
         # position of the pointer in pixels in the window frame
-        xcp, ycp = event.GetLogicalPosition(dc).Get()
+        xcp, ycp = event.GetLogicalPosition(self.dc).Get()
         increment = event.GetWheelRotation() / event.GetWheelDelta()
         if axis == wx.MOUSE_WHEEL_VERTICAL:
             self.zoom(xcp, ycp, increment)
+
+    def pixelsToMeshUnits(self, xcp, ycp):
+        """
+        Given a position in pixels in the window, returns the
+        corresponding position in mesh units.
+        """
+
+        xmin, xmax, ymin, ymax = self.limits
+        size = self.GetGLExtents()
+        # xcp is 0 on the left, ycp is zero on the top
+        xc = xmin + (xmax - xmin) * xcp / size.width
+        yc = ymax - (ymax - ymin) * ycp / size.height
+        return (xc, yc)
 
     def zoom(self, xcp, ycp, increment):
         """
@@ -140,11 +163,8 @@ class MeshFrame(wx.Frame):
         factor = self.zoom_factor ** increment
         xmin, xmax, ymin, ymax = self.limits
         xmin_t, xmax_t, ymin_t, ymax_t = self.target_limits
-        size = self.GetGLExtents()
         # get the centre location in mesh units
-        # xcp is 0 on the left, ycp is zero on the top
-        xc = xmin + (xmax - xmin) * xcp / size.width
-        yc = ymax - (ymax - ymin) * ycp / size.height
+        xc, yc = self.pixelsToMeshUnits(xcp, ycp)
         # update the limits
         xmin = xc + factor * (xmin - xc)
         xmax = xc + factor * (xmax - xc)
@@ -156,9 +176,59 @@ class MeshFrame(wx.Frame):
         ymax_t = yc + factor * (ymax_t - yc)
         self.limits = [xmin, xmax, ymin, ymax]
         self.target_limits = [xmin_t, xmax_t, ymin_t, ymax_t]
-        size = self.GetGLExtents()
-        self.updateLimits(size.width, size.height)
+        self.updateLimits()
         self.OnDraw()
+
+    def processLeftDownEvent(self, event):
+        """
+        Process actions that should be done when there is a left click
+        """
+
+        # enable view motion mode
+        self.moving = True
+        # store the position of the click to track how much we're moving the view
+        xcp, ycp = event.GetLogicalPosition(self.dc).Get()
+        self.motion_origin = self.pixelsToMeshUnits(xcp, ycp)
+
+    def processLeftUpEvent(self, event):
+        """
+        Process actions that should be done when the left mouse button is released
+        """
+
+        # stop dragging the view
+        self.moving = False
+
+    def processMiddleDownEvent(self, event):
+        """
+        Process actions that should be done when there is a middle click
+        """
+        # enable view motion mode
+        print("middle down")
+        self.moving = True
+        # store the position of the click to track how much we're moving the view
+        xcp, ycp = event.GetLogicalPosition(self.dc).Get()
+        self.motion_origin = self.pixelsToMeshUnits(xcp, ycp)
+
+    def processMiddleUpEvent(self, event):
+        """
+        Process actions that should be done when the middle mouse button is released
+        """
+        print("middle up")
+        # stop dragging the view
+        self.moving = False
+
+    def processMotionEvent(self, event):
+        if self.moving:
+            xcp, ycp = event.GetLogicalPosition(self.dc).Get()
+            xc, yc = self.pixelsToMeshUnits(xcp, ycp)
+            dx = xc - self.motion_origin[0]
+            dy = yc - self.motion_origin[1]
+            self.target_limits[0] -= dx
+            self.target_limits[1] -= dx
+            self.target_limits[2] -= dy
+            self.target_limits[3] -= dy
+            self.updateLimits()
+            self.OnDraw()
 
     # GLFrame OpenGL Event Handlers
 
@@ -167,9 +237,12 @@ class MeshFrame(wx.Frame):
         self.createBuffers()
         gl.glClearColor(1, 1, 1, 1)
 
-    def updateLimits(self, width, height):
+    def updateLimits(self):
         """Update the view limits based on the dimensions of the window."""
 
+        size = self.GetGLExtents()
+        width = size.width
+        height = size.height
         xmin = self.target_limits[0]
         xmax = self.target_limits[1]
         ymin = self.target_limits[2]

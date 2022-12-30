@@ -3,7 +3,6 @@ from wx import glcanvas
 import OpenGL.GL as gl
 import numpy as np
 from math import sqrt, atan2, asin, cos, sin
-import time
 
 
 class MeshFrame(wx.Frame):
@@ -281,7 +280,6 @@ class MeshFrame(wx.Frame):
     def OnDraw(self, *args, **kwargs):
         "Draw the window."
 
-        t1 = time.perf_counter()
         # initialise
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
@@ -298,10 +296,8 @@ class MeshFrame(wx.Frame):
         gl.glDrawArrays(gl.GL_LINES, 0, self.num_vertices)
         # finalise
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-        t2 = time.perf_counter()
 
         self.SwapBuffers()
-        print(f"time: draw {t2 - t1:.6e}")
 
     def buildMesh(self, mesh):
         """

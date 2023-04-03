@@ -100,7 +100,7 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
     # fix the internal boundary conditions
     # the end boundary conditions will be overwritten later with the proper ones
     if internal_bcs:
-        for (iel, el) in enumerate(mesh3d.elem):
+        for iel, el in enumerate(mesh3d.elem):
             for ibc in range(nbc):
                 el.bcs[ibc, 4][0] = "E"
                 el.bcs[ibc, 4][1] = iel + 1
@@ -1091,7 +1091,7 @@ def generate_internal_bcs(mesh, tol=1e-3):
 
     # First generate a length scale for each element, equal to the smallest edge of that element.
     scales = np.zeros((mesh.nel,))
-    for (iel, el) in enumerate(mesh.elem):
+    for iel, el in enumerate(mesh.elem):
         scales[iel] = el.smallest_edge()
 
         # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.

@@ -294,7 +294,7 @@ def test_merge(test_data_dir):
     # check if the element/faces indices in the boundary conditions are right too, even if it may not matter
     assert mesh1.nbc > 0
     for ibc in range(mesh1.nbc):
-        for (iel, el) in enumerate(mesh1.elem):
+        for iel, el in enumerate(mesh1.elem):
             for iface in range(6):
                 assert el.bcs[ibc, iface][1] == iel + 1
                 assert el.bcs[ibc, iface][2] == iface + 1
@@ -327,7 +327,7 @@ def test_readre2(test_data_dir):
     assert meshre2.var == meshrea.var
     assert meshre2.lr1 == meshrea.lr1
     assert meshre2.wdsz == 8
-    for (el, elw) in zip(meshrea.elem, meshre2.elem):
+    for el, elw in zip(meshrea.elem, meshre2.elem):
         npt.assert_allclose(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_allclose(elw.curv, el.curv)
@@ -358,7 +358,7 @@ def test_readre2_3d(test_data_dir):
     assert meshre2.var == meshrea.var
     assert meshre2.lr1 == meshrea.lr1
     assert meshre2.wdsz == 8
-    for (el, elw) in zip(meshrea.elem, meshre2.elem):
+    for el, elw in zip(meshrea.elem, meshre2.elem):
         npt.assert_allclose(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_allclose(elw.curv, el.curv)
@@ -384,7 +384,7 @@ def test_writere2(test_data_dir, tmpdir):
     assert meshw.var == mesh.var
     assert meshw.lr1 == mesh.lr1
     assert meshw.wdsz == 8
-    for (el, elw) in zip(mesh.elem, meshw.elem):
+    for el, elw in zip(mesh.elem, meshw.elem):
         npt.assert_array_equal(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_array_equal(elw.curv, el.curv)
@@ -410,7 +410,7 @@ def test_writere2_3d(test_data_dir, tmpdir):
     assert meshw.var == mesh.var
     assert meshw.lr1 == mesh.lr1
     assert meshw.wdsz == 8
-    for (el, elw) in zip(mesh.elem, meshw.elem):
+    for el, elw in zip(mesh.elem, meshw.elem):
         npt.assert_array_equal(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_array_equal(elw.curv, el.curv)
@@ -429,7 +429,7 @@ def test_generate_internal_bcs(test_data_dir):
     meshre2 = ns.readre2(fre2)
     nconnect = mt.generate_internal_bcs(meshre2)
     assert nconnect == 54  # This is a 3x3x3 box
-    for (ela, el2) in zip(meshrea.elem, meshre2.elem):
+    for ela, el2 in zip(meshrea.elem, meshre2.elem):
         npt.assert_array_equal(el2.bcs, ela.bcs)
     assert meshre2.check_connectivity()
 
@@ -447,7 +447,7 @@ def test_delete_internal_bcs(test_data_dir):
     assert (
         ndelete == 108
     )  # This is a 3x3x3 box, and each connection is deleted twice, one for each connected element
-    for (ela, el2) in zip(meshrea.elem, meshre2.elem):
+    for ela, el2 in zip(meshrea.elem, meshre2.elem):
         npt.assert_array_equal(el2.bcs, ela.bcs)
     assert meshrea.check_connectivity()
 

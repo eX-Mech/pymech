@@ -664,7 +664,7 @@ def readre2(fname):
     # This is the reason for the +1 here, then the first number is ignored.
     buf = infile.read((ndim * npel + 1) * wdsz * nel)
     # elem_shape = [ndim, ndim-1, 2, 2]  # nvar, lz, ly, lx
-    for (iel, el) in enumerate(data.elem):
+    for iel, el in enumerate(data.elem):
         fi = np.frombuffer(
             buf,
             dtype=emode + realtype,
@@ -869,7 +869,7 @@ def writere2(fname, data):
     # write curve sides data
     # locate curved edges
     curved_edges = []
-    for (iel, el) in enumerate(data.elem):
+    for iel, el in enumerate(data.elem):
         for iedge in range(12):
             if el.ccurv[iedge] != "":
                 curved_edges.append((iel, iedge))
@@ -883,7 +883,7 @@ def writere2(fname, data):
     write_data_to_file(ncurvf)
     # format curve data
     cdata = np.zeros((ncurv,), dtype="f8, f8, f8, f8, f8, f8, f8, S8")
-    for (cdat, (iel, iedge)) in zip(cdata, curved_edges):
+    for cdat, (iel, iedge) in zip(cdata, curved_edges):
         el = data.elem[iel]
         cdat[0] = iel + 1
         cdat[1] = iedge + 1
@@ -899,7 +899,7 @@ def writere2(fname, data):
     for ifield in range(data.nbc):
         # locate faces with boundary conditions
         bc_faces = []
-        for (iel, el) in enumerate(data.elem):
+        for iel, el in enumerate(data.elem):
             for iface in range(2 * ndim):
                 bctype = el.bcs[ifield, iface][0]
                 # internal boundary conditions are not written to .re2 files by reatore2
@@ -911,7 +911,7 @@ def writere2(fname, data):
         write_data_to_file(nbcsf)
         # initialize and format data
         bcdata = np.zeros((nbcs,), dtype="f8, f8, f8, f8, f8, f8, f8, S8")
-        for (bc, (iel, iface)) in zip(bcdata, bc_faces):
+        for bc, (iel, iface) in zip(bcdata, bc_faces):
             el = data.elem[iel]
             bc[0] = iel + 1
             bc[1] = iface + 1

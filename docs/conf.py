@@ -49,6 +49,9 @@ rst_prolog = f"""
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    # for ipython3 Pygments lexer
+    # https://nbsphinx.readthedocs.io/en/0.9.1/installation.html#Pygments-Lexer-for-Syntax-Highlighting # noqa
+    "IPython.sphinxext.ipython_console_highlighting.py",
     "myst_nb",
     "sphinx.ext.autodoc",
     # 'sphinx.ext.autosummary',

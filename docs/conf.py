@@ -51,7 +51,7 @@ rst_prolog = f"""
 extensions = [
     # for ipython3 Pygments lexer
     # https://nbsphinx.readthedocs.io/en/0.9.1/installation.html#Pygments-Lexer-for-Syntax-Highlighting # noqa
-    "IPython.sphinxext.ipython_console_highlighting.py",
+    "IPython.sphinxext.ipython_console_highlighting",
     "myst_nb",
     "sphinx.ext.autodoc",
     # 'sphinx.ext.autosummary',

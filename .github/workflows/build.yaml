@@ -19,7 +19,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.9', '3.10']  # No vtk available for 3.11
 
     steps:
     - name: Checkout
@@ -76,7 +76,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.7"
+        python-version: "3.9"
 
     - name: Install dependencies
       run: python -m pip install --upgrade pip nox
@@ -170,7 +170,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.7
+        python-version: "3.9"
         cache: "pip"
         cache-dependency-path: "requirements/docs.txt"
 

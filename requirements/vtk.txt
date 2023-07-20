@@ -67,7 +67,7 @@ pyface==7.4.3
     # via
     #   mayavi
     #   traitsui
-pygments==2.13.0
+pygments==2.15.0
     # via mayavi
 pyparsing==3.0.9
     # via matplotlib

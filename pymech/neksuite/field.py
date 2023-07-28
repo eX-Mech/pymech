@@ -264,7 +264,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
             skip_elements(h.nb_elems * nb_vars)
         else:
             for iel in range(h.nb_elems_file):
-                el = data.elem[iel - 1]
+                el = data.elem[iel]
                 for idim in range(nb_vars):
                     if skip_condition[idim]:
                         skip_elements()
@@ -287,7 +287,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
             skip_elements(h.nb_elems * nb_vars)
         else:
             for iel in range(h.nb_elems_file):
-                el = data.elem[iel - 1]
+                el = data.elem[iel]
                 for idim in range(nb_vars):
                     if skip_condition1[idim] or skip_condition2[idim]:
                         skip_elements()
@@ -303,7 +303,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
             skip_elements(h.nb_elems * nb_vars)
         else:
             for iel in range(h.nb_elems_file):
-                el = data.elem[iel - 1]
+                el = data.elem[iel]
                 for ivar in range(nb_vars):
                     read_file_into_data(el.pres, ivar)
 
@@ -316,7 +316,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
             skip_elements(h.nb_elems * nb_vars)
         else:
             for iel in range(h.nb_elems_file):
-                el = data.elem[iel - 1]
+                el = data.elem[iel]
                 for ivar in range(nb_vars):
                     read_file_into_data(el.temp, ivar)
     #
@@ -337,7 +337,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
                     skip_elements(h.nb_elems)
                 else:
                     for iel in range(h.nb_elems_file):
-                        el = data.elem[iel - 1]
+                        el = data.elem[iel]
                         read_file_into_data(el.scal, ivar)
     #
     #

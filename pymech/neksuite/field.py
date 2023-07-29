@@ -263,7 +263,15 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if all(skip_condition):
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in range(h.nb_elems_file):
+            if 0 in elmap:
+                print(
+                    "elmap is corrupted, pymech iterates in number of elements to read data!"
+                )
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
                 el = data.elem[iel]
                 for idim in range(nb_vars):
                     if skip_condition[idim]:
@@ -286,7 +294,12 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if all(skip_condition1) or all(skip_condition2):
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in range(h.nb_elems_file):
+            if 0 in elmap:
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
                 el = data.elem[iel]
                 for idim in range(nb_vars):
                     if skip_condition1[idim] or skip_condition2[idim]:
@@ -302,7 +315,12 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if skip_condition:
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in range(h.nb_elems_file):
+            if 0 in elmap:
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
                 el = data.elem[iel]
                 for ivar in range(nb_vars):
                     read_file_into_data(el.pres, ivar)
@@ -315,10 +333,16 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if skip_condition:
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in range(h.nb_elems_file):
+            if 0 in elmap:
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
                 el = data.elem[iel]
                 for ivar in range(nb_vars):
                     read_file_into_data(el.temp, ivar)
+
     #
     # read scalar fields
     #
@@ -336,9 +360,15 @@ def readnek(fname, dtype="float64", skip_vars=()):
                 if skip_condition[ivar]:
                     skip_elements(h.nb_elems)
                 else:
-                    for iel in range(h.nb_elems_file):
+                    if 0 in elmap:
+                        element_idxs = range(h.nb_elems_file)
+                    else:
+                        element_idxs = (idx - 1 for idx in elmap)
+
+                    for iel in element_idxs:
                         el = data.elem[iel]
                         read_file_into_data(el.scal, ivar)
+
     #
     #
     # close file

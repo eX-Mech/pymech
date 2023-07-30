@@ -264,8 +264,10 @@ def readnek(fname, dtype="float64", skip_vars=()):
             skip_elements(h.nb_elems * nb_vars)
         else:
             if 0 in elmap:
-                print(
-                    "elmap is corrupted, pymech iterates in number of elements to read data!"
+                logger.warning(
+                    "The 'elmap' appears to be corrupted as it contains an unexpected zero value."
+                    " As a workaround, Pymech will read data by iterating over the entire set of"
+                    " elements instead of following the map provided by 'elmap'."
                 )
                 element_idxs = range(h.nb_elems_file)
             else:

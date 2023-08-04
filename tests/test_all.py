@@ -594,6 +594,71 @@ def test_gen_box(test_data_dir):
     assert box.nbc == 2
 
 
+def test_map2D(test_data_dir):
+    import pymech.meshtools as mt
+
+    # make a very twisted mesh and check that it ends up the way we want
+    def mapping(x, y):
+        return (
+            2 * x + 0.2 * y + 0.1 * math.sin(math.pi * y),
+            1.2 * y - 0.1 * x - 0.2 * math.sin(2 * math.pi * x),
+        )
+
+    n_centre = 5
+    n_bl = 6
+    s_param = 0.5
+    radius = 1
+    circle_mesh = mt.gen_circle(
+        radius, s_param, n_centre, n_bl, var=[2, 2, 1, 1, 0], bc=["W", "I"]
+    )
+    circle_mesh = mt.map2D(circle_mesh, mapping)
+    assert circle_mesh.check_connectivity()
+    math.isclose(circle_mesh.elem[35].curv[0, 0], 1.4794589904304334)
+    math.isclose(circle_mesh.elem[35].curv[3, 1], -0.2516125141385187)
+    assert circle_mesh.elem[38].ccurv == [
+        "m",
+        "m",
+        "m",
+        "m",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ]
+
+    # test with a box without any curvature
+    # box of size 5×1
+    xmin = 0
+    xmax = 5
+    ymin = 0
+    ymax = 1
+    # 20 × 10 elements resolution
+    nx = 20
+    ny = 10
+    box = mt.gen_box(nx, ny, xmin, xmax, ymin, ymax)
+    # change resolution such that the first element in y has a height of 0.025 instead of 0.1
+    l0 = 0.025
+    alpha = mt.exponential_refinement_parameter(l0, ymax, ny)
+
+    def refinement_function(x, y):
+        iy = ny * y / ymax
+        return (x, l0 * iy**alpha)
+
+    box = mt.map2D(box, refinement_function, curvature=False, boundary_curvature=False)
+    box.check_connectivity()
+    assert box.elem[0].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+    assert box.elem[25].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+
+    # and now with curvature activated on the boundary only
+    box = mt.map2D(box, refinement_function, curvature=False)
+    assert box.elem[0].ccurv == ["m", "", "", "m", "", "", "", "", "", "", "", ""]
+    assert box.elem[25].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

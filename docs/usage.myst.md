@@ -167,11 +167,62 @@ It can modify existing meshes and generate new ones.
 
 ### 2D Mesh generation
 
-Pymech lets you generate a disc mesh. The following example generates a disc domain with a temperature field
+#### Boxes ####
 
+You can generate a rectangular box mesh like this:
 ```{code-cell} ipython3
 import pymech.meshtools as mt
 
+# box of size 5×1
+xmin = 0
+xmax = 5
+ymin = 0
+ymax = 1
+# 20 × 10 elements resolution
+nx = 20
+ny = 10
+# velocity inflow on the left
+bc_inflow = ['v']
+# outflow on the right
+bc_outflow = ['O']
+# wall at the bottom
+bc_wall = ['W']
+# free-stream (fixed vx and d(vy)/dy = 0) at the top
+bc_freestream = ['ON']
+box = mt.gen_box(
+    nx,
+    ny,
+    xmin,
+    xmax,
+    ymin,
+    ymax,
+    bcs_xmin=bc_inflow,
+    bcs_xmax=bc_outflow,
+    bcs_ymin=bc_wall,
+    bcs_ymax=bc_freestream,
+)
+```
+
+It is also possible to start from a square box and map it to a different shape, or simply move the elements in the box to change the resolution locally. For example, this refines the resolution close to the wall such that the first element has a height of 0.025 instead of 0.1.
+
+```{code-cell} ipython3
+l0 = 0.025
+alpha = mt.exponential_refinement_parameter(l0, ymax, ny)
+
+# maps (x, y) -> (x', y')
+def refinement_function(x, y):
+    iy = ny * y / ymax
+    return (x, l0 * (1 - alpha**iy)/(1 - alpha))
+
+# This mapping doesn't introduce any curvature, so we don't need to encode any new curvature in the mesh
+box = mt.map2D(box, refinement_function, curvature=False, boundary_curvature=False)
+```
+
+#### Other geometries ####
+
+Pymech also lets you generate a disc mesh. The following example generates a disc domain with a temperature field
+
+```{code-cell} ipython3
 # the disc will have radius 1
 radius = 1
 # centre box of 5×5 elements
@@ -192,11 +243,12 @@ disc_mesh = mt.gen_circle(radius, s_param, n_centre, n_bl, var=variables, bc=bcs
 
 Pymech can extrude 2D meshes into 3D ones.
 
-We can for example extrude the disc into a cylinder with isothermal walls at the top and bottom:
+We can for example extrude the disc into a cylinder with velocity and temperature inlet at the bottom and outflow at the top:
 ```{code-cell} ipython3
 # extrude in ten elements vertically between -1 and +1
 z = [-1, -0.9, -0.7, -0.5, -0.25, 0, 0.25, 0.5, 0.7, 0.9, 1]
-bcs_ends = ['W', 't']
+bc_inflow = ['v', 't']
+bc_outflow = ['O', 'I']
 # bc1 denotes the boundary conditions at z = -1, and bc2 at z = +1
-cylinder_mesh = mt.extrude(circle_mesh, z, bc1=bcs_ends, bc2=bcs_ends)
+cylinder_mesh = mt.extrude(disc_mesh, z, bc1=bc_inflow, bc2=bc_outflow)
 ```

@@ -568,6 +568,32 @@ def test_cylinder(test_data_dir):
     assert mesh3D.elem[0].bcs[1, 4][0] == "t"
 
 
+def test_gen_box(test_data_dir):
+    import pymech.meshtools as mt
+
+    # make a simple box and check that everything works fine
+    box = mt.gen_box(4, 5, -1.0, 1.0, -1.0, 1.2)
+    assert box.check_connectivity()
+    assert box.nel == 20
+
+    # try also with a temperature field and different boundary conditions
+    box = mt.gen_box(
+        4,
+        5,
+        -1.0,
+        1.0,
+        -1.0,
+        1.0,
+        var=[2, 2, 1, 1, 0],
+        bcs_xmin=["v", "t"],
+        bcs_xmax=["O", "I"],
+        bcs_ymin=["W", "I"],
+        bcs_ymax=["W", "I"],
+    )
+    assert box.check_connectivity()
+    assert box.nbc == 2
+
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #

@@ -41,7 +41,9 @@ type-annotations.
 
 ### Changed
 
-- Support for multiple fields with different boundary conditions in several {mod}`pymech.meshtools` functions 
+- Support for multiple fields with different boundary conditions in several {mod}`pymech.meshtools` functions
+- Explicitly raises `ValueError` instead of logging with `critical` or `error`
+  levels.
 
 
 ## [1.5.0] - 2022-11-25

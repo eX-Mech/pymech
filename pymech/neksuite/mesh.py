@@ -4,6 +4,7 @@ import struct
 import sys
 
 import numpy as np
+
 from pymech.core import HexaData
 from pymech.log import logger
 

@@ -21,7 +21,6 @@ from pymech.core import DataLims as datalims  # noqa
 from pymech.core import Elem as elem  # noqa
 from pymech.core import HexaData as exadata  # noqa
 
-
 warn(
     (
         "Module pymech.exadata is now pymech.core. This module is kept for backwards "

@@ -3,8 +3,8 @@ import time
 from textwrap import dedent
 
 import numpy as np
-from numpy import testing as npt
 import pytest
+from numpy import testing as npt
 
 from pymech.log import logger
 
@@ -264,8 +264,9 @@ def test_writerea(test_data_dir, tmpdir):
 
 
 def test_merge(test_data_dir):
-    import pymech.neksuite as ns
     import copy
+
+    import pymech.neksuite as ns
 
     fname = f"{test_data_dir}/nek/box3d.rea"
     mesh = ns.readrea(fname)
@@ -418,8 +419,8 @@ def test_writere2_3d(test_data_dir, tmpdir):
 
 
 def test_generate_internal_bcs(test_data_dir):
-    import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
     # The idea is to reconstruct the internal BCs of the re2 and compare with the .rea. They should be identical.
@@ -435,8 +436,8 @@ def test_generate_internal_bcs(test_data_dir):
 
 
 def test_delete_internal_bcs(test_data_dir):
-    import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
     frea = f"{test_data_dir}/nek/box3d.rea"
@@ -453,8 +454,8 @@ def test_delete_internal_bcs(test_data_dir):
 
 
 def test_extrude(test_data_dir):
-    import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     fname = f"{test_data_dir}/nek/2D_section_R360.re2"
     nz = 4
@@ -471,9 +472,10 @@ def test_extrude(test_data_dir):
 
 
 def test_extrude_refine(test_data_dir):
-    import pymech.neksuite as ns
-    import pymech.meshtools as mt
     from itertools import product
+
+    import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     fnameI = f"{test_data_dir}/nek/box2d.re2"
     mesh2D = ns.readre2(fnameI)
@@ -551,8 +553,9 @@ def test_gen_circle(test_data_dir):
 
 
 def test_cylinder(test_data_dir):
-    import pymech.meshtools as mt
     import numpy as np
+
+    import pymech.meshtools as mt
 
     # test making a cylinder using `gen_circle` and `extrude`
     # with a temperature field

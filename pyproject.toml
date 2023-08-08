@@ -1,10 +1,125 @@
 [build-system]
-requires = [
-    "setuptools>=49.5.0",
-    "wheel",
-    "setuptools_scm[toml]>=7.0.0",
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pymech"
+dynamic = ["version"]
+description = "A Python suite of routines for Nek5000 and Simson."
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">= 3.9"
+authors = [
+    { name = "eX-Mech Developers", email = "dev@fluid.quest" },
 ]
-build-backend = "setuptools.build_meta"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "attrs >= 21.4.0",
+    "numpy",
+    "xarray >= 0.19.0, != 0.20.0, != 0.20.1",
+]
+
+[project.optional-dependencies]
+# dev ∋ opt ∪ docs ∪ tests ∪ types
+dev = [
+    "asv >= 0.5.1",
+    "coverage[toml]",
+    "dask",
+    "furo",
+    "matplotlib",
+    "mypy",
+    "myst-nb",
+    "nox",
+    "numpy >= 1.18",
+    "pre-commit",
+    "pygments >= 2.15.0",
+    "pyperf",
+    "pytest >= 6.2.5",
+    "pytest-cov >= 3.0.0",
+    "pytest-xdist >= 2.4.0",
+    "rich",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-inline-tabs",
+    "typing-extensions",
+    "virtualenv",
+]
+docs = [
+    "asv >= 0.5.1",
+    "furo",
+    "matplotlib",
+    "myst-nb",
+    "pygments >= 2.15.0",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-inline-tabs",
+]
+# full ّ≡ opt ∪ vtk
+full = [
+    "dask",
+    "mayavi",
+    "numpy >= 1.18",
+    "pygments >= 2.15.0",
+    "rich",
+]
+opt = [
+    "dask",
+    "numpy >= 1.18",
+    "rich",
+]
+# tests ∋ opt
+tests = [
+    "coverage[toml]",
+    "dask",
+    "numpy >= 1.18",
+    "pygments >= 2.15.0",
+    "pytest >= 6.2.5",
+    "pytest-cov >= 3.0.0",
+    "pytest-xdist >= 2.4.0",
+    "rich",
+]
+types = [
+    "mypy",
+    "typing-extensions",
+]
+vtk = [
+    "mayavi",
+    "pygments >= 2.15.0",
+]
+
+[project.entry-points."xarray.backends"]
+pymech = "pymech.dataset:PymechXarrayBackend"
+
+[project.urls]
+"Bug Tracker" = "https://github.com/eX-Mech/pymech/issues"
+Changelog = "https://pymech.readthedocs.io/en/stable/changelog.html"
+Documentation = "https://pymech.readthedocs.io/en/stable"
+Homepage = "https://github.com/eX-Mech/pymech"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "pymech/_version.py"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pymech",
+]
 
 [tool.setuptools_scm]
 write_to = "pymech/_version.py"
@@ -34,3 +149,15 @@ exclude_lines = [
 
 [tool.coverage.html]
 directory = ".coverage/html"
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I", "NPY", "PLE", "PLW"]
+ignore = [ "E203", "E501"]
+
+[tool.mypy]
+ignore_missing_imports = true
+show_error_codes = true

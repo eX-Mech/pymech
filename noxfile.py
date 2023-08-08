@@ -11,12 +11,12 @@ Usage
 
 """
 
-from functools import partial
 import os
-from pathlib import Path
 import re
 import shlex
 import shutil
+from functools import partial
+from pathlib import Path
 
 import nox
 
@@ -24,6 +24,9 @@ PACKAGE = "pymech"
 CWD = Path.cwd()
 if (CWD / "poetry.lock").exists():
     BUILD_SYSTEM = "poetry"
+    PACKAGE_SPEC = "pyproject.toml"
+elif (CWD / "pyproject.toml").exists():
+    BUILD_SYSTEM = "hatch"
     PACKAGE_SPEC = "pyproject.toml"
 else:
     BUILD_SYSTEM = "setuptools"

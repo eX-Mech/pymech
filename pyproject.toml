@@ -27,78 +27,46 @@ classifiers = [
 ]
 dependencies = [
     "attrs >= 21.4.0",
-    "numpy",
+    "numpy >= 1.18",
     "xarray >= 0.19.0, != 0.20.0, != 0.20.1",
 ]
 
 [project.optional-dependencies]
-# dev ∋ opt ∪ docs ∪ tests ∪ types
-dev = [
-    "asv >= 0.5.1",
-    "coverage[toml]",
+opt = [
     "dask",
-    "furo",
-    "matplotlib",
-    "mypy",
-    "myst-nb",
-    "nox",
-    "numpy >= 1.18",
-    "pre-commit",
-    "pygments >= 2.15.0",
-    "pyperf",
-    "pytest >= 6.2.5",
-    "pytest-cov >= 3.0.0",
-    "pytest-xdist >= 2.4.0",
     "rich",
-    "sphinx",
-    "sphinx-autobuild",
-    "sphinx-copybutton",
-    "sphinx-inline-tabs",
-    "typing-extensions",
-    "virtualenv",
+]
+# full ّ≡ opt ∪ vtk
+full = [
+    "dask",
+    "mayavi",
+    "pygments >= 2.15.0",
+    "rich",
+]
+vtk = [
+    "mayavi",
+    "pygments >= 2.15.0",
 ]
 docs = [
     "asv >= 0.5.1",
     "furo",
     "matplotlib",
     "myst-nb",
-    "pygments >= 2.15.0",
     "sphinx",
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-inline-tabs",
 ]
-# full ّ≡ opt ∪ vtk
-full = [
-    "dask",
-    "mayavi",
-    "numpy >= 1.18",
-    "pygments >= 2.15.0",
-    "rich",
-]
-opt = [
-    "dask",
-    "numpy >= 1.18",
-    "rich",
-]
-# tests ∋ opt
 tests = [
     "coverage[toml]",
-    "dask",
-    "numpy >= 1.18",
     "pygments >= 2.15.0",
     "pytest >= 6.2.5",
     "pytest-cov >= 3.0.0",
     "pytest-xdist >= 2.4.0",
-    "rich",
 ]
 types = [
     "mypy",
     "typing-extensions",
-]
-vtk = [
-    "mayavi",
-    "pygments >= 2.15.0",
 ]
 
 [project.entry-points."xarray.backends"]
@@ -119,6 +87,35 @@ source = "vcs"
 [tool.hatch.build.targets.sdist]
 include = [
     "/pymech",
+]
+
+[tool.hatch.envs.docs]
+type = "pip-deepfreeze"
+features = [
+  "docs",
+]
+
+[tool.hatch.envs.dev]
+type = "pip-deepfreeze"
+features = [
+  "opt",
+  "docs",
+  "tests",
+  "types"
+]
+
+[tool.hatch.envs.tests]
+type = "pip-deepfreeze"
+#dev-mode = false
+features = [
+  "opt",
+  "tests",
+]
+
+[tool.hatch.envs.types]
+type = "pip-deepfreeze"
+features = [
+  "types",
 ]
 
 [tool.setuptools_scm]

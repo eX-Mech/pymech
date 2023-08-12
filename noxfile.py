@@ -57,6 +57,10 @@ def poetry_install(session, *args):
     run_ext(session, "python -m poetry install " + " ".join(args))
 
 
+def hatch_install(session, *args):
+    run_ext(session, "hatch install " + " ".join(args))
+
+
 def pip_install(session, filename, *args):
     """Install with dependencies pinned in requirements/*.txt"""
     run_ext(

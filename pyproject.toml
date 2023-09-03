@@ -38,14 +38,14 @@ opt = [
 ]
 vtk = [
     "mayavi",
-    "pygments >= 2.15.0",
+    "pygments >= 2.16.1",
 ]
 docs = [
     "asv >= 0.5.1",
     "furo",
     "matplotlib",
     "myst-nb",
-    "pygments >= 2.15.0",
+    "pygments >= 2.16.1",
     "sphinx",
     "sphinx-autobuild",
     "sphinx-copybutton",
@@ -54,7 +54,7 @@ docs = [
 tests = [
     "pymech[opt]",
     "coverage[toml]",
-    "pygments >= 2.15.0",
+    "pygments >= 2.16.1",
     "pytest >= 6.2.5",
     "pytest-cov >= 3.0.0",
     "pytest-xdist >= 2.4.0",

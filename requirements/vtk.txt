@@ -67,7 +67,7 @@ pyface==7.4.3
     # via
     #   mayavi
     #   traitsui
-pygments==2.15.1
+pygments==2.16.1
     # via
     #   mayavi
     #   pymech (pyproject.toml)

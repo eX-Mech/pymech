@@ -5,7 +5,9 @@
 #    pip-compile --extra=tests --output-file=requirements/tests.txt --resolver=backtracking pyproject.toml requirements/vcs_packages.in
 #
 -e .
-    # via -r requirements/vcs_packages.in
+    # via
+    #   -r requirements/vcs_packages.in
+    #   pymech (pyproject.toml)
 attrs==22.1.0
     # via
     #   pymech
@@ -22,7 +24,7 @@ coverage[toml]==7.0.0
     #   pymech (pyproject.toml)
     #   pytest-cov
 dask==2022.12.1
-    # via pymech (pyproject.toml)
+    # via pymech
 exceptiongroup==1.0.4
     # via pytest
 execnet==1.9.0
@@ -70,7 +72,7 @@ pytz==2022.7
 pyyaml==6.0
     # via dask
 rich==12.6.0
-    # via pymech (pyproject.toml)
+    # via pymech
 six==1.16.0
     # via python-dateutil
 tomli==2.0.1

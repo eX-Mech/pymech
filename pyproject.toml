@@ -36,13 +36,6 @@ opt = [
     "dask",
     "rich",
 ]
-# full ّ≡ opt ∪ vtk
-full = [
-    "dask",
-    "mayavi",
-    "pygments >= 2.15.0",
-    "rich",
-]
 vtk = [
     "mayavi",
     "pygments >= 2.15.0",
@@ -52,12 +45,14 @@ docs = [
     "furo",
     "matplotlib",
     "myst-nb",
+    "pygments >= 2.15.0",
     "sphinx",
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-inline-tabs",
 ]
 tests = [
+    "pymech[opt]",
     "coverage[toml]",
     "pygments >= 2.15.0",
     "pytest >= 6.2.5",
@@ -67,6 +62,12 @@ tests = [
 types = [
     "mypy",
     "typing-extensions",
+]
+full = [
+    "pymech[opt,vtk]"
+]
+dev = [
+    "pymech[opt,docs,tests,types]"
 ]
 
 [project.entry-points."xarray.backends"]
@@ -87,35 +88,6 @@ source = "vcs"
 [tool.hatch.build.targets.sdist]
 include = [
     "/pymech",
-]
-
-[tool.hatch.envs.docs]
-type = "pip-deepfreeze"
-features = [
-  "docs",
-]
-
-[tool.hatch.envs.dev]
-type = "pip-deepfreeze"
-features = [
-  "opt",
-  "docs",
-  "tests",
-  "types"
-]
-
-[tool.hatch.envs.tests]
-type = "pip-deepfreeze"
-#dev-mode = false
-features = [
-  "opt",
-  "tests",
-]
-
-[tool.hatch.envs.types]
-type = "pip-deepfreeze"
-features = [
-  "types",
 ]
 
 [tool.setuptools_scm]

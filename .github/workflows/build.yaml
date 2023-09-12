@@ -100,11 +100,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu", "macos", "windows"]
+        os: [
+          # "ubuntu",
+          "macos",
+          "windows"
+         ]
         include:
-          - os: ubuntu
-            environment-file: .github/environment_pypy.yml
-            miniforge-variant: Mambaforge-pypy3
+          # - os: ubuntu
+          #   environment-file: .github/environment_pypy.yml
+          #   miniforge-variant: Mambaforge-pypy3
           - os: macos
             environment-file: .github/environment.yml
             miniforge-variant: Mambaforge

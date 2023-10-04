@@ -61,7 +61,7 @@ packaging==22.0
     #   xarray
 pandas==1.5.2
     # via xarray
-pillow==9.3.0
+pillow==10.0.1
     # via matplotlib
 pyface==7.4.3
     # via

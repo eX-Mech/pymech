@@ -340,7 +340,7 @@ typing-extensions==4.4.0
     #   myst-nb
     #   myst-parser
     #   pymech (setup.cfg)
-urllib3==1.26.13
+urllib3==1.26.18
     # via requests
 virtualenv==20.17.1
     # via

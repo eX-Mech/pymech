@@ -257,7 +257,7 @@ typing-extensions==4.4.0
     # via
     #   myst-nb
     #   myst-parser
-urllib3==1.26.13
+urllib3==1.26.18
     # via requests
 wcwidth==0.2.5
     # via prompt-toolkit

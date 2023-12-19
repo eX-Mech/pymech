@@ -136,8 +136,8 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
         coordinates from a cubical array format for every direction
 
         """
-        u, indices = np.unique(np.round(mesh,8), return_index=True)
-        mesh_1d = np.reshape(mesh,np.size(mesh))
+        u, indices = np.unique(np.round(mesh, 8), return_index=True)
+        mesh_1d = np.reshape(mesh, np.size(mesh))
         dim = mesh_1d[indices]
         return dim
 

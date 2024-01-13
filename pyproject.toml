@@ -40,6 +40,9 @@ vtk = [
     "mayavi",
     "pygments >= 2.16.1",
 ]
+full = [
+    "pymech[opt,vtk]"
+]
 docs = [
     "asv >= 0.5.1",
     "furo",
@@ -62,9 +65,6 @@ tests = [
 types = [
     "mypy",
     "typing-extensions",
-]
-full = [
-    "pymech[opt,vtk]"
 ]
 dev = [
     "pymech[opt,docs,tests,types]"

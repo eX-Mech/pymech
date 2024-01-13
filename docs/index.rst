@@ -38,9 +38,9 @@ Optional dependencies can be installed as follows::
 
    Specifying ``[full]`` would also install optional dependencies, namely:
 
-   .. literalinclude:: ../setup.cfg
-      :start-at: full =
-      :end-before: docs =
+   .. literalinclude:: ../pyproject.toml
+      :start-at: opt = [
+      :end-before: docs = [
 
 .. _virtual environment: https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments
 

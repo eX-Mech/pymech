@@ -24,3 +24,6 @@ docs/_build
 # test related
 test.rea
 test*.f*
+
+# pdm
+.pdm-python

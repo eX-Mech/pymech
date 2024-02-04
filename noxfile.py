@@ -39,7 +39,7 @@ if os.getenv("CI"):
 EXTRA_REQUIRES = ("main", "vtk", "docs", "tests", "types", "dev")
 
 no_venv_session = partial(nox.session, venv_backend="none")
-nox.options.sessions = ["tests", "types"]
+# nox.options.sessions = ["tests", "types"]
 
 
 def run_ext(session, cmd):

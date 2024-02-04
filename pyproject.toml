@@ -1,13 +1,13 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
-build-backend = "hatchling.build"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [project]
 name = "pymech"
 dynamic = ["version"]
 description = "A Python suite of routines for Nek5000 and Simson."
 readme = "README.md"
-license = "GPL-3.0-or-later"
+license = {text = "GPL-3.0-or-later"}
 requires-python = ">= 3.9"
 authors = [
     { name = "eX-Mech Developers", email = "dev@fluid.quest" },
@@ -74,23 +74,13 @@ dev = [
 pymech = "pymech.dataset:PymechXarrayBackend"
 
 [project.urls]
-"Bug Tracker" = "https://github.com/eX-Mech/pymech/issues"
+"Bug-Tracker" = "https://github.com/eX-Mech/pymech/issues"
 Changelog = "https://pymech.readthedocs.io/en/stable/changelog.html"
 Documentation = "https://pymech.readthedocs.io/en/stable"
 Homepage = "https://github.com/eX-Mech/pymech"
 
-[tool.hatch.build.hooks.vcs]
-version-file = "pymech/_version.py"
-
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/pymech",
-]
-
-[tool.setuptools_scm]
+[tool.pdm.version]
+source = "scm"
 write_to = "pymech/_version.py"
 
 [tool.coverage.run]

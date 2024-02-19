@@ -13,6 +13,7 @@ For coloured logging::
     pip install rich
 
 """
+
 import os
 import logging
 from typing import Union

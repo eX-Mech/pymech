@@ -15,7 +15,7 @@ import os
 import shlex
 from functools import partial
 from pathlib import Path
-from shutil import rmdir
+from shutil import rmtree
 
 import nox
 from nox_pdm import session
@@ -242,8 +242,8 @@ def release_tests(session, dist_type):
 def release_clean(session):
     """Remove build and dist directories"""
     session.log("Removing build and dist")
-    rmdir("./build/")
-    rmdir("./dist/")
+    rmtree("./build/")
+    rmtree("./dist/")
 
 
 @session(name="release-build")

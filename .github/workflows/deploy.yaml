@@ -22,7 +22,7 @@ jobs:
         python-version: "3.9"
 
     - name: Install dependencies
-      run: python -m pip install --upgrade pip nox
+      run: python -m pip install --upgrade pip nox nox-pdm
 
     - name: Download, test and publish package
       env:

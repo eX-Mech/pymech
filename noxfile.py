@@ -12,33 +12,25 @@ Usage
 """
 
 import os
-import re
 import shlex
-import shutil
 from functools import partial
 from pathlib import Path
+from shutil import rmdir
 
 import nox
+from nox_pdm import session
 
 PACKAGE = "pymech"
 CWD = Path.cwd()
-if (CWD / "poetry.lock").exists():
-    BUILD_SYSTEM = "poetry"
-    PACKAGE_SPEC = "pyproject.toml"
-elif (CWD / "pyproject.toml").exists():
-    BUILD_SYSTEM = "hatch"
-    PACKAGE_SPEC = "pyproject.toml"
-else:
-    BUILD_SYSTEM = "setuptools"
-    PACKAGE_SPEC = "setup.cfg"
 
 TEST_ENV_VARS = {}
 if os.getenv("CI"):
     TEST_ENV_VARS["PYTEST_ADDOPTS"] = "--color=yes"
 
-EXTRA_REQUIRES = ("main", "vtk", "docs", "tests", "types", "dev")
+no_venv_session = partial(session, venv_backend="none")
+pytest_cmd = "python -m pytest".split()
+mypy_cmd = "python -m mypy".split()
 
-no_venv_session = partial(nox.session, venv_backend="none")
 # nox.options.sessions = ["tests", "types"]
 
 
@@ -47,150 +39,10 @@ def run_ext(session, cmd):
     session.run(*shlex.split(cmd), external=True)
 
 
-def rmdir(path_dir: str):
-    if Path(path_dir).exists():
-        shutil.rmtree(path_dir)
-
-
-def poetry_install(session, *args):
-    """Install with dependencies pinned in pyproject.toml"""
-    run_ext(session, "python -m poetry install " + " ".join(args))
-
-
-def hatch_install(session, *args):
-    run_ext(session, "hatch install " + " ".join(args))
-
-
-def pip_install(session, filename, *args):
-    """Install with dependencies pinned in requirements/*.txt"""
-    run_ext(
-        session,
-        f"python -m pip install -r requirements/{filename}.txt " + " ".join(args),
-    )
-
-
-def pip_sync(session, filename):
-    """Reset developer environment with dependencies pinned in requirements/dev.txt"""
-    run_ext(session, f"python -m piptools sync requirements/{filename}.txt")
-
-
-@no_venv_session
-def install(session):
-    """Install package."""
-    if BUILD_SYSTEM == "poetry":
-        poetry_install(session)
-    else:
-        pip_install(session, "main", ".")
-
-
-@no_venv_session
-def develop(session):
-    """Install developer environment."""
-    if BUILD_SYSTEM == "poetry":
-        poetry_install(session, "--with=dev")
-    else:
-        pip_install(session, "dev")
-
-
-@no_venv_session
-def sync(session):
-    """Sync developer environment."""
-    if BUILD_SYSTEM == "poetry":
-        poetry_install(session, "--sync", "--with=dev")
-    else:
-        pip_sync(session, "dev")
-
-
-@no_venv_session
-def requires(session):
-    """Pin dependencies"""
-    if BUILD_SYSTEM == "poetry":
-        run_ext(session, "python -m poetry lock --no-update")
-    else:
-        session.notify("pip-compile")
-
-
-@nox.session(name="pip-compile", reuse_venv=True)
-@nox.parametrize("extra", [nox.param(extra, id=extra) for extra in EXTRA_REQUIRES])
-def pip_compile(session, extra):
-    """Pin dependencies to requirements/*.txt
-
-    How to run all in parallel::
-
-        pipx install nox
-        make -j requirements
-
-    or::
-
-        nox -l | awk '/pip-compile/{print $2}' | xargs -P6 -I_ nox -s _
-
-    """
-    session.install("pip-tools")
-    req = Path("requirements")
-
-    if extra == "main":
-        in_extra = ""
-        in_file = ""
-    if extra in ("vtk",):
-        in_extra = f"--extra {extra}"
-        in_file = ""
-    else:
-        in_extra = f"--extra {extra}"
-        in_file = req / "vcs_packages.in"
-
-    out_file = req / f"{extra}.txt"
-
-    session.run(
-        *shlex.split(
-            "python -m piptools compile --resolver backtracking --quiet "
-            f"{in_extra} {in_file} {PACKAGE_SPEC} "
-            f"-o {out_file}"
-        ),
-        *session.posargs,
-    )
-
-    session.log(f"Removing absolute paths from {out_file}")
-    packages = out_file.read_text()
-    rel_path_packages = packages.replace("file://" + str(Path.cwd().resolve()), ".")
-    if extra == "tests":
-        tests_editable = out_file.parent / out_file.name.replace(
-            "tests", "tests-editable"
-        )
-        session.log(f"Copying {out_file} with -e flag in {tests_editable}")
-        tests_editable.write_text(rel_path_packages)
-        session.log(f"Removing -e flag in {out_file}")
-        rel_path_packages = re.sub(r"^-e\ \.", ".", rel_path_packages, flags=re.M)
-
-    session.log(f"Writing {out_file}")
-    out_file.write_text(rel_path_packages)
-
-
-def install_with_tests(session, args=()):
-    if BUILD_SYSTEM == "poetry":
-        session.install("poetry")
-        session.run("python", "-m", "poetry", "install", "--with=tests", *args)
-        session.run("python", "-m", "poetry", "env", "info")
-        return "python", "-m", "poetry", "run", "pytest"
-    else:
-        session.install("-r", "requirements/tests.txt", *args)
-        return "python", "-m", "pytest"
-
-
-def install_with_types(session, args=()):
-    if BUILD_SYSTEM == "poetry":
-        session.install("poetry")
-        session.run("python", "-m", "poetry", "install", "--with=types", *args)
-        session.run("python", "-m", "poetry", "env", "info")
-        return "python", "-m", "poetry", "run", "mypy"
-    else:
-        session.install("-r", "requirements/types.txt", *args)
-        return "python", "-m", "mypy"
-
-
-@nox.session
+@session
 def tests(session):
     """Execute unit-tests using pytest"""
-    pytest_cmd = install_with_tests(session)
+    session.install(".[tests]")
     session.run(
         *pytest_cmd,
         *session.posargs,
@@ -198,10 +50,10 @@ def tests(session):
     )
 
 
-@nox.session(name="tests-cov-vtk")
+@session
 def tests_cov_vtk(session):
     """Execute unit-tests using pytest+pytest-cov+VTK dependencies"""
-    pytest_cmd = install_with_tests(session, ["-r", "requirements/vtk.txt"])
+    session.install(".[tests,vtk]")
     session.run(
         *pytest_cmd,
         "--cov",
@@ -230,7 +82,7 @@ def tests_cov(session):
     )
 
 
-@nox.session
+@session
 def types(session):
     """Execute type-checking using mypy"""
     if (CWD / "src").exists():
@@ -238,11 +90,11 @@ def types(session):
     else:
         test_source = PACKAGE
 
-    mypy_cmd = install_with_types(session)
+    session.install(".[types]")
     session.run(*mypy_cmd, *session.posargs, test_source, "tests")
 
 
-@nox.session(name="coverage-html")
+@session(name="coverage-html")
 def coverage_html(session, nox=False):
     """Generate coverage report in HTML. Requires `tests-cov` session."""
     report = Path.cwd() / ".coverage" / "html" / "index.html"
@@ -260,7 +112,7 @@ def format_(session):
     run_ext(session, "pre-commit run --all-files")
 
 
-@nox.session
+@session
 def lint(session):
     """Run pre-commit hooks on files which differ in the current branch from origin/HEAD."""
     remote = "origin/HEAD" if not session.posargs else session.posargs[0]
@@ -270,8 +122,7 @@ def lint(session):
 
 
 def _prepare_docs_session(session):
-    session.install("-r", "requirements/docs.txt")
-    session.chdir("./docs")
+    session.install(".[docs]")
 
     build_dir = Path.cwd() / "_build"
     source_dir = "."
@@ -279,7 +130,7 @@ def _prepare_docs_session(session):
     return source_dir, output_dir
 
 
-@nox.session
+@session
 def docs(session):
     """Build documentation using Sphinx."""
     source, output = _prepare_docs_session(session)
@@ -290,7 +141,7 @@ def docs(session):
     print(f"file://{output}/index.html")
 
 
-@nox.session(name="docs-autobuild")
+@session(name="docs-autobuild")
 def docs_autobuild(session):
     """Build documentation using sphinx-autobuild."""
     source, output = _prepare_docs_session(session)
@@ -329,7 +180,7 @@ def pypi(session):
     session.notify("release-upload", ["--repository", "pypi"])
 
 
-@nox.session(name="download-testpypi")
+@session(name="download-testpypi")
 @nox.parametrize("dist_type", ["no-binary", "only-binary"])
 def download_testpypi(session, dist_type):
     """Download from TestPyPI and run tests"""
@@ -369,7 +220,7 @@ def download_testpypi(session, dist_type):
     )
 
 
-@nox.session(name="release-tests")
+@session(name="release-tests")
 @nox.parametrize("dist_type", ["no-binary", "only-binary"])
 def release_tests(session, dist_type):
     """Execute test suite with build / downloaded package in ./dist"""
@@ -378,30 +229,13 @@ def release_tests(session, dist_type):
     else:
         pattern = "*.tar.gz"
 
-    if BUILD_SYSTEM == "poetry":
-        poetry_conf = CWD / "poetry.toml"
-        assert (
-            not poetry_conf.exists()
-        ), "Poetry local configuration exists. Please remove to continue"
-        session.install("poetry")
-        session.run(
-            "python", "-m", "poetry", "config", "--local", "virtualenvs.create", "false"
-        )
-        pytest_cmd = install_with_tests(session, ["--no-root"])
-    else:
-        pytest_cmd = install_with_tests(session)
-
     dist_packages = [str(p) for p in Path("./dist").glob(pattern)]
     session.install(*dist_packages)
 
-    try:
-        session.run(
-            *pytest_cmd,
-            env=TEST_ENV_VARS,
-        )
-    finally:
-        if BUILD_SYSTEM == "poetry":
-            poetry_conf.unlink()
+    session.run(
+        *pytest_cmd,
+        env=TEST_ENV_VARS,
+    )
 
 
 @no_venv_session(name="release-clean")
@@ -412,14 +246,14 @@ def release_clean(session):
     rmdir("./dist/")
 
 
-@nox.session(name="release-build")
+@session(name="release-build")
 def release_build(session):
     """Build package into dist."""
     session.install("build")
     session.run("python", "-m", "build")
 
 
-@nox.session(name="release-upload")
+@session(name="release-upload")
 def release_upload(session):
     """Upload dist/* to repository testpypi (default, must be configured in ~/.pypirc).
     Also accepts positional arguments to `twine upload` command.

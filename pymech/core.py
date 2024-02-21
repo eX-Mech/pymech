@@ -1,4 +1,5 @@
 """Core data structures for pymech"""
+
 import copy
 from textwrap import dedent, indent
 import itertools

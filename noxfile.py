@@ -123,6 +123,7 @@ def lint(session):
 
 def _prepare_docs_session(session):
     session.install(".[docs]")
+    session.chdir("docs")
 
     build_dir = Path.cwd() / "_build"
     source_dir = "."

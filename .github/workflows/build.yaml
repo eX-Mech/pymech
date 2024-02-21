@@ -74,7 +74,8 @@ jobs:
         python-version: "3.9"
 
     - name: Install dependencies
-      run: python -m pip install --upgrade pip nox nox-pdm
+      run: |
+        python -m pip install --upgrade pip nox nox-pdm pdm
 
     - name: Package
       run: nox --session release-build
@@ -181,7 +182,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip nox nox-pdm
+        python -m pip install --upgrade pip nox nox-pdm pdm
 
     - name: Build docs
       run: |

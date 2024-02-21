@@ -82,6 +82,7 @@ Homepage = "https://github.com/eX-Mech/pymech"
 [tool.pdm.version]
 source = "scm"
 write_to = "pymech/_version.py"
+write_template = "__version__ = '{}'"
 
 [tool.coverage.run]
 source = ["pymech", "./tests"]

@@ -27,3 +27,4 @@ test*.f*
 
 # pdm
 .pdm-python
+.pdm-build

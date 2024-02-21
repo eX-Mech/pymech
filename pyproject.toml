@@ -79,6 +79,9 @@ Changelog = "https://pymech.readthedocs.io/en/stable/changelog.html"
 Documentation = "https://pymech.readthedocs.io/en/stable"
 Homepage = "https://github.com/eX-Mech/pymech"
 
+[tool.pdm.build]
+package-dir = "src"
+
 [tool.pdm.version]
 source = "scm"
 write_to = "pymech/_version.py"

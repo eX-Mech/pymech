@@ -50,7 +50,7 @@ def tests(session):
     )
 
 
-@session
+@session(name="tests-cov-vtk")
 def tests_cov_vtk(session):
     """Execute unit-tests using pytest+pytest-cov+VTK dependencies"""
     session.install(".[tests,vtk]")

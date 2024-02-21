@@ -67,8 +67,10 @@ pyface==7.4.3
     # via
     #   mayavi
     #   traitsui
-pygments==2.13.0
-    # via mayavi
+pygments==2.15.1
+    # via
+    #   mayavi
+    #   pymech (setup.cfg)
 pyparsing==3.0.9
     # via matplotlib
 python-dateutil==2.8.2

@@ -163,10 +163,11 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
-pygments==2.13.0
+pygments==2.15.1
     # via
     #   furo
     #   ipython
+    #   pymech (setup.cfg)
     #   sphinx
 pyparsing==3.0.9
     # via matplotlib

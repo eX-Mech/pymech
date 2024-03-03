@@ -23,7 +23,7 @@ project = "pymech"
 _meta = metadata(project)
 _today = date.today()
 
-author = _meta["Author"]
+author = _meta.get("Author", "eX-Mech Developers")
 copyright = f"2016-{_today.year}"  # ", {author}"
 master_doc = "index"
 

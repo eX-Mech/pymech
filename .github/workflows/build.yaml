@@ -42,7 +42,7 @@ jobs:
     - name: Run tests
       run: |
         nox --session tests-cov -- -v --cov-report=xml
-        nox --session tests-cov-vtk -- -v --cov-report=xml
+        nox --session tests-cov-vtk --no-error-on-missing-interpreters -- -v --cov-report=xml
 
     - name: Run mypy
       run: |

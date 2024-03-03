@@ -82,6 +82,7 @@ Homepage = "https://github.com/eX-Mech/pymech"
 
 [tool.pdm.build]
 package-dir = "src"
+source-includes = ["CITATION.cff"]
 
 [tool.pdm.version]
 source = "scm"

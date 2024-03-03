@@ -1,5 +1,5 @@
-import pytest
 import pymech as pm
+import pytest
 
 
 @pytest.mark.parametrize(

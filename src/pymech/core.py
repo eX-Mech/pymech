@@ -1,14 +1,14 @@
 """Core data structures for pymech"""
 
 import copy
-from textwrap import dedent, indent
 import itertools
+from functools import partial, reduce
 from itertools import product
-from functools import reduce, partial
+from textwrap import dedent, indent
 
 import numpy as np
-from pymech.log import logger
 
+from pymech.log import logger
 
 """Repeat N times. Pythonic idiom to use when the iterated value is discarded.
 

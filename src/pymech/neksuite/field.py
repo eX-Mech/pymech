@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import os
 import io
+import os
 import struct
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, Union, BinaryIO
+from typing import BinaryIO, Optional, Tuple, Union
 
 import numpy as np
-
 from attrs import define, field
 
 from pymech.core import HexaData

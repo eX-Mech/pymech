@@ -4,6 +4,7 @@ import struct
 import sys
 
 import numpy as np
+
 from pymech.core import HexaData
 from pymech.log import logger
 
@@ -185,7 +186,6 @@ def readrea(fname):
                     data.elem[iel].bcs[ibc, iface][0] = ""
                     for j in range(1, 8):
                         data.elem[iel].bcs[ibc, iface][j] = 0
-        ibc = ibc + 1
     #
     # ---------------------------------------------------------------------------
     # FORGET ABOUT WHAT FOLLOWS

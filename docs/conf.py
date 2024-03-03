@@ -13,20 +13,17 @@
 import os
 import sys
 from datetime import date
-
-
-from importlib import metadata
-
+from importlib.metadata import metadata
 
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
 project = "pymech"
-_meta = metadata.metadata(project)
+_meta = metadata(project)
 _today = date.today()
 
-author = _meta.get("Author")
+author = _meta.get("Author", "eX-Mech Developers")
 copyright = f"2016-{_today.year}"  # ", {author}"
 master_doc = "index"
 

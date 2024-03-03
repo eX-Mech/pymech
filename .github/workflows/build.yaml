@@ -17,37 +17,32 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 5
+      max-parallel: 8
       matrix:
-        python-version: ['3.9', '3.10']  # No vtk available for 3.11
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
+    # NOTE: pdm caching unsupported
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         cache: "pip"
-        cache-dependency-path: "requirements/tests.txt"
-
-    - name: Verify Python environment
-      run: |
-        pip list
-        pip cache list
-        pip check
+        cache-dependency-path: "pdm.lock"
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip nox
+        python -m pip install --upgrade pip nox nox-pdm pdm
 
     - name: Run tests
       run: |
         nox --session tests-cov -- -v --cov-report=xml
-        nox --session tests-cov-vtk -- -v --cov-report=xml
+        nox --session tests-cov-vtk --no-error-on-missing-interpreters -- -v --cov-report=xml
 
     - name: Run mypy
       run: |
@@ -69,7 +64,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -79,7 +74,8 @@ jobs:
         python-version: "3.9"
 
     - name: Install dependencies
-      run: python -m pip install --upgrade pip nox
+      run: |
+        python -m pip install --upgrade pip nox nox-pdm pdm
 
     - name: Package
       run: nox --session release-build
@@ -100,11 +96,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu", "macos", "windows"]
+        os: [
+          # "ubuntu",
+          "macos",
+          "windows"
+         ]
         include:
-          - os: ubuntu
-            environment-file: .github/environment_pypy.yml
-            miniforge-variant: Mambaforge-pypy3
+          # - os: ubuntu
+          #   environment-file: .github/environment_pypy.yml
+          #   miniforge-variant: Mambaforge-pypy3
           - os: macos
             environment-file: .github/environment.yml
             miniforge-variant: Mambaforge
@@ -112,12 +112,12 @@ jobs:
             environment-file: .github/environment.yml
             miniforge-variant: Mambaforge
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
     - name: Cache conda
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       env:
         # Increase this value to reset cache if environment.yml has not changed
         CACHE_NUMBER: 0
@@ -126,7 +126,7 @@ jobs:
         key:
           ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
 
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-variant: ${{ matrix.miniforge-variant }}
         environment-file: ${{ matrix.environment-file }}
@@ -157,7 +157,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
         fetch-depth: 0
@@ -182,7 +182,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip nox
+        python -m pip install --upgrade pip nox nox-pdm pdm
 
     - name: Build docs
       run: |

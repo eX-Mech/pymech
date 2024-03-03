@@ -1,6 +1,7 @@
 import struct
 
 import numpy as np
+
 from ..log import logger
 
 

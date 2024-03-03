@@ -1,9 +1,10 @@
 """Module for reading and writing SIMSON files"""
 
 import struct
-import numpy as np
-from pymech.core import HexaData
 
+import numpy as np
+
+from pymech.core import HexaData
 
 __all__ = ("readdns", "readplane")
 

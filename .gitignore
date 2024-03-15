@@ -28,3 +28,7 @@ test*.f*
 # pdm
 .pdm-python
 .pdm-build
+
+# build
+dist/
+src/pymech/_version.py

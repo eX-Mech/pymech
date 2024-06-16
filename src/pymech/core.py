@@ -47,7 +47,11 @@ class DataLims:
         for var in self._variables:
             agg_lims_var = aggregated_lims[var]
             # set minimum, maximum of variables as a nested tuple
-            setattr(self, var, tuple(zip(*agg_lims_var)))
+            setattr(
+                self,
+                var,
+                tuple((float(lims[0]), float(lims[1])) for lims in zip(*agg_lims_var)),
+            )
 
         # prevent further mutation of attributes via __setattr__
         self._initialized = True

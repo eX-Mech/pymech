@@ -5,6 +5,7 @@ from textwrap import dedent
 import numpy as np
 import pytest
 from numpy import testing as npt
+
 from pymech.log import logger
 
 
@@ -553,6 +554,7 @@ def test_gen_circle(test_data_dir):
 
 def test_cylinder(test_data_dir):
     import numpy as np
+
     import pymech.meshtools as mt
 
     # test making a cylinder using `gen_circle` and `extrude`

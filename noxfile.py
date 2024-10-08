@@ -232,6 +232,7 @@ def release_tests(session, dist_type):
 
     dist_packages = [str(p) for p in Path("./dist").glob(pattern)]
     session.install(*dist_packages)
+    session.install("pytest")
 
     session.run(
         *pytest_cmd,

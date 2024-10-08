@@ -31,7 +31,7 @@ Security in case of vulnerabilities.
 ## [Unreleased]
 
 Supports Python 3.9 and above, from now on to make use of concise
-type-annotations.
+type-annotations. Constraints support for Numpy versions < 2.0.
 
 ### Added
 

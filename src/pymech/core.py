@@ -214,7 +214,7 @@ class Elem:
             kx3, ky3, kz3 = -1, 0, -1
             kx4, ky4, kz4 = -1, -1, -1
         else:
-            raise ValueError(f"Invalid face number {i} (must be between 0 and 5)")
+            logger.error(f"Invalid face number {i} (must be between 0 and 5)")
         (x1, y1, z1) = self.pos[:, kz1, ky1, kx1]
         (x2, y2, z2) = self.pos[:, kz2, ky2, kx2]
         (x3, y3, z3) = self.pos[:, kz3, ky3, kx3]
@@ -295,11 +295,11 @@ class HexaData:
                 xc, yc, zc = el.face_center(iface)
                 if connected_iel < 0 or connected_iel >= self.nel:
                     err = True
-                    raise ValueError(
+                    logger.error(
                         f"face {iface} of element {iel} is connected ('{cbc}') to face "
                         f"{connected_face} of the nonexistent element {connected_iel}"
                     )
-                    raise ValueError(f"face center: ({xc:.6e} {yc:.6e} {zc:.6e})")
+                    logger.error(f"face center: ({xc:.6e} {yc:.6e} {zc:.6e})")
                 else:
                     cbc1 = self.elem[connected_iel].bcs[ibc, connected_face][0]
                     iel1 = int(self.elem[connected_iel].bcs[ibc, connected_face][3]) - 1
@@ -309,14 +309,14 @@ class HexaData:
                     xc1, yc1, zc1 = self.elem[connected_iel].face_center(connected_face)
                     if cbc1 != cbc or iel1 != iel or iface1 != iface:
                         err = True
-                        raise ValueError(
+                        logger.error(
                             "mismatched boundary conditions: "
                             f"face {iface + 1} of element {iel + 1} with "
                             f"condition '{cbc}' is connected to face {connected_face + 1} "
                             f"of element {connected_iel + 1}, which has condition '{cbc1}' "
                             f"and points to face {iface1} of element {iel1}"
                         )
-                        raise ValueError(
+                        logger.error(
                             f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})"
                         )
                     elif cbc == "E":  # no check for 'P' yet, but it should be possible
@@ -328,15 +328,21 @@ class HexaData:
                         )
                         if dist > max_dist:
                             err = True
-                            raise ValueError(
+                            logger.error(
                                 "mismatched face locations: "
                                 f"face {iface + 1} of element {iel + 1} and "
                                 f"face {connected_face + 1} of element {connected_iel + 1} "
                                 "are connected but are not at the same location"
                             )
-                            raise ValueError(
+                            logger.error(
                                 f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})"
                             )
+
+        if err:
+            raise ValueError(
+                "Some errors were encountered while checking connectivity."
+            )
+
         return not err
 
     def check_bcs_present(self):
@@ -353,9 +359,15 @@ class HexaData:
         ):
             if el.bcs[ibc, iface][0] == "":
                 res = False
-                raise ValueError(
+                logger.error(
                     f"missing boundary condition at element {iel}, face {iface}, field {ibc}"
                 )
+
+        if not res:
+            raise ValueError(
+                "Some errors were encountered while checking boundary conditions."
+            )
+
         return res
 
     def merge(self, other, tol=1e-2, ignore_empty=True, ignore_all_bcs=False):
@@ -387,14 +399,12 @@ class HexaData:
             raise ValueError(
                 f"Cannot merge meshes of dimensions {self.ndim} and {other.ndim}!"
             )
-            return -1
         if self.lr1[0] != other.lr1[0]:
             raise ValueError(
                 "Cannot merge meshes of different polynomial orders ({} != {})".format(
                     self.lr1[0], other.lr1[0]
                 )
             )
-            return -2
 
         # add the new elements (in an inconsistent state if there are internal boundary conditions)
         nel1 = self.nel
@@ -415,8 +425,7 @@ class HexaData:
         nchanges = 0  # counter for the boundary conditions connected
         if nbc == 0 or ignore_all_bcs:
             # Quickly exit the function
-            logger.debug("no pairs of faces to merge")
-            return nchanges
+            raise ValueError("No pairs of faces to merge.")
 
         for iel0, iface0 in product(range(nel1, self.nel), range(nfaces)):
             elem0 = self.elem[iel0]

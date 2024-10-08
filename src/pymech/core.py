@@ -425,7 +425,8 @@ class HexaData:
         nchanges = 0  # counter for the boundary conditions connected
         if nbc == 0 or ignore_all_bcs:
             # Quickly exit the function
-            raise ValueError("No pairs of faces to merge.")
+            logger.warning("No pairs of faces to merge.")
+            return nchanges
 
         for iel0, iface0 in product(range(nel1, self.nel), range(nfaces)):
             elem0 = self.elem[iel0]

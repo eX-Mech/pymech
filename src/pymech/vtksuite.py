@@ -3,7 +3,6 @@
 import os
 from itertools import product
 from pathlib import Path
-from warnings import warn
 
 import numpy as np
 
@@ -20,20 +19,7 @@ except ImportError:
     logger.warning("To use VTK functions,\n    pip install mayavi")
 
 
-__all__ = ("exa2vtk", "writevtk")
-
-
-# ==============================================================================
-def exa2vtk(field, downsample=False):
-    warn(
-        (
-            "Function pymech.vtksuite.exa2vtk is now pymech.vtksuite.hexa2vtk. "
-            "This module is kept for backwards "
-            "compatibility and would disappear in version 2.0.0"
-        ),
-        DeprecationWarning,
-    )
-    return hexa2vtk(field, downsample)
+__all__ = ("hexa2vtk", "writevtk")
 
 
 def hexa2vtk(field, downsample=False):
@@ -55,11 +41,11 @@ def hexa2vtk(field, downsample=False):
     .. code-block:: python
 
        import pymech as pm
-       from pymech.vtksuite import exa2vtk
+       from pymech.vtksuite import hexa2vtk
        from mayavi import mlab
 
        field = pm.readnek("tests/nek/channel3D_0.f00001")
-       dataset = exa2vtk(field)
+       dataset = hexa2vtk(field)
        mlab.pipeline.add_dataset(dataset)
 
     Instead of MayaVi_ you could use also use something high-level like PyVista_

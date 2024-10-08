@@ -45,6 +45,13 @@ type-annotations. Constraints support for Numpy versions < 2.0.
 - Explicitly raises `ValueError` instead of logging with `critical` or `error`
   levels.
 
+### Removed
+
+Previously deprecated features are now removed
+
+- Module {ref}`exadata` is removed in favour of {mod}`pymech.core`.
+  See {ref}`exadata` for more information on migrating your code.
+- Function {func}`pymech.vtksuite.exa2vtk` is removed in favour of {func}`pymech.vtksuite.hexa2vtk`.
 
 ## [1.5.0] - 2022-11-25
 

@@ -26,11 +26,7 @@ def readma2(fname):
     procmap  : 1d int ndarray
             processor map (0-based) indicating ownership for each element of the mesh
     """
-    try:
-        infile = open(fname, "rb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    infile = open(fname, "rb")
     #
     # read header
     header = infile.read(132).split()
@@ -77,8 +73,7 @@ def readma2(fname):
         emode = ">"
         # endian = "big"
     else:
-        logger.error("Could not interpret endianness")
-        return -3
+        raise ValueError("Could not interpret endianness")
 
     # read the entire contents of the file
     # for each element, there are nvert vertices and a processor id

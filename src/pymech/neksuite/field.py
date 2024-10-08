@@ -79,7 +79,7 @@ class Header:
             elif wdsz == 8:
                 self.realtype = "d"
             else:
-                logger.error(f"Could not interpret real type (wdsz = {wdsz})")
+                raise ValueError(f"Could not interpret real type (wdsz = {wdsz})")
 
         orders = self.orders
         if not self.nb_pts_elem:
@@ -103,12 +103,10 @@ class Header:
         nb_dims = self.nb_dims
 
         if not variables:
-            logger.error("Failed to convert variables to nb_vars")
-            return None
+            raise ValueError("Failed to convert variables to nb_vars")
 
         if not nb_dims:
-            logger.error("Unintialized nb_dims")
-            return None
+            raise ValueError("Unintialized nb_dims")
 
         def nb_scalars():
             index_s = variables.index("S")
@@ -127,8 +125,7 @@ class Header:
     def _nb_vars_to_variables(self) -> Optional[str]:
         nb_vars = self.nb_vars
         if not nb_vars:
-            logger.error("Failed to convert nb_vars to variables")
-            return None
+            raise ValueError("Failed to convert nb_vars to variables")
 
         str_vars = ("X", "U", "P", "T", f"S{nb_vars[4]:02d}")
         variables = (str_vars[i] if nb_vars[i] > 0 else "" for i in range(5))
@@ -191,11 +188,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
 
     """
     #
-    try:
-        infile = open(fname, "rb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    infile = open(fname, "rb")
     #
     # ---------------------------------------------------------------------------
     # READ HEADER
@@ -217,8 +210,8 @@ def readnek(fname, dtype="float64", skip_vars=()):
         logger.debug("Reading big-endian file\n")
         emode = ">"
     else:
-        logger.error("Could not interpret endianness")
-        return -3
+        raise ValueError("Could not interpret endianness")
+
     #
     # read element map for the file
     elmap = infile.read(4 * h.nb_elems_file)
@@ -391,11 +384,7 @@ def writenek(fname, data):
             data structure
     """
     #
-    try:
-        outfile = open(fname, "wb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    outfile = open(fname, "wb")
     #
     # ---------------------------------------------------------------------------
     # WRITE HEADER
@@ -422,8 +411,7 @@ def writenek(fname, data):
     elif h.wdsz == 8:
         logger.debug("Writing double-precision file")
     else:
-        logger.error("Could not interpret real type (wdsz = %i)" % (data.wdsz))
-        return -2
+        raise ValueError("Could not interpret real type (wdsz = %i)" % (data.wdsz))
     #
     # generate header
     outfile.write(h.as_bytestring())

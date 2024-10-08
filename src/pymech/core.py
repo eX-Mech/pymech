@@ -337,6 +337,12 @@ class HexaData:
                             logger.error(
                                 f"face centers: ({xc:.6e} {yc:.6e} {zc:.6e}), ({xc1:.6e} {yc1:.6e} {zc1:.6e})"
                             )
+
+        if err:
+            raise ValueError(
+                "Some errors were encountered while checking connectivity."
+            )
+
         return not err
 
     def check_bcs_present(self):
@@ -356,6 +362,12 @@ class HexaData:
                 logger.error(
                     f"missing boundary condition at element {iel}, face {iface}, field {ibc}"
                 )
+
+        if not res:
+            raise ValueError(
+                "Some errors were encountered while checking boundary conditions."
+            )
+
         return res
 
     def merge(self, other, tol=1e-2, ignore_empty=True, ignore_all_bcs=False):
@@ -384,17 +396,15 @@ class HexaData:
 
         # perform some consistency checks
         if self.ndim != other.ndim:
-            logger.error(
+            raise ValueError(
                 f"Cannot merge meshes of dimensions {self.ndim} and {other.ndim}!"
             )
-            return -1
         if self.lr1[0] != other.lr1[0]:
-            logger.error(
+            raise ValueError(
                 "Cannot merge meshes of different polynomial orders ({} != {})".format(
                     self.lr1[0], other.lr1[0]
                 )
             )
-            return -2
 
         # add the new elements (in an inconsistent state if there are internal boundary conditions)
         nel1 = self.nel
@@ -415,7 +425,7 @@ class HexaData:
         nchanges = 0  # counter for the boundary conditions connected
         if nbc == 0 or ignore_all_bcs:
             # Quickly exit the function
-            logger.debug("no pairs of faces to merge")
+            logger.warning("No pairs of faces to merge.")
             return nchanges
 
         for iel0, iface0 in product(range(nel1, self.nel), range(nfaces)):

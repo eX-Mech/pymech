@@ -191,11 +191,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
 
     """
     #
-    try:
-        infile = open(fname, "rb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    infile = open(fname, "rb")
     #
     # ---------------------------------------------------------------------------
     # READ HEADER
@@ -391,11 +387,7 @@ def writenek(fname, data):
             data structure
     """
     #
-    try:
-        outfile = open(fname, "wb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    outfile = open(fname, "wb")
     #
     # ---------------------------------------------------------------------------
     # WRITE HEADER

@@ -633,7 +633,7 @@ def readre2(fname):
         endian = "big"
     else:
         raise ValueError("Could not interpret endianness")
-        return -3
+
     #
     # there are no GLL points here, only quad/hex vertices
     lr1 = [2, 2, ndim - 1]

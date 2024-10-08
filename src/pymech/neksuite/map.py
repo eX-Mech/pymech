@@ -74,7 +74,6 @@ def readma2(fname):
         # endian = "big"
     else:
         raise ValueError("Could not interpret endianness")
-        return -3
 
     # read the entire contents of the file
     # for each element, there are nvert vertices and a processor id

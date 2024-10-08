@@ -77,7 +77,7 @@ def readma2(fname):
         emode = ">"
         # endian = "big"
     else:
-        logger.error("Could not interpret endianness")
+        raise ValueError("Could not interpret endianness")
         return -3
 
     # read the entire contents of the file

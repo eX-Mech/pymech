@@ -79,7 +79,7 @@ class Header:
             elif wdsz == 8:
                 self.realtype = "d"
             else:
-                logger.error(f"Could not interpret real type (wdsz = {wdsz})")
+                raise ValueError(f"Could not interpret real type (wdsz = {wdsz})")
 
         orders = self.orders
         if not self.nb_pts_elem:
@@ -103,11 +103,11 @@ class Header:
         nb_dims = self.nb_dims
 
         if not variables:
-            logger.error("Failed to convert variables to nb_vars")
+            raise ValueError("Failed to convert variables to nb_vars")
             return None
 
         if not nb_dims:
-            logger.error("Unintialized nb_dims")
+            raise ValueError("Unintialized nb_dims")
             return None
 
         def nb_scalars():
@@ -127,7 +127,7 @@ class Header:
     def _nb_vars_to_variables(self) -> Optional[str]:
         nb_vars = self.nb_vars
         if not nb_vars:
-            logger.error("Failed to convert nb_vars to variables")
+            raise ValueError("Failed to convert nb_vars to variables")
             return None
 
         str_vars = ("X", "U", "P", "T", f"S{nb_vars[4]:02d}")
@@ -217,7 +217,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
         logger.debug("Reading big-endian file\n")
         emode = ">"
     else:
-        logger.error("Could not interpret endianness")
+        raise ValueError("Could not interpret endianness")
         return -3
     #
     # read element map for the file
@@ -422,7 +422,7 @@ def writenek(fname, data):
     elif h.wdsz == 8:
         logger.debug("Writing double-precision file")
     else:
-        logger.error("Could not interpret real type (wdsz = %i)" % (data.wdsz))
+        raise ValueError("Could not interpret real type (wdsz = %i)" % (data.wdsz))
         return -2
     #
     # generate header

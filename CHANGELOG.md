@@ -30,6 +30,10 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
+TBD
+
+## [2.0.0] - 2024-10-09
+
 Supports Python 3.9 and above, from now on to make use of concise
 type-annotations. Constraints support for Numpy versions < 2.0.
 
@@ -174,7 +178,8 @@ writing
 ### Changed
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.5.0...HEAD
+[Unreleased]: https://github.com/eX-Mech/pymech/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/eX-Mech/pymech/compare/1.5.0...2.0.0
 [1.5.0]: https://github.com/eX-Mech/pymech/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/eX-Mech/pymech/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/eX-Mech/pymech/compare/1.3.3...1.4.0

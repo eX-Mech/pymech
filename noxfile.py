@@ -243,8 +243,8 @@ def release_tests(session, dist_type):
 def release_clean(session):
     """Remove build and dist directories"""
     session.log("Removing build and dist")
-    rmtree("./build/")
-    rmtree("./dist/")
+    rmtree("./build/", ignore_errors=True)
+    rmtree("./dist/", ignore_errors=True)
 
 
 @session(name="release-build")

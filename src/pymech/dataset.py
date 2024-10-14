@@ -3,8 +3,8 @@ from functools import partial
 from pathlib import Path
 
 import numpy as np
-import xarray as xr
 import uxarray as uxr
+import xarray as xr
 from xarray.core.utils import Frozen
 
 from .neksuite import readnek
@@ -99,6 +99,7 @@ def _open_nek_dataset(path, drop_variables=None):
 
     return ds
 
+
 def extract_elem_data(elem_array):
     # Use lists to accumulate data
     x_list, y_list, z_list = [], [], []
@@ -110,11 +111,11 @@ def extract_elem_data(elem_array):
         x_list.append(np.ravel(elem.pos[0]))
         y_list.append(np.ravel(elem.pos[1]))
         z_list.append(np.ravel(elem.pos[2]))
-        
+
         ux_list.append(np.ravel(elem.vel[0]))
         uy_list.append(np.ravel(elem.vel[1]))
         uz_list.append(np.ravel(elem.vel[2]))
-        
+
         p_list.append(np.ravel(elem.pres))
 
     # Convert lists to NumPy arrays after the loop
@@ -132,13 +133,13 @@ def extract_elem_data(elem_array):
             "ux": (["points"], ux),
             "uy": (["points"], uy),
             "uz": (["points"], uz),  # Correctly assign uz
-            "p": (["points"], p)     # Correctly assign p
+            "p": (["points"], p),  # Correctly assign p
         },
         coords={
             "x": (["points"], x),
             "y": (["points"], y),
             "z": (["points"], z),
-        }
+        },
     )
 
     # Wrap the xarray dataset in a uxarray grid (optional)
@@ -235,7 +236,7 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
 
 
 def open_unstruc_dataset(path):
-    
+
     # Proposed Methodology
     # Step 1: Use readnek to import the data
     # Step 2: Create an array of nodes, elements, and fields
@@ -247,10 +248,10 @@ def open_unstruc_dataset(path):
         raise OSError(f"Failed to load {path}")
 
     elements = field.elem
-    
+
     # Method 1 : adapt the existing method used for xarray
 
-    #elem_stores = [_NekDataStore(elem) for elem in elements]
+    # elem_stores = [_NekDataStore(elem) for elem in elements]
     #
     # try:
     #     elem_dsets = [
@@ -261,10 +262,6 @@ def open_unstruc_dataset(path):
     #     print(error)
     #     print(elem_stores[0].axes)
 
-    # Method 2 : manually create array of x, y, z and variables and use it to 
+    # Method 2 : manually create array of x, y, z and variables and use it to
     # make a uxarray dataset
     ds = extract_elem_data(elements)
-
-
-
-    

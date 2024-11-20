@@ -108,10 +108,8 @@ jobs:
           #   miniforge-variant: Mambaforge-pypy3
           - os: macos
             environment-file: .github/environment.yml
-            miniforge-variant: Mambaforge
           - os: windows
             environment-file: .github/environment.yml
-            miniforge-variant: Mambaforge
     steps:
     - uses: actions/checkout@v4
       with:
@@ -129,15 +127,14 @@ jobs:
 
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: ${{ matrix.miniforge-variant }}
         environment-file: ${{ matrix.environment-file }}
         condarc-file: .github/condarc.yml
-        use-mamba: true
+        # use-mamba: true
 
     - name: Verify Python environment
       shell: bash -l {0}
       run: |
-        mamba list
+        conda list
         python --version
 
     - name: Install dependencies

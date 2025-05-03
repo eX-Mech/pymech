@@ -238,7 +238,7 @@ class HexaData:
         self.nbc = nbc
         self.var = var
         self.lr1 = lr1
-        self.time = 0.
+        self.time = 0.0
         self.istep = 0
         self.wdsz = 8
         self.endian = sys.byteorder

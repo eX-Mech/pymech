@@ -672,7 +672,7 @@ def test_readdns(test_data_dir):
     field = ss.readdns(fname)
 
     assert field.endian == "little"
-    assert field.istep == []
+    assert field.istep == 0
     assert field.lr1 == [48, 65, 48]
     assert field.ndim == 3
     assert field.nel == 1

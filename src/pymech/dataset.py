@@ -3,6 +3,7 @@ from functools import partial
 from pathlib import Path
 
 import numpy as np
+import uxarray as uxr
 import xarray as xr
 from xarray.core.utils import Frozen
 
@@ -99,6 +100,54 @@ def _open_nek_dataset(path, drop_variables=None):
     return ds
 
 
+def extract_elem_data(elem_array):
+    # Use lists to accumulate data
+    x_list, y_list, z_list = [], [], []
+    ux_list, uy_list, uz_list, p_list = [], [], [], []
+
+    # Loop through the elements in the array
+    for elem in elem_array:
+        # Append data to respective lists
+        x_list.append(np.ravel(elem.pos[0]))
+        y_list.append(np.ravel(elem.pos[1]))
+        z_list.append(np.ravel(elem.pos[2]))
+
+        ux_list.append(np.ravel(elem.vel[0]))
+        uy_list.append(np.ravel(elem.vel[1]))
+        uz_list.append(np.ravel(elem.vel[2]))
+
+        p_list.append(np.ravel(elem.pres))
+
+    # Convert lists to NumPy arrays after the loop
+    x = np.concatenate(x_list)
+    y = np.concatenate(y_list)
+    z = np.concatenate(z_list)
+    ux = np.concatenate(ux_list)
+    uy = np.concatenate(uy_list)
+    uz = np.concatenate(uz_list)
+    p = np.concatenate(p_list)
+
+    # Create an xarray dataset
+    data = xr.Dataset(
+        {
+            "ux": (["points"], ux),
+            "uy": (["points"], uy),
+            "uz": (["points"], uz),  # Correctly assign uz
+            "p": (["points"], p),  # Correctly assign p
+        },
+        coords={
+            "x": (["points"], x),
+            "y": (["points"], y),
+            "z": (["points"], z),
+        },
+    )
+
+    # Wrap the xarray dataset in a uxarray grid (optional)
+    ux_ds = uxr.Grid.from_dataset(data)
+
+    return ux_ds
+
+
 class PymechXarrayBackend(xr.backends.BackendEntrypoint):
     def guess_can_open(self, filename_or_obj):
         return can_open_nek_dataset(filename_or_obj)
@@ -184,3 +233,35 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
             )
 
         return Frozen(data_vars)
+
+
+def open_unstruc_dataset(path):
+
+    # Proposed Methodology
+    # Step 1: Use readnek to import the data
+    # Step 2: Create an array of nodes, elements, and fields
+    # Step 3: Create a grid and xarray dataset from the data array
+    # Step 4: Create a uxarray dataset and return it
+
+    field = readnek(path)
+    if isinstance(field, int):
+        raise OSError(f"Failed to load {path}")
+
+    elements = field.elem
+
+    # Method 1 : adapt the existing method used for xarray
+
+    # elem_stores = [_NekDataStore(elem) for elem in elements]
+    #
+    # try:
+    #     elem_dsets = [
+    #         uxr.UxDataset.load_store(store).set_coords(store.axes) for store in elem_stores
+    #     ]
+    # except Exception as error:
+    #     print("uxarray failure")
+    #     print(error)
+    #     print(elem_stores[0].axes)
+
+    # Method 2 : manually create array of x, y, z and variables and use it to
+    # make a uxarray dataset
+    ds = extract_elem_data(elements)

@@ -2,6 +2,7 @@
 
 import copy
 import itertools
+import sys
 from functools import partial, reduce
 from itertools import product
 from textwrap import dedent, indent
@@ -233,14 +234,14 @@ class HexaData:
     def __init__(self, ndim, nel, lr1, var, nbc=0, dtype="float64"):
         self.ndim = ndim
         self.nel = nel
-        self.ncurv = []
+        self.ncurv = 0
         self.nbc = nbc
         self.var = var
         self.lr1 = lr1
-        self.time = []
-        self.istep = []
-        self.wdsz = []
-        self.endian = []
+        self.time = 0.0
+        self.istep = 0
+        self.wdsz = 8
+        self.endian = sys.byteorder
         if isinstance(dtype, type):
             # For example np.float64 -> "float64"
             dtype = dtype.__name__

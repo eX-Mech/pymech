@@ -19,21 +19,21 @@ jobs:
     strategy:
       max-parallel: 8
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13-dev']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.13t']
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: recursive
 
     # NOTE: pdm caching unsupported
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         cache: "pip"
-        cache-dependency-path: "pdm.lock"
+        cache-dependency-path: "pylock.toml"
 
     - name: Install dependencies
       run: |
@@ -43,7 +43,7 @@ jobs:
     - name: Run tests
       run: |
         nox --session tests-cov -- -v --cov-report=xml
-        nox --session tests-cov-vtk --no-error-on-missing-interpreters -- -v --cov-report=xml
+        # nox --session tests-cov-vtk --no-error-on-missing-interpreters -- -v --cov-report=xml
 
     - name: Run mypy
       run: |
@@ -57,40 +57,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy:
-    needs: [tests, tests-miniforge, docs]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.9"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip nox nox-pdm pdm
-
-    - name: Package
-      run: nox --session release-build
-
-    - name: Publish package
-      if: |
-        (
-          ( github.event_name == 'release' && github.event.action == 'published' ) ||
-          ( github.event_name == 'push' && startsWith(github.ref, 'refs/tags') )
-        )
-      env:
-        TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
-      run: nox --session release-upload -- --repository testpypi
-
   tests-miniforge:
     name: test (${{ matrix.os }}, ${{ matrix.miniforge-variant }})
     runs-on: ${{ matrix.os }}-latest
@@ -98,22 +64,21 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          # "ubuntu",
+          "ubuntu",
           "macos",
           "windows"
          ]
         include:
-          # - os: ubuntu
-          #   environment-file: .github/environment_pypy.yml
-          #   miniforge-variant: Mambaforge-pypy3
+          - os: ubuntu
+            environment-file: .github/environment.yml
+            # environment-file: .github/environment_pypy.yml
+            # miniforge-variant: Mambaforge-pypy3
           - os: macos
             environment-file: .github/environment.yml
-            miniforge-variant: Mambaforge
           - os: windows
             environment-file: .github/environment.yml
-            miniforge-variant: Mambaforge
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: recursive
 
@@ -129,15 +94,14 @@ jobs:
 
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: ${{ matrix.miniforge-variant }}
         environment-file: ${{ matrix.environment-file }}
         condarc-file: .github/condarc.yml
-        use-mamba: true
+        # use-mamba: true
 
     - name: Verify Python environment
       shell: bash -l {0}
       run: |
-        mamba list
+        conda list
         python --version
 
     - name: Install dependencies
@@ -158,7 +122,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: recursive
         fetch-depth: 0
@@ -169,9 +133,9 @@ jobs:
       run: git fetch origin $GITHUB_BASE_REF:main $GITHUB_REF:pr
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
-        python-version: "3.9"
+        python-version: "3.10"
         cache: "pip"
         cache-dependency-path: "requirements/docs.txt"
 
@@ -188,3 +152,38 @@ jobs:
     - name: Build docs
       run: |
         nox --session docs -- -W
+
+  deploy:
+    needs: [tests, tests-miniforge, docs]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip nox nox-pdm pdm
+
+    - name: Package
+      run: nox --session release-build
+
+    - name: Publish package
+      if: |
+        (
+          ( github.event_name == 'release' && github.event.action == 'published' ) ||
+          ( github.event_name == 'push' && startsWith(github.ref, 'refs/tags') )
+        )
+      env:
+        TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+      run: nox --session release-upload -- --repository testpypi
+

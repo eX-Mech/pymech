@@ -50,7 +50,7 @@ def tests(session):
     )
 
 
-@session(name="tests-cov-vtk", python=["3.9", "3.10"])
+@session(name="tests-cov-vtk", python=["3.9", "3.10", "3.11", "3.12"])
 def tests_cov_vtk(session):
     """Execute unit-tests using pytest+pytest-cov+VTK dependencies"""
     session.install(".[tests,vtk]")
@@ -189,7 +189,7 @@ def download_testpypi(session, dist_type):
     session.chdir("./dist")
 
     git_tags = session.run(
-        "git", "tag", "--list", "--sort=committerdate", external=True, silent=True
+        "git", "tag", "--list", "--sort=taggerdate", external=True, silent=True
     )
     latest_version = git_tags.splitlines()[-1]
     spec = f"{PACKAGE}=={latest_version}"

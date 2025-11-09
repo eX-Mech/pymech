@@ -1,8 +1,10 @@
+import enum
 import re
 from functools import partial
 from pathlib import Path
 
 import numpy as np
+import uxarray as uxr
 import xarray as xr
 from xarray.core.utils import Frozen
 
@@ -43,10 +45,10 @@ def open_dataset(path, **kwargs):
     Parameters
     ----------
     path : str
-            Path to a field file (only Nek files are supported at the moment.)
+        Path to a field file (only Nek files are supported at the moment.)
 
     kwargs : dict
-            Keyword arguments passed on to the compatible open function.
+        Keyword arguments passed on to the compatible open function.
 
     """
     if can_open_nek_dataset(path):
@@ -65,15 +67,42 @@ open_mfdataset.__doc__ = """Helper function for opening multiple files as an
 parameters."""
 
 
-def _open_nek_dataset(path, drop_variables=None):
+class MeshType(enum.Enum):
+    CARTESIAN = enum.auto()
+    UNSTRUCT = enum.auto()
+
+
+def _open_nek_dataset(
+    path: str | Path, drop_variables=None, mesh_type: str = "CARTESIAN"
+):
     """Interface for converting Nek field files into xarray_ datasets.
+
+    Parameters
+    ----------
+    path : str
+        Path to a Nek field file.
+
+    drop_variables: str or collection of str
+        Names of data variables to drop.
+
+        See: https://docs.xarray.dev/en/stable/generated/xarray.Dataset.drop_vars.html#xarray.Dataset.drop_vars
+
+    mesh_type: str
+
 
     .. _xarray: https://docs.xarray.dev/en/stable/
     """
-    field = readnek(path)
-    if isinstance(field, int):
-        raise OSError(f"Failed to load {path}")
+    known_mesh_type = getattr(MeshType, mesh_type.upper())
+    if known_mesh_type == MeshType.CARTESIAN:
+        return _open_nek_dataset_struct(path, drop_variables)
+    elif known_mesh_type == MeshType.UNSTRUCT:
+        return _open_nek_dataset_unstruct(path)
+    else:
+        raise ValueError("Unknown mesh type.")
 
+
+def _open_nek_dataset_struct(path, drop_variables):
+    field = readnek(path)
     elements = field.elem
     elem_stores = [_NekDataStore(elem) for elem in elements]
     try:
@@ -97,6 +126,54 @@ def _open_nek_dataset(path, drop_variables=None):
         ds = ds.drop_vars(drop_variables)
 
     return ds
+
+
+def extract_elem_data(elem_array):
+    # Use lists to accumulate data
+    x_list, y_list, z_list = [], [], []
+    ux_list, uy_list, uz_list, p_list = [], [], [], []
+
+    # Loop through the elements in the array
+    for elem in elem_array:
+        # Append data to respective lists
+        x_list.append(np.ravel(elem.pos[0]))
+        y_list.append(np.ravel(elem.pos[1]))
+        z_list.append(np.ravel(elem.pos[2]))
+
+        ux_list.append(np.ravel(elem.vel[0]))
+        uy_list.append(np.ravel(elem.vel[1]))
+        uz_list.append(np.ravel(elem.vel[2]))
+
+        p_list.append(np.ravel(elem.pres))
+
+    # Convert lists to NumPy arrays after the loop
+    x = np.concatenate(x_list)
+    y = np.concatenate(y_list)
+    z = np.concatenate(z_list)
+    ux = np.concatenate(ux_list)
+    uy = np.concatenate(uy_list)
+    uz = np.concatenate(uz_list)
+    p = np.concatenate(p_list)
+
+    # Create an xarray dataset
+    data = xr.Dataset(
+        {
+            "ux": (["points"], ux),
+            "uy": (["points"], uy),
+            "uz": (["points"], uz),  # Correctly assign uz
+            "p": (["points"], p),  # Correctly assign p
+        },
+        coords={
+            "x": (["points"], x),
+            "y": (["points"], y),
+            "z": (["points"], z),
+        },
+    )
+
+    # Wrap the xarray dataset in a uxarray grid (optional)
+    ux_ds = uxr.Grid.from_dataset(data)
+
+    return ux_ds
 
 
 class PymechXarrayBackend(xr.backends.BackendEntrypoint):
@@ -184,3 +261,34 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
             )
 
         return Frozen(data_vars)
+
+
+def _open_nek_dataset_unstruct(path):
+    # Proposed Methodology
+    # Step 1: Use readnek to import the data
+    # Step 2: Create an array of nodes, elements, and fields
+    # Step 3: Create a grid and xarray dataset from the data array
+    # Step 4: Create a uxarray dataset and return it
+
+    field = readnek(path)
+    if isinstance(field, int):
+        raise OSError(f"Failed to load {path}")
+
+    elements = field.elem
+
+    # Method 1 : adapt the existing method used for xarray
+
+    # elem_stores = [_NekDataStore(elem) for elem in elements]
+    #
+    # try:
+    #     elem_dsets = [
+    #         uxr.UxDataset.load_store(store).set_coords(store.axes) for store in elem_stores
+    #     ]
+    # except Exception as error:
+    #     print("uxarray failure")
+    #     print(error)
+    #     print(elem_stores[0].axes)
+
+    # Method 2 : manually create array of x, y, z and variables and use it to
+    # make a uxarray dataset
+    ds = extract_elem_data(elements)

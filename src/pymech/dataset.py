@@ -1,3 +1,4 @@
+import enum
 import re
 from functools import partial
 from pathlib import Path
@@ -44,10 +45,10 @@ def open_dataset(path, **kwargs):
     Parameters
     ----------
     path : str
-            Path to a field file (only Nek files are supported at the moment.)
+        Path to a field file (only Nek files are supported at the moment.)
 
     kwargs : dict
-            Keyword arguments passed on to the compatible open function.
+        Keyword arguments passed on to the compatible open function.
 
     """
     if can_open_nek_dataset(path):
@@ -66,15 +67,42 @@ open_mfdataset.__doc__ = """Helper function for opening multiple files as an
 parameters."""
 
 
-def _open_nek_dataset(path, drop_variables=None):
+class MeshType(enum.Enum):
+    CARTESIAN = enum.auto()
+    UNSTRUCT = enum.auto()
+
+
+def _open_nek_dataset(
+    path: str | Path, drop_variables=None, mesh_type: str = "CARTESIAN"
+):
     """Interface for converting Nek field files into xarray_ datasets.
+
+    Parameters
+    ----------
+    path : str
+        Path to a Nek field file.
+
+    drop_variables: str or collection of str
+        Names of data variables to drop.
+
+        See: https://docs.xarray.dev/en/stable/generated/xarray.Dataset.drop_vars.html#xarray.Dataset.drop_vars
+
+    mesh_type: str
+
 
     .. _xarray: https://docs.xarray.dev/en/stable/
     """
-    field = readnek(path)
-    if isinstance(field, int):
-        raise OSError(f"Failed to load {path}")
+    known_mesh_type = getattr(MeshType, mesh_type.upper())
+    if known_mesh_type == MeshType.CARTESIAN:
+        return _open_nek_dataset_struct(path, drop_variables)
+    elif known_mesh_type == MeshType.UNSTRUCT:
+        return _open_nek_dataset_unstruct(path)
+    else:
+        raise ValueError("Unknown mesh type.")
 
+
+def _open_nek_dataset_struct(path, drop_variables):
+    field = readnek(path)
     elements = field.elem
     elem_stores = [_NekDataStore(elem) for elem in elements]
     try:
@@ -235,8 +263,7 @@ class _NekDataStore(xr.backends.common.AbstractDataStore):
         return Frozen(data_vars)
 
 
-def open_unstruc_dataset(path):
-
+def _open_nek_dataset_unstruct(path):
     # Proposed Methodology
     # Step 1: Use readnek to import the data
     # Step 2: Create an array of nodes, elements, and fields

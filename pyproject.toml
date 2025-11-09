@@ -45,6 +45,8 @@ vtk = [
 full = [
     "pymech[opt,vtk]"
 ]
+
+[dependency-groups]
 docs = [
     "asv >= 0.5.1",
     "furo",

@@ -27,5 +27,12 @@ def test_writevtk(downsample, test_data_dir, tmpdir):
     out_fname = Path(tmpdir / in_fname.name)
     field = readnek(in_fname)
 
-    writevtk(out_fname, field)
+    import traits
+
+    try:
+        writevtk(out_fname, field)
+    except traits.trait_errors.TraitError:
+        pytest.xfail(
+            reason="Known issue with changes in tvtk. See https://github.com/eX-Mech/pymech/issues/142"
+        )
     assert out_fname.with_suffix(".vtp").exists()

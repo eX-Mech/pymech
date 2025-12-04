@@ -51,15 +51,15 @@ class TestPyVistaBackend:
 
     def test_hexa_to_pyvista_linear_3d(self, test_data_dir):
         """Test conversion of 3D mesh with linear resolution."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import hexa_to_pyvista
 
         # Load test data
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
         mesh = hexa_to_pyvista(field, resolution="linear", include_fields=False)
 
         assert isinstance(mesh, pv.UnstructuredGrid)
@@ -70,17 +70,17 @@ class TestPyVistaBackend:
 
     def test_hexa_to_pyvista_linear_2d(self, test_data_dir):
         """Test conversion of 2D mesh."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import hexa_to_pyvista
 
         # Try to find a 2D test file
-        test_files_2d = ["cbox0.fld", "2d_test.f00001"]
+        test_files_2d = ["box2d.re2", "2D_section_R360.re2"]
         field = None
         for fname in test_files_2d:
             test_file = test_data_dir / "nek" / fname
             if test_file.exists():
                 try:
-                    field = readnek(str(test_file))
+                    field = readre2(str(test_file))
                     if field.ndim == 2:
                         break
                 except Exception:
@@ -96,14 +96,14 @@ class TestPyVistaBackend:
 
     def test_hexa_to_pyvista_spectral(self, test_data_dir):
         """Test conversion with spectral resolution."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import hexa_to_pyvista
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
         mesh = hexa_to_pyvista(field, resolution="spectral", include_fields=False)
 
         lx, ly, lz = field.lr1
@@ -112,14 +112,14 @@ class TestPyVistaBackend:
 
     def test_include_fields(self, test_data_dir):
         """Test that velocity/pressure fields are included."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import hexa_to_pyvista
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
         mesh = hexa_to_pyvista(field, resolution="linear", include_fields=True)
 
         # Check velocity field
@@ -138,14 +138,14 @@ class TestPyVistaBackend:
 
     def test_add_boundary_conditions(self, test_data_dir):
         """Test BC extraction and coloring."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import hexa_to_pyvista, add_boundary_conditions
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
         mesh = hexa_to_pyvista(field, resolution="linear", include_fields=False)
         surface = add_boundary_conditions(mesh, field, bc_field=0)
 
@@ -159,14 +159,14 @@ class TestPyVistaBackend:
         """Test plot_mesh in headless mode (screenshot only)."""
         pv.OFF_SCREEN = True  # Enable headless rendering
 
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import plot_mesh
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
         screenshot_path = tmp_path / f"test_{resolution}.png"
 
         try:
@@ -191,14 +191,14 @@ class TestPyVistaBackend:
         """Test that return_plotter works."""
         pv.OFF_SCREEN = True
 
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import plot_mesh
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
 
         try:
             plotter = plot_mesh(field, backend='pyvista', return_plotter=True)
@@ -211,14 +211,14 @@ class TestPyVistaBackend:
 
     def test_invalid_resolution(self, test_data_dir):
         """Test that invalid resolution raises ValueError."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import hexa_to_pyvista
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
 
         with pytest.raises(ValueError, match="resolution must be"):
             hexa_to_pyvista(field, resolution="invalid")
@@ -230,14 +230,14 @@ class TestMatplotlibBackend:
 
     def test_plot_mesh_matplotlib(self, test_data_dir, tmp_path):
         """Test plot_mesh with Matplotlib backend."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import plot_mesh
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
         screenshot_path = tmp_path / "test_matplotlib.png"
 
         fig = plot_mesh(
@@ -255,14 +255,14 @@ class TestMatplotlibBackend:
 
     def test_plot_mesh_matplotlib_views(self, test_data_dir):
         """Test different camera views with Matplotlib."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import plot_mesh
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
 
         for view in ['xy', 'xz', 'yz']:
             fig = plot_mesh(
@@ -281,14 +281,14 @@ class TestBackendSelection:
 
     def test_auto_backend_selection(self, test_data_dir):
         """Test that 'auto' backend selects appropriately."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import plot_mesh
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
 
         # 'auto' should work if at least one backend is available
         if PYVISTA_AVAILABLE or MATPLOTLIB_AVAILABLE:
@@ -317,14 +317,14 @@ class TestBackendSelection:
 
     def test_invalid_backend(self, test_data_dir):
         """Test that invalid backend raises ValueError."""
-        from pymech import readnek
+        from pymech import readre2
         from pymech.viz import plot_mesh
 
-        test_file = test_data_dir / "nek" / "channel3D_0.f00001"
+        test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
             pytest.skip(f"Test file not found: {test_file}")
 
-        field = readnek(str(test_file))
+        field = readre2(str(test_file))
 
         with pytest.raises(ValueError, match="Invalid backend"):
             plot_mesh(field, backend='invalid')

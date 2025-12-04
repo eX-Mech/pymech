@@ -87,6 +87,7 @@ interpreter of your choice:
    neksuite.rst
    simsonsuite.rst
    vtksuite.rst
+   pyvista_backend.rst
    dataset.rst
    meshtools.rst
    usage.myst.md

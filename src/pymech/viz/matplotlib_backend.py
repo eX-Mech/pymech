@@ -84,6 +84,11 @@ class MatplotlibBackend:
                 "    pip install matplotlib"
             )
 
+        # Filter out PyVista-specific kwargs that matplotlib doesn't understand
+        matplotlib_kwargs = kwargs.copy()
+        for key in ['jupyter_backend', 'window_size', 'notebook', 'off_screen']:
+            matplotlib_kwargs.pop(key, None)
+
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(111, projection='3d')
 
@@ -119,7 +124,7 @@ class MatplotlibBackend:
                     [p1[2], p2[2]],
                     color=edge_color,
                     linewidth=0.5,
-                    **kwargs
+                    **matplotlib_kwargs
                 )
 
         # Set labels

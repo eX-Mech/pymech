@@ -1,13 +1,13 @@
-.. _pyvista_backend:
+.. _viz:
 
-pymech.pyvista_backend
-======================
+pymech.viz
+==========
 
 3D mesh visualization using PyVista or Matplotlib backends.
 
 .. warning::
 
-   This module requires visualization libraries. Install with::
+   This subpackage requires visualization libraries. Install with::
 
        pip install pymech[plot]
 
@@ -16,7 +16,7 @@ pymech.pyvista_backend
 Overview
 --------
 
-The ``pyvista_backend`` module provides modern mesh visualization capabilities with two backends:
+The ``pymech.viz`` subpackage provides modern mesh visualization capabilities with two backends:
 
 - **PyVista** (recommended): Interactive 3D visualization optimized for Jupyter notebooks
 - **Matplotlib**: Publication-quality figures and simple 3D plots
@@ -24,12 +24,18 @@ The ``pyvista_backend`` module provides modern mesh visualization capabilities w
 Architecture
 ~~~~~~~~~~~~
 
-The visualization system uses a modular, protocol-based architecture:
+The visualization system uses a modular, protocol-based architecture within the ``pymech.viz`` subpackage:
 
-- ``pymech.viz_protocol``: Defines the ``MeshBackend`` Protocol interface
-- ``pymech.pyvista_backend_impl``: PyVista-specific implementation
-- ``pymech.matplotlib_backend``: Matplotlib-specific implementation
-- ``pymech.pyvista_backend``: Unified API and backend selection
+- ``pymech.viz.viz_protocol``: Defines the ``MeshBackend`` Protocol interface
+- ``pymech.viz.pyvista_backend_impl``: PyVista-specific implementation
+- ``pymech.viz.matplotlib_backend``: Matplotlib-specific implementation
+- ``pymech.viz.pyvista_backend``: Backend dispatcher module
+
+The subpackage exports a unified API through ``pymech.viz``:
+
+- Main functions: ``plot_mesh()``, ``get_available_backends()``
+- PyVista utilities: ``hexa_to_pyvista()``, ``add_boundary_conditions()``
+- Protocol and constants: ``MeshBackend``, ``DEFAULT_BC_COLORS``
 
 Backends implement the ``MeshBackend`` protocol using ``typing.Protocol`` and
 ``runtime_checkable``, ensuring consistent interfaces across different rendering engines.
@@ -45,7 +51,7 @@ PyVista Backend (Interactive 3D)
 .. code-block:: python
 
     import pymech as pm
-    from pymech.pyvista_backend import plot_mesh
+    from pymech.viz import plot_mesh
 
     # Load mesh
     field = pm.readnek("channel3D_0.f00001")
@@ -70,7 +76,7 @@ PyVista automatically detects Jupyter environments and uses interactive backends
 .. code-block:: python
 
     # In Jupyter notebook - automatically interactive
-    from pymech.pyvista_backend import plot_mesh
+    from pymech.viz import plot_mesh
 
     field = pm.readnek("mesh.nek5000")
     plot_mesh(field, jupyter_backend="trame")
@@ -132,7 +138,7 @@ Visualize velocity, pressure, or temperature fields:
 
 .. code-block:: python
 
-    from pymech.pyvista_backend import hexa_to_pyvista
+    from pymech.viz import hexa_to_pyvista
     import pyvista as pv
 
     # Convert mesh with field data
@@ -204,28 +210,28 @@ API Reference
 Main Function
 ~~~~~~~~~~~~~
 
-.. autofunction:: pymech.pyvista_backend.plot_mesh
+.. autofunction:: pymech.viz.plot_mesh
    :noindex:
 
 Backend Discovery
 ~~~~~~~~~~~~~~~~~
 
-.. autofunction:: pymech.pyvista_backend.get_available_backends
+.. autofunction:: pymech.viz.get_available_backends
    :noindex:
 
 Conversion Functions (PyVista)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: pymech.pyvista_backend.hexa_to_pyvista
+.. autofunction:: pymech.viz.hexa_to_pyvista
    :noindex:
 
-.. autofunction:: pymech.pyvista_backend.add_boundary_conditions
+.. autofunction:: pymech.viz.add_boundary_conditions
    :noindex:
 
 Complete API
 ~~~~~~~~~~~~
 
-.. automodule:: pymech.pyvista_backend
+.. automodule:: pymech.viz
    :members:
    :undoc-members:
    :show-inheritance:
@@ -238,7 +244,7 @@ Example 1: Check Available Backends
 
 .. code-block:: python
 
-    from pymech.pyvista_backend import get_available_backends
+    from pymech.viz import get_available_backends
 
     backends = get_available_backends()
     print(f"Available backends: {list(backends.keys())}")
@@ -254,7 +260,7 @@ Example 2: Basic Mesh Visualization
 .. code-block:: python
 
     import pymech as pm
-    from pymech.pyvista_backend import plot_mesh
+    from pymech.viz import plot_mesh
 
     field = pm.readnek("channel3D_0.f00001")
     plot_mesh(field)
@@ -273,7 +279,7 @@ Example 4: Velocity Field Coloring
 
 .. code-block:: python
 
-    from pymech.pyvista_backend import hexa_to_pyvista
+    from pymech.viz import hexa_to_pyvista
     import pyvista as pv
 
     mesh = hexa_to_pyvista(field, include_fields=True)
@@ -294,25 +300,25 @@ Comparison with meshplot
 The existing ``meshplot.py`` module provides 2D visualization with wxPython.
 Choose the appropriate tool for your use case:
 
-+-----------------------+---------------------+----------------------+
-| Feature               | meshplot (2D)       | pyvista_backend (3D) |
-+=======================+=====================+======================+
-| Dimensionality        | 2D only             | 2D and 3D            |
-+-----------------------+---------------------+----------------------+
-| Curved edges          | Exact (parabolic)   | Linear approx.       |
-+-----------------------+---------------------+----------------------+
-| Jupyter support       | No                  | Yes (primary)        |
-+-----------------------+---------------------+----------------------+
-| Boundary conditions   | Edge colors         | Face colors          |
-+-----------------------+---------------------+----------------------+
-| Interactivity         | Zoom/pan only       | Full 3D rotation     |
-+-----------------------+---------------------+----------------------+
-| Dependencies          | wxPython, OpenGL    | PyVista or Matplotlib|
-+-----------------------+---------------------+----------------------+
++-----------------------+---------------------+---------------------------+
+| Feature               | meshplot (2D)       | pymech.viz (3D)           |
++=======================+=====================+===========================+
+| Dimensionality        | 2D only             | 2D and 3D                 |
++-----------------------+---------------------+---------------------------+
+| Curved edges          | Exact (parabolic)   | Linear approx.            |
++-----------------------+---------------------+---------------------------+
+| Jupyter support       | No                  | Yes (primary)             |
++-----------------------+---------------------+---------------------------+
+| Boundary conditions   | Edge colors         | Face colors               |
++-----------------------+---------------------+---------------------------+
+| Interactivity         | Zoom/pan only       | Full 3D rotation          |
++-----------------------+---------------------+---------------------------+
+| Dependencies          | wxPython, OpenGL    | PyVista or Matplotlib     |
++-----------------------+---------------------+---------------------------+
 
 **Use ``meshplot``** for detailed 2D edge inspection with exact curved geometry.
 
-**Use ``pyvista_backend``** for 3D exploration, Jupyter workflows, and publication figures.
+**Use ``pymech.viz``** for 3D exploration, Jupyter workflows, and publication figures.
 
 Troubleshooting
 ---------------

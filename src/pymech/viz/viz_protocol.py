@@ -8,7 +8,7 @@ from typing import Protocol, Optional, Tuple, Any, Literal, runtime_checkable
 from typing_extensions import TypeAlias
 import numpy as np
 
-from .core import HexaData
+from ..core import HexaData
 
 # Type aliases
 Resolution: TypeAlias = Literal["linear", "spectral"]

@@ -26,8 +26,8 @@ Auto-select best available backend:
 from typing import Optional, Tuple, Any, Literal
 import warnings
 
-from .core import HexaData
-from .log import logger
+from ..core import HexaData
+from ..log import logger
 from .viz_protocol import MeshBackend, DEFAULT_BC_COLORS
 
 # Import backend implementations

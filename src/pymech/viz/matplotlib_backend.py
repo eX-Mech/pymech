@@ -7,8 +7,8 @@ static figures and basic 3D plots.
 from typing import Optional, Tuple, Any
 import numpy as np
 
-from .core import HexaData
-from .log import logger
+from ..core import HexaData
+from ..log import logger
 from .viz_protocol import (
     MeshBackend,
     DEFAULT_BC_COLORS,

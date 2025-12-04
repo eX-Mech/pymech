@@ -7,8 +7,8 @@ interactive 3D rendering in Jupyter notebooks.
 from typing import Optional, Tuple, Any
 import numpy as np
 
-from .core import HexaData, Elem
-from .log import logger
+from ..core import HexaData, Elem
+from ..log import logger
 from .viz_protocol import (
     MeshBackend,
     DEFAULT_BC_COLORS,

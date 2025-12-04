@@ -344,7 +344,7 @@ def test_import_without_backends():
 
 def test_bc_colors():
     """Test that BC color scheme is defined."""
-    from pymech.viz_protocol import DEFAULT_BC_COLORS
+    from pymech.viz import DEFAULT_BC_COLORS
 
     # Check that important BC types are defined
     assert "" in DEFAULT_BC_COLORS
@@ -366,8 +366,8 @@ class TestProtocolCompliance:
     @pytest.mark.skipif(not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available")
     def test_pyvista_backend_protocol(self):
         """Test PyVista backend implements MeshBackend protocol."""
-        from pymech.pyvista_backend_impl import PyVistaBackend
-        from pymech.viz_protocol import MeshBackend
+        from pymech.viz.pyvista_backend_impl import PyVistaBackend
+        from pymech.viz import MeshBackend
 
         backend = PyVistaBackend()
 
@@ -391,8 +391,8 @@ class TestProtocolCompliance:
     @pytest.mark.skipif(not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available")
     def test_matplotlib_backend_protocol(self):
         """Test Matplotlib backend implements MeshBackend protocol."""
-        from pymech.matplotlib_backend import MatplotlibBackend
-        from pymech.viz_protocol import MeshBackend
+        from pymech.viz.matplotlib_backend import MatplotlibBackend
+        from pymech.viz import MeshBackend
 
         backend = MatplotlibBackend()
 

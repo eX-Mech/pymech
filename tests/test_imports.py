@@ -1,5 +1,5 @@
-from types import FunctionType
 from functools import partial
+from types import FunctionType
 
 
 def test_top_level():

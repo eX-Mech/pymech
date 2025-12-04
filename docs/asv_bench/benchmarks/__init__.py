@@ -2,7 +2,6 @@
 # See "Writing benchmarks" in the asv docs for more information.
 from pathlib import Path
 
-
 test_data = Path(__file__).parent.parent.parent.parent / "tests" / "data"
 
 

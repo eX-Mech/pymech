@@ -4,6 +4,7 @@ import struct
 import sys
 
 import numpy as np
+
 from pymech.core import HexaData
 from pymech.log import logger
 
@@ -17,11 +18,7 @@ def readrea(fname):
             file name
     """
     #
-    try:
-        infile = open(fname)
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        # return -1
+    infile = open(fname)
     #
     # ---------------------------------------------------------------------------
     # count the number of boundary conditions
@@ -185,7 +182,6 @@ def readrea(fname):
                     data.elem[iel].bcs[ibc, iface][0] = ""
                     for j in range(1, 8):
                         data.elem[iel].bcs[ibc, iface][j] = 0
-        ibc = ibc + 1
     #
     # ---------------------------------------------------------------------------
     # FORGET ABOUT WHAT FOLLOWS
@@ -211,11 +207,7 @@ def writerea(fname, data):
             data structure
     """
     #
-    try:
-        outfile = open(fname, "w")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        # return -1
+    outfile = open(fname, "w")
     #
     # ---------------------------------------------------------------------------
     # READ HEADER (2 lines) + ndim + number of parameters
@@ -615,11 +607,7 @@ def readre2(fname):
             file name
     """
     #
-    try:
-        infile = open(fname, "rb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    infile = open(fname, "rb")
     # the header for re2 files is 80 ASCII bytes, something like
     # #v002    18669  2    18669 this is the hdr                                      %
     header = infile.read(80).split()
@@ -644,8 +632,8 @@ def readre2(fname):
         emode = ">"
         endian = "big"
     else:
-        logger.error("Could not interpret endianness")
-        return -3
+        raise ValueError("Could not interpret endianness")
+
     #
     # there are no GLL points here, only quad/hex vertices
     lr1 = [2, 2, ndim - 1]
@@ -664,7 +652,7 @@ def readre2(fname):
     # This is the reason for the +1 here, then the first number is ignored.
     buf = infile.read((ndim * npel + 1) * wdsz * nel)
     # elem_shape = [ndim, ndim-1, 2, 2]  # nvar, lz, ly, lx
-    for (iel, el) in enumerate(data.elem):
+    for iel, el in enumerate(data.elem):
         fi = np.frombuffer(
             buf,
             dtype=emode + realtype,
@@ -775,27 +763,21 @@ def writere2(fname, data):
     #
     # We could extract the corners, but for now just return an error if lr1 is too large
     if data.lr1 != [2, 2, data.ndim - 1]:
-        logger.critical(
+        raise ValueError(
             "wrong element dimensions for re2 file! {} != {}".format(
                 data.lr1, [2, 2, data.ndim - 1]
             )
         )
-        return -2
     #
     if data.var[0] != data.ndim:
-        logger.critical(
+        raise ValueError(
             "wrong number of geometric variables for re2 file! expected {}, found {}".format(
                 data.ndim, data.var[0]
             )
         )
-        return -3
     #
     # Open file
-    try:
-        outfile = open(fname, "wb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    outfile = open(fname, "wb")
     #
     # ---------------------------------------------------------------------------
     # WRITE HEADER
@@ -869,7 +851,7 @@ def writere2(fname, data):
     # write curve sides data
     # locate curved edges
     curved_edges = []
-    for (iel, el) in enumerate(data.elem):
+    for iel, el in enumerate(data.elem):
         for iedge in range(12):
             if el.ccurv[iedge] != "":
                 curved_edges.append((iel, iedge))
@@ -883,7 +865,7 @@ def writere2(fname, data):
     write_data_to_file(ncurvf)
     # format curve data
     cdata = np.zeros((ncurv,), dtype="f8, f8, f8, f8, f8, f8, f8, S8")
-    for (cdat, (iel, iedge)) in zip(cdata, curved_edges):
+    for cdat, (iel, iedge) in zip(cdata, curved_edges):
         el = data.elem[iel]
         cdat[0] = iel + 1
         cdat[1] = iedge + 1
@@ -899,7 +881,7 @@ def writere2(fname, data):
     for ifield in range(data.nbc):
         # locate faces with boundary conditions
         bc_faces = []
-        for (iel, el) in enumerate(data.elem):
+        for iel, el in enumerate(data.elem):
             for iface in range(2 * ndim):
                 bctype = el.bcs[ifield, iface][0]
                 # internal boundary conditions are not written to .re2 files by reatore2
@@ -911,7 +893,7 @@ def writere2(fname, data):
         write_data_to_file(nbcsf)
         # initialize and format data
         bcdata = np.zeros((nbcs,), dtype="f8, f8, f8, f8, f8, f8, f8, S8")
-        for (bc, (iel, iface)) in zip(bcdata, bc_faces):
+        for bc, (iel, iface) in zip(bcdata, bc_faces):
             el = data.elem[iel]
             bc[0] = iel + 1
             bc[1] = iface + 1

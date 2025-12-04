@@ -13,23 +13,17 @@
 import os
 import sys
 from datetime import date
-
-try:
-    from importlib import metadata
-except ImportError:
-    # Running on pre-3.8 Python; use importlib-metadata package
-    import importlib_metadata as metadata
-
+from importlib.metadata import metadata
 
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
 project = "pymech"
-_meta = metadata.metadata(project)
+_meta = metadata(project)
 _today = date.today()
 
-author = _meta.get("Author")
+author = _meta.get("Author", "eX-Mech Developers")
 copyright = f"2016-{_today.year}"  # ", {author}"
 master_doc = "index"
 
@@ -52,6 +46,9 @@ rst_prolog = f"""
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    # for ipython3 Pygments lexer
+    # https://nbsphinx.readthedocs.io/en/0.9.1/installation.html#Pygments-Lexer-for-Syntax-Highlighting # noqa
+    "IPython.sphinxext.ipython_console_highlighting",
     "myst_nb",
     "sphinx.ext.autodoc",
     # 'sphinx.ext.autosummary',

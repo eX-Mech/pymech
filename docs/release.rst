@@ -5,7 +5,6 @@ Via GitHub Actions
 ------------------
 
 - Update :doc:`changelog` with version comparison links and detailed description
-- Update version and date in ``CITATION.cff``.
 - Make a `new release`_.
 - Inspect upload in TestPyPI_.
 - Execute manual `deploy workflow`_ to download from TestPyPI_, run tests and

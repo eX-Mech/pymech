@@ -30,10 +30,44 @@ Security in case of vulnerabilities.
 
 ## [Unreleased]
 
-## [1.5.0] - 2022-11-25
+TBD
+
+## [2.0.1] - 2024-11-20
+
+Allow use of pymech with NumPy 2.x
+
+### Changed
+
+- Removed upper bound for Numpy from packaging metadata, pyproject.toml
+
+## [2.0.0] - 2024-10-09
+
+Supports Python 3.9 and above, from now on to make use of concise
+type-annotations. Constraints support for Numpy versions < 2.0.
 
 ### Added
 
+- New function {func}`pymech.meshtools.gen_box` to generate box meshes
+- New function {func}`pymech.meshtools.map2D` to apply 2D coordinate transformations to meshes
+- {mod}`pymech.meshtools` examples in the documentation
+
+### Changed
+
+- Support for multiple fields with different boundary conditions in several {mod}`pymech.meshtools` functions
+- Explicitly raises `ValueError` instead of logging with `critical` or `error`
+  levels.
+
+### Removed
+
+Previously deprecated features are now removed
+
+- Module {ref}`exadata` is removed in favour of {mod}`pymech.core`.
+  See {ref}`exadata` for more information on migrating your code.
+- Function {func}`pymech.vtksuite.exa2vtk` is removed in favour of {func}`pymech.vtksuite.hexa2vtk`.
+
+## [1.5.0] - 2022-11-25
+
+### Added
 
 - [Citeable in Zenodo](https://zenodo.org/badge/latestdoi/50511298)!
 - New extra dependency groups for install as `pip install pymech[opt]` and `pip
@@ -95,50 +129,60 @@ improvements.  This will be the last release to support Python 3.6 and Xarray <
 ## [1.4.0] - 2020-11-16
 
 ### Added
+
 - Functions `readre2` and `writere2` to read/write binary .re2 Nek5000 meshes
 
 ### Fixed
+
 - indexing bug in the boundary conditions parameters in `readrea`
 
 ### Changed
+
 - Ignore some invalid 'E' internal boundary conditions in `readrea`
   since they are written this way by re2torea and ignored by Nek5000.
-
 
 ## [1.3.3] - 2020-09-29
 
 ### Fixed
+
 - Various fixes -- including writing element map, correct order for min/max
   metadata -- in `writenek`
 
 ### Added
+
 - {meth}`pymech.core.HexaData.merge` to merge meshes together and build proper connectivity
 
 ## [1.3.2] - 2020-09-23
 
 ### Fixed
+
 - `writenek` detects system endianness and byte-swaps arrays, if needed, before
 writing
 
 ### Removed
+
 - Warnings while reading/writing scalars
 
 ## [1.3.1] - 2020-09-17
 
 ### Changed
+
 - use ndarray.tofile() for faster output
 
 ## [1.3.0.post0] - 2020-07-16
 
 ### Fixed
+
 - Packaging issue of sdist and wheel. Now uses `find_packages` instead of package name.
 
 ## [1.3.0] - 2020-07-16
 
 ### Added
+
 - Dataset module which extends xarray
 
 ### Changed
+
 - Faster `readnek` function uses less for loops
 - Lazy load {class}`pymech.core.DataLims` limits as properties
 - Autogenerate documentation using sphinx extension `autodoc`
@@ -146,12 +190,16 @@ writing
 ## [1.2.0] - 2020-03-18
 
 ### Added
+
 - License GPL v3 or later
 
 ### Changed
+
 - Miscellaneous improvements in documentation, testing and packaging
 
-[Unreleased]: https://github.com/eX-Mech/pymech/compare/1.5.0...HEAD
+[Unreleased]: https://github.com/eX-Mech/pymech/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/eX-Mech/pymech/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/eX-Mech/pymech/compare/1.5.0...2.0.0
 [1.5.0]: https://github.com/eX-Mech/pymech/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/eX-Mech/pymech/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/eX-Mech/pymech/compare/1.3.3...1.4.0

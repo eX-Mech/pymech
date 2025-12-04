@@ -1,7 +1,7 @@
 # Pymech
 
 [![PyPI](https://img.shields.io/pypi/v/pymech)](https://pypi.org/project/pymech/)
-[![Build Status](https://img.shields.io/github/workflow/status/eX-Mech/pymech/build)](https://github.com/eX-Mech/pymech/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/eX-Mech/pymech/build.yaml?branch=main)](https://github.com/eX-Mech/pymech/actions)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/eX-Mech/pymech/main.svg)](https://results.pre-commit.ci/latest/github/eX-Mech/pymech/main)
 [![Coverage Status](https://coveralls.io/repos/github/eX-Mech/pymech/badge.svg)](https://coveralls.io/github/eX-Mech/pymech)
 [![Documentation Status](https://readthedocs.org/projects/pymech/badge/?version=latest)](http://pymech.readthedocs.org/en/stable/)

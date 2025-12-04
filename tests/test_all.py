@@ -3,8 +3,8 @@ import time
 from textwrap import dedent
 
 import numpy as np
-from numpy import testing as npt
 import pytest
+from numpy import testing as npt
 
 from pymech.log import logger
 
@@ -264,8 +264,9 @@ def test_writerea(test_data_dir, tmpdir):
 
 
 def test_merge(test_data_dir):
-    import pymech.neksuite as ns
     import copy
+
+    import pymech.neksuite as ns
 
     fname = f"{test_data_dir}/nek/box3d.rea"
     mesh = ns.readrea(fname)
@@ -294,7 +295,7 @@ def test_merge(test_data_dir):
     # check if the element/faces indices in the boundary conditions are right too, even if it may not matter
     assert mesh1.nbc > 0
     for ibc in range(mesh1.nbc):
-        for (iel, el) in enumerate(mesh1.elem):
+        for iel, el in enumerate(mesh1.elem):
             for iface in range(6):
                 assert el.bcs[ibc, iface][1] == iel + 1
                 assert el.bcs[ibc, iface][2] == iface + 1
@@ -327,7 +328,7 @@ def test_readre2(test_data_dir):
     assert meshre2.var == meshrea.var
     assert meshre2.lr1 == meshrea.lr1
     assert meshre2.wdsz == 8
-    for (el, elw) in zip(meshrea.elem, meshre2.elem):
+    for el, elw in zip(meshrea.elem, meshre2.elem):
         npt.assert_allclose(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_allclose(elw.curv, el.curv)
@@ -358,7 +359,7 @@ def test_readre2_3d(test_data_dir):
     assert meshre2.var == meshrea.var
     assert meshre2.lr1 == meshrea.lr1
     assert meshre2.wdsz == 8
-    for (el, elw) in zip(meshrea.elem, meshre2.elem):
+    for el, elw in zip(meshrea.elem, meshre2.elem):
         npt.assert_allclose(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_allclose(elw.curv, el.curv)
@@ -384,7 +385,7 @@ def test_writere2(test_data_dir, tmpdir):
     assert meshw.var == mesh.var
     assert meshw.lr1 == mesh.lr1
     assert meshw.wdsz == 8
-    for (el, elw) in zip(mesh.elem, meshw.elem):
+    for el, elw in zip(mesh.elem, meshw.elem):
         npt.assert_array_equal(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_array_equal(elw.curv, el.curv)
@@ -410,7 +411,7 @@ def test_writere2_3d(test_data_dir, tmpdir):
     assert meshw.var == mesh.var
     assert meshw.lr1 == mesh.lr1
     assert meshw.wdsz == 8
-    for (el, elw) in zip(mesh.elem, meshw.elem):
+    for el, elw in zip(mesh.elem, meshw.elem):
         npt.assert_array_equal(elw.pos, el.pos)
         npt.assert_array_equal(elw.bcs, el.bcs)
         npt.assert_array_equal(elw.curv, el.curv)
@@ -418,8 +419,8 @@ def test_writere2_3d(test_data_dir, tmpdir):
 
 
 def test_generate_internal_bcs(test_data_dir):
-    import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
     # The idea is to reconstruct the internal BCs of the re2 and compare with the .rea. They should be identical.
@@ -429,14 +430,14 @@ def test_generate_internal_bcs(test_data_dir):
     meshre2 = ns.readre2(fre2)
     nconnect = mt.generate_internal_bcs(meshre2)
     assert nconnect == 54  # This is a 3x3x3 box
-    for (ela, el2) in zip(meshrea.elem, meshre2.elem):
+    for ela, el2 in zip(meshrea.elem, meshre2.elem):
         npt.assert_array_equal(el2.bcs, ela.bcs)
     assert meshre2.check_connectivity()
 
 
 def test_delete_internal_bcs(test_data_dir):
-    import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     # The rea and re2 meshes should be identical with the exception of internal boundary conditions.
     frea = f"{test_data_dir}/nek/box3d.rea"
@@ -447,14 +448,14 @@ def test_delete_internal_bcs(test_data_dir):
     assert (
         ndelete == 108
     )  # This is a 3x3x3 box, and each connection is deleted twice, one for each connected element
-    for (ela, el2) in zip(meshrea.elem, meshre2.elem):
+    for ela, el2 in zip(meshrea.elem, meshre2.elem):
         npt.assert_array_equal(el2.bcs, ela.bcs)
     assert meshrea.check_connectivity()
 
 
 def test_extrude(test_data_dir):
-    import pymech.neksuite as ns
     import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     fname = f"{test_data_dir}/nek/2D_section_R360.re2"
     nz = 4
@@ -471,9 +472,10 @@ def test_extrude(test_data_dir):
 
 
 def test_extrude_refine(test_data_dir):
-    import pymech.neksuite as ns
-    import pymech.meshtools as mt
     from itertools import product
+
+    import pymech.meshtools as mt
+    import pymech.neksuite as ns
 
     fnameI = f"{test_data_dir}/nek/box2d.re2"
     mesh2D = ns.readre2(fnameI)
@@ -482,8 +484,8 @@ def test_extrude_refine(test_data_dir):
     zmin = 0
     zmax = 6
     n = 16
-    bc1 = "P"
-    bc2 = "P"
+    bc1 = ["P"]
+    bc2 = ["P"]
     imesh_high = 0
     funpar = [0.5, 1.5]
 
@@ -550,6 +552,116 @@ def test_gen_circle(test_data_dir):
     assert mesh.nel == 8100
 
 
+def test_cylinder(test_data_dir):
+    import numpy as np
+
+    import pymech.meshtools as mt
+
+    # test making a cylinder using `gen_circle` and `extrude`
+    # with a temperature field
+    mesh = mt.gen_circle(1, 0.5, 9, 2, bc=["W", "I"])
+    assert mesh.nbc == 2
+    z = np.linspace(-1, 1, 5)
+    # with default (periodic) boundary conditions
+    mesh3D = mt.extrude(mesh, z)
+    assert mesh3D.nbc == 2
+    mesh3D.elem[0].bcs[1, 4][0] == "P"
+    # with custom boundary conditions
+    mesh3D = mt.extrude(mesh, z, bc1=["W", "t"], bc2=["W", "t"])
+    assert mesh3D.elem[0].bcs[1, 4][0] == "t"
+
+
+def test_gen_box(test_data_dir):
+    import pymech.meshtools as mt
+
+    # make a simple box and check that everything works fine
+    box = mt.gen_box(4, 5, -1.0, 1.0, -1.0, 1.2)
+    assert box.check_connectivity()
+    assert box.nel == 20
+
+    # try also with a temperature field and different boundary conditions
+    box = mt.gen_box(
+        4,
+        5,
+        -1.0,
+        1.0,
+        -1.0,
+        1.0,
+        var=[2, 2, 1, 1, 0],
+        bcs_xmin=["v", "t"],
+        bcs_xmax=["O", "I"],
+        bcs_ymin=["W", "I"],
+        bcs_ymax=["W", "I"],
+    )
+    assert box.check_connectivity()
+    assert box.nbc == 2
+
+
+def test_map2D(test_data_dir):
+    import pymech.meshtools as mt
+
+    # make a very twisted mesh and check that it ends up the way we want
+    def mapping(x, y):
+        return (
+            2 * x + 0.2 * y + 0.1 * math.sin(math.pi * y),
+            1.2 * y - 0.1 * x - 0.2 * math.sin(2 * math.pi * x),
+        )
+
+    n_centre = 5
+    n_bl = 6
+    s_param = 0.5
+    radius = 1
+    circle_mesh = mt.gen_circle(
+        radius, s_param, n_centre, n_bl, var=[2, 2, 1, 1, 0], bc=["W", "I"]
+    )
+    circle_mesh = mt.map2D(circle_mesh, mapping)
+    assert circle_mesh.check_connectivity()
+    math.isclose(circle_mesh.elem[35].curv[0, 0], 1.4794589904304334)
+    math.isclose(circle_mesh.elem[35].curv[3, 1], -0.2516125141385187)
+    assert circle_mesh.elem[38].ccurv == [
+        "m",
+        "m",
+        "m",
+        "m",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ]
+
+    # test with a box without any curvature
+    # box of size 5×1
+    xmin = 0
+    xmax = 5
+    ymin = 0
+    ymax = 1
+    # 20 × 10 elements resolution
+    nx = 20
+    ny = 10
+    box = mt.gen_box(nx, ny, xmin, xmax, ymin, ymax)
+    # change resolution such that the first element in y has a height of 0.025 instead of 0.1
+    l0 = 0.025
+    alpha = mt.exponential_refinement_parameter(l0, ymax, ny)
+
+    def refinement_function(x, y):
+        iy = ny * y / ymax
+        return (x, l0 * iy**alpha)
+
+    box = mt.map2D(box, refinement_function, curvature=False, boundary_curvature=False)
+    box.check_connectivity()
+    assert box.elem[0].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+    assert box.elem[25].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+
+    # and now with curvature activated on the boundary only
+    box = mt.map2D(box, refinement_function, curvature=False)
+    assert box.elem[0].ccurv == ["m", "", "", "m", "", "", "", "", "", "", "", ""]
+    assert box.elem[25].ccurv == ["", "", "", "", "", "", "", "", "", "", "", ""]
+
+
 # ------------------------------------------------------------------------------
 # test simson scripts
 #
@@ -560,7 +672,7 @@ def test_readdns(test_data_dir):
     field = ss.readdns(fname)
 
     assert field.endian == "little"
-    assert field.istep == []
+    assert field.istep == 0
     assert field.lr1 == [48, 65, 48]
     assert field.ndim == 3
     assert field.nel == 1

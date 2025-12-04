@@ -13,8 +13,9 @@ For coloured logging::
     pip install rich
 
 """
-import os
+
 import logging
+import os
 from typing import Union
 
 logger = logging.getLogger("pymech")

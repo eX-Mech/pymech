@@ -9,40 +9,44 @@ from pymech.log import logger
 
 
 # ==============================================================================
-def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
+def extrude(mesh: HexaData, z, bc1=None, bc2=None, internal_bcs=True):
     """Extrudes a 2D mesh into a 3D one
 
     Parameters
     ----------
     mesh : :class:`pymech.core.HexaData`
            2D mesh structure to extrude
-    zmin : float
-           min value of the z coordinate to extrude to
-    zmax : float
-           max value of the z coordinate to extrude to
     z :  float 1d array
-           z coordinates at which to extrude the mesh
-    bc1, bc2 : str
-           the boundary conditions to use at each end
+           z coordinates at which to extrude the mesh, in increasing order
+    bc1: str list
+           A list of boundary conditions to use at the first end, one string per field. Defaults to periodic.
+    bc2: str list
+           A list of boundary conditions to use at the other end, one string per field. Defaults to periodic.
     internal_bcs : bool
            if True, build mesh connectivity using internal 'E' boundary conditions
            (note that those are not used by Nek5000 and will not be written to binary .re2 files).
     """
 
+    # Set periodic boundary conditions by default if nothing else is requested
+    if bc1 is None:
+        bc1 = ["P"] * mesh.nbc
+    if bc2 is None:
+        bc2 = ["P"] * mesh.nbc
+
     if mesh.ndim != 2:
-        logger.critical("The mesh to extrude must be 2D")
-        return -1
+        raise ValueError("The mesh to extrude must be 2D")
     if mesh.lr1 != [2, 2, 1]:
-        logger.critical("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
-        return -2
+        raise ValueError("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
     if mesh.var[0] < 2:
-        logger.critical("The mesh to extrude must contain (x, y) geometry")
-        return -3
-    if (bc1 == "P" and bc2 != "P") or (bc1 != "P" and bc2 == "P"):
-        logger.critical(
-            "Inconsistent boundary conditions: one end is 'P' but the other isn't"
-        )
-        return -4
+        raise ValueError("The mesh to extrude must contain (x, y) geometry")
+    # Is it possible to have periodic conditions for only some of the fields? If not, we should check for it too.
+    for bc1_field, bc2_field in zip(bc1, bc2):
+        if (bc1_field == "P" and bc2_field != "P") or (
+            bc1_field != "P" and bc2_field == "P"
+        ):
+            raise ValueError(
+                "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
+            )
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
@@ -100,7 +104,7 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
     # fix the internal boundary conditions
     # the end boundary conditions will be overwritten later with the proper ones
     if internal_bcs:
-        for (iel, el) in enumerate(mesh3d.elem):
+        for iel, el in enumerate(mesh3d.elem):
             for ibc in range(nbc):
                 el.bcs[ibc, 4][0] = "E"
                 el.bcs[ibc, 4][1] = iel + 1
@@ -126,19 +130,25 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
     for i in range(nel2d):
         for ibc in range(nbc):
             i1 = i + (nz - 1) * nel2d  # index of the face on the zmax side
-            mesh3d.elem[i].bcs[ibc, 4][0] = bc1
+            mesh3d.elem[i].bcs[ibc, 4][0] = bc1[ibc]
             mesh3d.elem[i].bcs[ibc, 4][1] = i + 1
             mesh3d.elem[i].bcs[ibc, 4][2] = 5
-            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2
+            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2[ibc]
             mesh3d.elem[i1].bcs[ibc, 5][1] = i1 + 1
             mesh3d.elem[i1].bcs[ibc, 5][2] = 6
             # fix the matching faces for the periodic conditions
-            if bc1 == "P":
+            if bc1[ibc] == "P":
                 mesh3d.elem[i].bcs[ibc, 4][3] = i1 + 1
                 mesh3d.elem[i].bcs[ibc, 4][4] = 6
-            if bc2 == "P":
+            else:
+                mesh3d.elem[i].bcs[ibc, 4][3] = 0
+                mesh3d.elem[i].bcs[ibc, 4][4] = 0
+            if bc2[ibc] == "P":
                 mesh3d.elem[i1].bcs[ibc, 5][3] = i + 1
                 mesh3d.elem[i1].bcs[ibc, 5][4] = 5
+            else:
+                mesh3d.elem[i1].bcs[ibc, 5][3] = 0
+                mesh3d.elem[i1].bcs[ibc, 5][4] = 0
 
     # return the extruded mesh
     return mesh3d
@@ -146,7 +156,14 @@ def extrude(mesh: HexaData, z, bc1="P", bc2="P", internal_bcs=True):
 
 # ==============================================================================
 def extrude_refine(
-    mesh2D, z, bc1="P", bc2="P", fun=None, funpar=None, imesh_high=0, internal_bcs=True
+    mesh2D,
+    z,
+    bc1=None,
+    bc2=None,
+    fun=None,
+    funpar=None,
+    imesh_high=0,
+    internal_bcs=True,
 ):
     r"""Extrudes a 2D mesh into a 3D one, following the pattern
 
@@ -175,8 +192,10 @@ def extrude_refine(
            2D mesh structure to extrude
     z : float array
         list of z values of the  most refined zones of the extruded mesh
-    bc : str
-         the boundary condition to use at the ends
+    bc1: str list
+           A list of boundary conditions to use at the first end, one string per field. Defaults to periodic.
+    bc2: str list
+           A list of boundary conditions to use at the other end, one string per field. Defaults to periodic.
     fun: function
          list of functions that define the splitting lines for different discretization meshes (default: empty, in which case the simple extrusion function `extrude` is called instead)
     funpar: list
@@ -185,30 +204,34 @@ def extrude_refine(
                  index of fun that defines the mesh with higher discretization. Example: 0, is the most internal mesh; 1 is the second most internal mesh, etc (default: the most internal mesh, imesh_high=0)
     """
 
+    # Set periodic boundary conditions by default if nothing else is requested
+    if bc1 is None:
+        bc1 = ["P"] * mesh2D.nbc
+    if bc2 is None:
+        bc2 = ["P"] * mesh2D.nbc
+
     # Consistency checks: Initial grid
     if mesh2D.ndim != 2:
-        logger.critical("The mesh to extrude must be 2D")
-        return -1
+        raise ValueError("The mesh to extrude must be 2D")
     if mesh2D.lr1 != [2, 2, 1]:
-        logger.critical("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
-        return -2
+        raise ValueError("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
     if mesh2D.var[0] < 2:
-        logger.critical("The mesh to extrude must contain (x, y) geometry")
-        return -3
+        raise ValueError("The mesh to extrude must contain (x, y) geometry")
     # Consistency checks: Periodic boundary condition
-    if (bc1 == "P" and bc2 != "P") or (bc1 != "P" and bc2 == "P"):
-        logger.critical(
-            "Inconsistent boundary conditions: one end is 'P' but the other isn't"
-        )
-        return -4
+    for bc1_field, bc2_field in zip(bc1, bc2):
+        if (bc1_field == "P" and bc2_field != "P") or (
+            bc1_field != "P" and bc2_field == "P"
+        ):
+            raise ValueError(
+                "Inconsistent boundary conditions: one end is 'P' but the other isn't"
+            )
 
     # Consistency checks: Functions that define the splitting lines
     nsplit = len(fun)
     if funpar is not None and len(funpar) != nsplit:
-        logger.critical(
+        raise ValueError(
             f"The length of funpar ({len(funpar)}) must match the length of par ({nsplit})!"
         )
-        return -5
 
     # number of elements in the z direction
     nz = len(z) - 1
@@ -217,10 +240,9 @@ def extrude_refine(
     if (nz % 2 ** abs(imesh_high + 1) != 0) or (
         nz % 2 ** abs(nsplit - imesh_high + 1) != 0
     ):
-        logger.critical(
+        raise ValueError(
             f"Inconsistent elements to extrude: the number of elements ({nz}) must be a multiple of {max([2**abs(imesh_high + 1), 2**abs(nsplit - imesh_high + 1)])}"
         )
-        return -10
 
     # If fun is not defined, there is no splitting to be done. Call simple extrusion and end routine
     if fun is None:
@@ -310,10 +332,9 @@ def extrude_refine(
             z_mid = z_local
 
         if n_mid % 4 != 0:
-            logger.critical(
+            raise ValueError(
                 f"Inconsistent elements to extrude: n ({n_mid}) is not a multiple of 4."
             )
-            return -11
 
         meshes3D.append(
             extrude(
@@ -377,8 +398,10 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
            2D mesh structure to extrude
     z : float
         list of z values of the nodes of the elements of the extruded mesh in the high discretization region (len(z)-1 must be divide by 4)
-    bc : str
-         the boundary condition to use at the ends
+    bc1: str list
+           A list of boundary conditions to use at the first end, one string per field.
+    bc2: str list
+           A list of boundary conditions to use at the other end, one string per field.
     fun : function
           function that define the splitting lines for different discretization meshes
     funpar : not defined, depends on the function
@@ -389,19 +412,18 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
 
     # Consistency checks: Initial grid
     if mesh.ndim != 2:
-        logger.critical("The mesh to extrude must be 2D")
-        return -1
+        raise ValueError("The mesh to extrude must be 2D")
     if mesh.lr1 != [2, 2, 1]:
-        logger.critical("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
-        return -2
+        raise ValueError("Only mesh structures can be extruded (lr1 = [2, 2, 1])")
     if mesh.var[0] < 2:
-        logger.critical("The mesh to extrude must contain (x, y) geometry")
-        return -3
-    if (bc1 == "P" and bc2 != "P") or (bc1 != "P" and bc2 == "P"):
-        logger.critical(
-            "Inconsistent boundary conditions: one end is 'P' but the other isn't"
-        )
-        return -4
+        raise ValueError("The mesh to extrude must contain (x, y) geometry")
+    for bc1_field, bc2_field in zip(bc1, bc2):
+        if (bc1_field == "P" and bc2_field != "P") or (
+            bc1_field != "P" and bc2_field == "P"
+        ):
+            raise ValueError(
+                "Inconsistent boundary conditions: one end is periodic ('P') but the other isn't"
+            )
 
     nz = len(z) - 1
     z1 = np.zeros((nz, 1))
@@ -410,8 +432,7 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
     z2 = z[1 : nz + 1]
 
     if nz % 4 != 0:
-        logger.critical("Inconsistent elements to extrude: nz must be divided by 4")
-        return -5
+        raise ValueError("Inconsistent elements to extrude: nz must be divided by 4")
 
     # copy the structure and make it 3D
     mesh3d = copy.deepcopy(mesh)
@@ -465,25 +486,22 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
                     rvec[jj, ii] = fun(xvec[jj, ii], yvec[jj, ii], funpar)
                     if rvec[jj, ii] <= 0.0:
                         if iindex_lo > 1:
-                            logger.critical(
+                            raise ValueError(
                                 "Mid element not consistent. Criteria must divide elements with 2 points on each side."
                             )
-                            return -11
                         index_lo[iindex_lo, :] = [jj, ii]
                         iindex_lo += 1
                     else:
                         if iindex_hi > 1:
-                            logger.critical(
+                            raise ValueError(
                                 "Mid element not consistent. Criteria must divide elements with 2 points on each side."
                             )
-                            return -11
                         index_hi[iindex_hi, :] = [jj, ii]
                         iindex_hi += 1
             if (iindex_lo != 2) or (iindex_hi != 2):
-                logger.critical(
+                raise ValueError(
                     "Mid element not consistent. Criteria must divide elements with 2 points on each side."
                 )
-                return -11
 
             # find the indices of edges, for curvature and boundary condition
             #
@@ -816,16 +834,16 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
     for i in range(0, 6 * nel2d, 6):
         for ibc in range(nbc):
             i1 = i + nel3d - 6 * nel2d + 5
-            mesh3d.elem[i].bcs[ibc, 4][0] = bc1
+            mesh3d.elem[i].bcs[ibc, 4][0] = bc1[ibc]
             mesh3d.elem[i].bcs[ibc, 4][1] = i + 1
             mesh3d.elem[i].bcs[ibc, 4][2] = 5
-            mesh3d.elem[i + 1].bcs[ibc, 4][0] = bc1
+            mesh3d.elem[i + 1].bcs[ibc, 4][0] = bc1[ibc]
             mesh3d.elem[i + 1].bcs[ibc, 4][1] = i + 1 + 1
             mesh3d.elem[i + 1].bcs[ibc, 4][2] = 5
-            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2
+            mesh3d.elem[i1].bcs[ibc, 5][0] = bc2[ibc]
             mesh3d.elem[i1].bcs[ibc, 5][1] = i1 + 1
             mesh3d.elem[i1].bcs[ibc, 5][2] = 6
-            mesh3d.elem[i1 - 1].bcs[ibc, 5][0] = bc2
+            mesh3d.elem[i1 - 1].bcs[ibc, 5][0] = bc2[ibc]
             mesh3d.elem[i1 - 1].bcs[ibc, 5][1] = i1 - 1 + 1
             mesh3d.elem[i1 - 1].bcs[ibc, 5][2] = 6
 
@@ -839,12 +857,12 @@ def extrude_mid(mesh, z, bc1, bc2, fun, funpar=0.0, internal_bcs=True):
             mesh3d.elem[i1 - 1].bcs[ibc, 5][4] = 0.0
 
             # fix the matching faces for the periodic conditions
-            if bc1 == "P":
+            if bc1[ibc] == "P":
                 mesh3d.elem[i].bcs[ibc, 4][3] = i1 + 1
                 mesh3d.elem[i].bcs[ibc, 4][4] = 6
                 mesh3d.elem[i + 1].bcs[ibc, 4][3] = i1 - 1 + 1
                 mesh3d.elem[i + 1].bcs[ibc, 4][4] = 6
-            if bc2 == "P":
+            if bc2[ibc] == "P":
                 mesh3d.elem[i1].bcs[ibc, 5][3] = i + 1
                 mesh3d.elem[i1].bcs[ibc, 5][4] = 5
                 mesh3d.elem[i1 - 1].bcs[ibc, 5][3] = i + 1 + 1
@@ -1091,13 +1109,12 @@ def generate_internal_bcs(mesh, tol=1e-3):
 
     # First generate a length scale for each element, equal to the smallest edge of that element.
     scales = np.zeros((mesh.nel,))
-    for (iel, el) in enumerate(mesh.elem):
+    for iel, el in enumerate(mesh.elem):
         scales[iel] = el.smallest_edge()
 
         # check if there is a zero length edge; in this case the mesh is invalid and there is no point continuing.
         if scales[iel] <= 0.0:
-            logger.critical(f"Detected an edge with zero length in element {iel}!")
-            return -1
+            raise ValueError(f"Detected an edge with zero length in element {iel}!")
 
     # generate lookup tables for face centers and the faces that are already connected
     nface = 2 * mesh.ndim
@@ -1186,8 +1203,7 @@ def keep_elements(mesh: HexaData, elems, external_bc=""):
     current_offset = 0
     for iel in elems:
         if iel >= mesh.nel:
-            logger.critical(f"invalid element number {iel} for nel = {mesh.nel}")
-            return
+            raise ValueError(f"invalid element number {iel} for nel = {mesh.nel}")
         current_offset += iel - last_iel - 1
         offsets[iel] = current_offset
         last_iel = iel
@@ -1337,6 +1353,172 @@ def rotate_2d(mesh, x0, y0, theta):
 # =================================================================================
 
 
+def gen_box(
+    nx: int,
+    ny: int,
+    xmin: float,
+    xmax: float,
+    ymin: float,
+    ymax: float,
+    var=[2, 2, 1, 0, 0],
+    bcs_xmin=None,
+    bcs_xmax=None,
+    bcs_ymin=None,
+    bcs_ymax=None,
+    internal_bcs=True,
+):
+    """
+    generates a rectangular box of nx×ny elements in [xmin, xmax]×[ymin, ymax].
+    Boundary conditions can optionally be scpecified for each side.
+
+    Parameters
+    ----------
+    nx : float
+          number of spectral elements in the x direction
+    ny : float
+          number of spectral elements in the y direction
+    xmin, xmax, ymin, ymax : float
+          bounds pof the box in the x and y directions
+    var : int list
+          optional, the list of fields to include in the mesh (velocity, pressure, temperature, passive scalars).
+          Defaults to only velocity and pressure.
+    bcs_xmin, bcs_xmax, bcs_ymin, bcs_ymax : str lists
+          optional, lists of boundary conditions for each of the sides of the box.
+          Each argument must be either `None` or a list of boundary conditions, one for each field present in the mesh except pressure. If `None`, it defaults to periodic boundary conditions for all fields.
+    internal_bcs : bool
+          Optional, specifies whether to build the connectivity boundary conditions between internal elements. Default is `True`.
+    """
+
+    lr1 = [2, 2, 1]  # the mesh is 2D so lz1 = 1
+    ndim = 2
+    nel = nx * ny
+    # count the number of boundary conditions required
+    nbc = 0
+    if var[1] > 0:
+        nbc += 1
+    if var[3] > 0:
+        nbc += 1
+    nbc += var[4]
+
+    # set default periodic boundary conditions
+    if bcs_xmin is None:
+        bcs_xmin = ["P"] * nbc
+    if bcs_xmax is None:
+        bcs_xmax = ["P"] * nbc
+    if bcs_ymin is None:
+        bcs_ymin = ["P"] * nbc
+    if bcs_ymax is None:
+        bcs_ymax = ["P"] * nbc
+
+    box = HexaData(ndim, nel, lr1, var, nbc=nbc)
+    # box dimensions
+    lx = xmax - xmin
+    if lx <= 0:
+        raise ValueError(f"xmax must be greater than xmin, but xmax - xmin = {lx:9e}")
+    ly = ymax - ymin
+    if ly <= 0:
+        raise ValueError(f"ymax must be greater than ymin, but ymax - ymin = {ly:9e}")
+
+    # indexing in each block, 0-indexed
+    def elnum(i, j, ni, nj):
+        return i + ni * j
+
+    for i, j in product(range(nx), range(ny)):
+        # coordinates of corners
+        x0 = xmin + lx * i / nx
+        x1 = xmin + lx * (i + 1) / nx
+        y0 = ymin + ly * j / ny
+        y1 = ymin + ly * (j + 1) / ny
+        # assign the coordinates
+        el = box.elem[elnum(i, j, nx, ny)]
+        el.pos[0, 0, :, 0] = x0
+        el.pos[0, 0, :, 1] = x1
+        el.pos[1, 0, 0, :] = y0
+        el.pos[1, 0, 1, :] = y1
+    # connectivity
+    if internal_bcs:
+        for ibc, i, j in product(range(nbc), range(nx), range(ny)):
+            el = box.elem[elnum(i, j, nx, ny)]
+            # bottom face
+            if j != 0:
+                el.bcs[ibc, 0][0] = "E"
+                el.bcs[ibc, 0][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 0][2] = 1
+                el.bcs[ibc, 0][3] = elnum(i, j - 1, nx, ny) + 1
+                el.bcs[ibc, 0][4] = 3
+            # right face
+            if i != nx - 1:
+                el.bcs[ibc, 1][0] = "E"
+                el.bcs[ibc, 1][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 1][2] = 2
+                el.bcs[ibc, 1][3] = elnum(i + 1, j, nx, ny) + 1
+                el.bcs[ibc, 1][4] = 4
+            # top face
+            if j != ny - 1:
+                el.bcs[ibc, 2][0] = "E"
+                el.bcs[ibc, 2][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 2][2] = 3
+                el.bcs[ibc, 2][3] = elnum(i, j + 1, nx, ny) + 1
+                el.bcs[ibc, 2][4] = 1
+            # left face
+            if i != 0:
+                el.bcs[ibc, 3][0] = "E"
+                el.bcs[ibc, 3][1] = elnum(i, j, nx, ny) + 1
+                el.bcs[ibc, 3][2] = 4
+                el.bcs[ibc, 3][3] = elnum(i - 1, j, nx, ny) + 1
+                el.bcs[ibc, 3][4] = 2
+
+    # Apply boundary conditions
+    for ibc in range(nbc):
+        for i in range(nx):
+            # bottom face
+            j = 0
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_ymin[ibc]
+            el.bcs[ibc, 0][0] = bc
+            el.bcs[ibc, 0][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 0][2] = 1
+            if bc == "P":
+                el.bcs[ibc, 0][3] = elnum(i, ny - 1, nx, ny) + 1
+                el.bcs[ibc, 0][4] = 3
+            # top face
+            j = ny - 1
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_ymax[ibc]
+            el.bcs[ibc, 2][0] = bc
+            el.bcs[ibc, 2][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 2][2] = 3
+            if bc == "P":
+                el.bcs[ibc, 2][3] = elnum(i, 0, nx, ny) + 1
+                el.bcs[ibc, 2][4] = 1
+        for j in range(ny):
+            # left face
+            i = 0
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_xmin[ibc]
+            el.bcs[ibc, 3][0] = bc
+            el.bcs[ibc, 3][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 3][2] = 4
+            if bc == "P":
+                el.bcs[ibc, 3][3] = elnum(nx - 1, j, nx, ny) + 1
+                el.bcs[ibc, 3][4] = 2
+            # right face
+            i = nx - 1
+            el = box.elem[elnum(i, j, nx, ny)]
+            bc = bcs_xmax[ibc]
+            el.bcs[ibc, 1][0] = bc
+            el.bcs[ibc, 1][1] = elnum(i, j, nx, ny) + 1
+            el.bcs[ibc, 1][2] = 2
+            if bc == "P":
+                el.bcs[ibc, 1][3] = elnum(0, j, nx, ny) + 1
+                el.bcs[ibc, 1][4] = 4
+
+    return box
+
+
+# =================================================================================
+
+
 def gen_circle(
     r: float,
     s: float,
@@ -1345,7 +1527,6 @@ def gen_circle(
     curvature_fun=None,
     bl_fun=None,
     var=[2, 2, 1, 0, 0],
-    nbc=1,
     bc=["W"],
     internal_bcs=True,
 ):
@@ -1388,6 +1569,7 @@ def gen_circle(
     # dimension constants for mesh / elements generation
     lr1 = [2, 2, 1]  # the mesh is 2D so lz1 = 1
     ndim = 2
+    nbc = len(bc)
 
     # default curvature function
     if curvature_fun is None:
@@ -1510,7 +1692,16 @@ def gen_circle(
     if internal_bcs:
         build_connectivity(box_square, ns, ns)
     # boundary conditions: dummy BCs to signal that the faces should be glued
-    apply_bcs(box_square, ns, ns, ["con"], ["con"], ["con"], ["con"])
+    connectivity_bc = ["con"] * nbc
+    apply_bcs(
+        box_square,
+        ns,
+        ns,
+        connectivity_bc,
+        connectivity_bc,
+        connectivity_bc,
+        connectivity_bc,
+    )
 
     # Box 2: quarter-O
     nel_o = no * ns
@@ -1580,7 +1771,7 @@ def gen_circle(
     if internal_bcs:
         build_connectivity(box_o, no, ns)
     # boundary conditions: dummy BCs on the faces to be connected, external BC on the right face
-    apply_bcs(box_o, no, ns, ["con"], bc, ["con"], ["con"])
+    apply_bcs(box_o, no, ns, connectivity_bc, bc, connectivity_bc, connectivity_bc)
     # add circular curvature for external faces
     for j in range(ns):
         el = box_o.elem[elnum(no - 1, j, no, ns)]
@@ -1602,3 +1793,64 @@ def gen_circle(
     box_square.merge(box_o, ignore_all_bcs=not internal_bcs)
 
     return box_square
+
+
+# =================================================================================
+
+
+def map2D(
+    mesh: HexaData,
+    transformation,
+    curvature=True,
+    boundary_curvature=True,
+):
+    """
+    Applies a coordinate transformation to a 2D mesh, returning the transformed mesh.
+    The faces are curved to second-order accuracy by setting the midpoints according to the transformation.
+
+
+    Parameters
+    ----------
+    mesh : :class:`pymech.core.HexaData`
+        the mesh to transform, will not be modified.
+    transformation : (float, float) -> (float float) function
+        the coordinate transformation to apply. It must be a valid right-handed transformation (the determinant of its Jacobian must be positive on the mesh domain).
+    curvature : bool
+        specifies whether to apply curvature to all faces. The faces that are already curved in the original mesh will always be curved. Curvature can still be applied on the boundaries when this is `False` if `boundary_curvature` is set to `True`. True by default.
+    boundary_curvature: bool
+        specifies whether to apply curvature to boundary faces by setting midpoints. `True` by default.
+
+    Returns
+    -------
+    mapped_mesh : :class:`pymech.core.HexaData`
+        the transformed mesh
+    """
+
+    mapped_mesh = copy.deepcopy(mesh)
+    for el, mapped_el in zip(mesh.elem, mapped_mesh.elem):
+        # map the vertices of the elements. This is the easy part.
+        # we might want to use vectorisation here but the input function might not support it
+        for ix, iy in product(range(2), range(2)):
+            x = el.pos[0, 0, ix, iy]
+            y = el.pos[1, 0, ix, iy]
+            mapped_x, mapped_y = transformation(x, y)
+            mapped_el.pos[0, 0, ix, iy] = mapped_x
+            mapped_el.pos[1, 0, ix, iy] = mapped_y
+
+        # Now, fix the curvature.
+        # Several scenarios are possible:
+        # - the edge is curved with a midpoint. In this case, we update the midpoint.
+        # - the edge is curved with a circle arc ("C"). In this case, we transform this into a midpoint curvature and update it, because there is no guarantee that the image of a circle by the transformation is a circle.
+        # - the edge is a boundary edge and boundary_curvature=True or any edge and curvature=True. then we generate a new midpoint at the image of the centre of the original edge.
+        # otherwise, leave the edge without curvature.
+        for iedge in range(4):
+            if (
+                curvature
+                or el.ccurv[iedge] != ""
+                or (boundary_curvature and el.bcs[0][iedge][0] not in ["", "E"])
+            ):
+                mapped_el.ccurv[iedge] = "m"
+                xm, ym, _ = edge_mid(el, iedge)
+                mapped_xm, mapped_ym = transformation(xm, ym)
+                mapped_el.curv[iedge, 0:2] = mapped_xm, mapped_ym
+    return mapped_mesh

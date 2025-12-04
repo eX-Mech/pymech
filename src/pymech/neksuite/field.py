@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import os
 import io
+import os
 import struct
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, Union, BinaryIO
+from typing import BinaryIO, Optional, Tuple, Union
 
 import numpy as np
-
 from attrs import define, field
 
 from pymech.core import HexaData
@@ -80,7 +79,7 @@ class Header:
             elif wdsz == 8:
                 self.realtype = "d"
             else:
-                logger.error(f"Could not interpret real type (wdsz = {wdsz})")
+                raise ValueError(f"Could not interpret real type (wdsz = {wdsz})")
 
         orders = self.orders
         if not self.nb_pts_elem:
@@ -104,12 +103,10 @@ class Header:
         nb_dims = self.nb_dims
 
         if not variables:
-            logger.error("Failed to convert variables to nb_vars")
-            return None
+            raise ValueError("Failed to convert variables to nb_vars")
 
         if not nb_dims:
-            logger.error("Unintialized nb_dims")
-            return None
+            raise ValueError("Unintialized nb_dims")
 
         def nb_scalars():
             index_s = variables.index("S")
@@ -128,8 +125,7 @@ class Header:
     def _nb_vars_to_variables(self) -> Optional[str]:
         nb_vars = self.nb_vars
         if not nb_vars:
-            logger.error("Failed to convert nb_vars to variables")
-            return None
+            raise ValueError("Failed to convert nb_vars to variables")
 
         str_vars = ("X", "U", "P", "T", f"S{nb_vars[4]:02d}")
         variables = (str_vars[i] if nb_vars[i] > 0 else "" for i in range(5))
@@ -192,11 +188,7 @@ def readnek(fname, dtype="float64", skip_vars=()):
 
     """
     #
-    try:
-        infile = open(fname, "rb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    infile = open(fname, "rb")
     #
     # ---------------------------------------------------------------------------
     # READ HEADER
@@ -218,8 +210,8 @@ def readnek(fname, dtype="float64", skip_vars=()):
         logger.debug("Reading big-endian file\n")
         emode = ">"
     else:
-        logger.error("Could not interpret endianness")
-        return -3
+        raise ValueError("Could not interpret endianness")
+
     #
     # read element map for the file
     elmap = infile.read(4 * h.nb_elems_file)
@@ -263,8 +255,18 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if all(skip_condition):
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in elmap:
-                el = data.elem[iel - 1]
+            if 0 in elmap:
+                logger.warning(
+                    "The 'elmap' appears to be corrupted as it contains an unexpected zero value."
+                    " As a workaround, Pymech will read data by iterating over the entire set of"
+                    " elements instead of following the map provided by 'elmap'."
+                )
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
+                el = data.elem[iel]
                 for idim in range(nb_vars):
                     if skip_condition[idim]:
                         skip_elements()
@@ -286,8 +288,13 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if all(skip_condition1) or all(skip_condition2):
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in elmap:
-                el = data.elem[iel - 1]
+            if 0 in elmap:
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
+                el = data.elem[iel]
                 for idim in range(nb_vars):
                     if skip_condition1[idim] or skip_condition2[idim]:
                         skip_elements()
@@ -302,8 +309,13 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if skip_condition:
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in elmap:
-                el = data.elem[iel - 1]
+            if 0 in elmap:
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
+                el = data.elem[iel]
                 for ivar in range(nb_vars):
                     read_file_into_data(el.pres, ivar)
 
@@ -315,10 +327,16 @@ def readnek(fname, dtype="float64", skip_vars=()):
         if skip_condition:
             skip_elements(h.nb_elems * nb_vars)
         else:
-            for iel in elmap:
-                el = data.elem[iel - 1]
+            if 0 in elmap:
+                element_idxs = range(h.nb_elems_file)
+            else:
+                element_idxs = (idx - 1 for idx in elmap)
+
+            for iel in element_idxs:
+                el = data.elem[iel]
                 for ivar in range(nb_vars):
                     read_file_into_data(el.temp, ivar)
+
     #
     # read scalar fields
     #
@@ -336,9 +354,15 @@ def readnek(fname, dtype="float64", skip_vars=()):
                 if skip_condition[ivar]:
                     skip_elements(h.nb_elems)
                 else:
-                    for iel in elmap:
-                        el = data.elem[iel - 1]
+                    if 0 in elmap:
+                        element_idxs = range(h.nb_elems_file)
+                    else:
+                        element_idxs = (idx - 1 for idx in elmap)
+
+                    for iel in element_idxs:
+                        el = data.elem[iel]
                         read_file_into_data(el.scal, ivar)
+
     #
     #
     # close file
@@ -360,11 +384,7 @@ def writenek(fname, data):
             data structure
     """
     #
-    try:
-        outfile = open(fname, "wb")
-    except OSError as e:
-        logger.critical(f"I/O error ({e.errno}): {e.strerror}")
-        return -1
+    outfile = open(fname, "wb")
     #
     # ---------------------------------------------------------------------------
     # WRITE HEADER
@@ -391,8 +411,7 @@ def writenek(fname, data):
     elif h.wdsz == 8:
         logger.debug("Writing double-precision file")
     else:
-        logger.error("Could not interpret real type (wdsz = %i)" % (data.wdsz))
-        return -2
+        raise ValueError("Could not interpret real type (wdsz = %i)" % (data.wdsz))
     #
     # generate header
     outfile.write(h.as_bytestring())

@@ -21,6 +21,21 @@ The ``pyvista_backend`` module provides modern mesh visualization capabilities w
 - **PyVista** (recommended): Interactive 3D visualization optimized for Jupyter notebooks
 - **Matplotlib**: Publication-quality figures and simple 3D plots
 
+Architecture
+~~~~~~~~~~~~
+
+The visualization system uses a modular, protocol-based architecture:
+
+- ``pymech.viz_protocol``: Defines the ``MeshBackend`` Protocol interface
+- ``pymech.pyvista_backend_impl``: PyVista-specific implementation
+- ``pymech.matplotlib_backend``: Matplotlib-specific implementation
+- ``pymech.pyvista_backend``: Unified API and backend selection
+
+Backends implement the ``MeshBackend`` protocol using ``typing.Protocol`` and
+``runtime_checkable``, ensuring consistent interfaces across different rendering engines.
+The main ``plot_mesh()`` function automatically selects the best available backend or
+uses the explicitly specified one
+
 Quick Start
 -----------
 
@@ -192,8 +207,14 @@ Main Function
 .. autofunction:: pymech.pyvista_backend.plot_mesh
    :noindex:
 
-Conversion Functions
-~~~~~~~~~~~~~~~~~~~~
+Backend Discovery
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: pymech.pyvista_backend.get_available_backends
+   :noindex:
+
+Conversion Functions (PyVista)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: pymech.pyvista_backend.hexa_to_pyvista
    :noindex:
@@ -212,7 +233,22 @@ Complete API
 Examples Gallery
 ----------------
 
-Example 1: Basic Mesh Visualization
+Example 1: Check Available Backends
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    from pymech.pyvista_backend import get_available_backends
+
+    backends = get_available_backends()
+    print(f"Available backends: {list(backends.keys())}")
+
+    # Check capabilities
+    for name, backend in backends.items():
+        caps = backend.get_capabilities()
+        print(f"{name}: 3D={caps['3d']}, Interactive={caps['interactive']}")
+
+Example 2: Basic Mesh Visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -223,7 +259,7 @@ Example 1: Basic Mesh Visualization
     field = pm.readnek("channel3D_0.f00001")
     plot_mesh(field)
 
-Example 2: Custom Camera View
+Example 3: Custom Camera View
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -232,7 +268,7 @@ Example 2: Custom Camera View
     plotter.camera_position = 'xy'  # Top-down view
     plotter.show()
 
-Example 3: Velocity Field Coloring
+Example 4: Velocity Field Coloring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -243,7 +279,7 @@ Example 3: Velocity Field Coloring
     mesh = hexa_to_pyvista(field, include_fields=True)
     mesh.plot(scalars="pressure", cmap="viridis", show_edges=True)
 
-Example 4: Publication Figure
+Example 5: Publication Figure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python

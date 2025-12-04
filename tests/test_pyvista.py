@@ -18,6 +18,25 @@ except ImportError:
     MATPLOTLIB_AVAILABLE = False
     plt = None
 
+# Try importing Protocol and backend modules
+try:
+    from pymech.viz_protocol import MeshBackend
+    PROTOCOL_AVAILABLE = True
+except ImportError:
+    PROTOCOL_AVAILABLE = False
+
+try:
+    from pymech.pyvista_backend_impl import PyVistaBackend
+    PYVISTA_IMPL_AVAILABLE = True
+except ImportError:
+    PYVISTA_IMPL_AVAILABLE = False
+
+try:
+    from pymech.matplotlib_backend import MatplotlibBackend
+    MATPLOTLIB_IMPL_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_IMPL_AVAILABLE = False
+
 
 @pytest.mark.skipif(not PYVISTA_AVAILABLE, reason="PyVista not installed")
 class TestPyVistaBackend:
@@ -307,7 +326,7 @@ class TestBackendSelection:
 
         field = readnek(str(test_file))
 
-        with pytest.raises(ValueError, match="backend must be"):
+        with pytest.raises(ValueError, match="Invalid backend"):
             plot_mesh(field, backend='invalid')
 
 
@@ -325,7 +344,7 @@ def test_import_without_backends():
 
 def test_bc_colors():
     """Test that BC color scheme is defined."""
-    from pymech.pyvista_backend import DEFAULT_BC_COLORS
+    from pymech.viz_protocol import DEFAULT_BC_COLORS
 
     # Check that important BC types are defined
     assert "" in DEFAULT_BC_COLORS
@@ -338,3 +357,127 @@ def test_bc_colors():
         assert isinstance(color, tuple)
         assert len(color) == 3
         assert all(0 <= c <= 1 for c in color)
+
+
+@pytest.mark.skipif(not PROTOCOL_AVAILABLE, reason="Protocol module not available")
+class TestProtocolCompliance:
+    """Test that backends implement the MeshBackend protocol correctly."""
+
+    @pytest.mark.skipif(not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available")
+    def test_pyvista_backend_protocol(self):
+        """Test PyVista backend implements MeshBackend protocol."""
+        from pymech.pyvista_backend_impl import PyVistaBackend
+        from pymech.viz_protocol import MeshBackend
+
+        backend = PyVistaBackend()
+
+        # Runtime check for Protocol compliance
+        assert isinstance(backend, MeshBackend)
+
+        # Verify required methods exist
+        assert hasattr(backend, 'is_available')
+        assert hasattr(backend, 'plot_mesh')
+        assert hasattr(backend, 'get_backend_name')
+        assert hasattr(backend, 'get_capabilities')
+
+        # Verify method return types
+        assert isinstance(backend.is_available(), bool)
+        assert isinstance(backend.get_backend_name(), str)
+        assert isinstance(backend.get_capabilities(), dict)
+
+        # Verify backend name
+        assert backend.get_backend_name() == "pyvista"
+
+    @pytest.mark.skipif(not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available")
+    def test_matplotlib_backend_protocol(self):
+        """Test Matplotlib backend implements MeshBackend protocol."""
+        from pymech.matplotlib_backend import MatplotlibBackend
+        from pymech.viz_protocol import MeshBackend
+
+        backend = MatplotlibBackend()
+
+        # Runtime check for Protocol compliance
+        assert isinstance(backend, MeshBackend)
+
+        # Verify required methods exist
+        assert hasattr(backend, 'is_available')
+        assert hasattr(backend, 'plot_mesh')
+        assert hasattr(backend, 'get_backend_name')
+        assert hasattr(backend, 'get_capabilities')
+
+        # Verify method return types
+        assert isinstance(backend.is_available(), bool)
+        assert isinstance(backend.get_backend_name(), str)
+        assert isinstance(backend.get_capabilities(), dict)
+
+        # Verify backend name
+        assert backend.get_backend_name() == "matplotlib"
+
+    @pytest.mark.skipif(not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available")
+    def test_pyvista_capabilities(self):
+        """Test PyVista backend capabilities."""
+        from pymech.pyvista_backend_impl import PyVistaBackend
+
+        backend = PyVistaBackend()
+        caps = backend.get_capabilities()
+
+        assert caps["interactive"] is True
+        assert caps["3d"] is True
+        assert caps["jupyter"] is True
+        assert caps["headless"] is True
+        assert "formats" in caps
+        assert "png" in caps["formats"]
+
+    @pytest.mark.skipif(not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available")
+    def test_matplotlib_capabilities(self):
+        """Test Matplotlib backend capabilities."""
+        from pymech.matplotlib_backend import MatplotlibBackend
+
+        backend = MatplotlibBackend()
+        caps = backend.get_capabilities()
+
+        assert caps["interactive"] is False
+        assert caps["3d"] is True
+        assert caps["jupyter"] is True
+        assert caps["headless"] is True
+        assert "formats" in caps
+        assert "png" in caps["formats"]
+        assert "pdf" in caps["formats"]
+
+
+@pytest.mark.skipif(not PROTOCOL_AVAILABLE, reason="Protocol module not available")
+class TestBackendDiscovery:
+    """Test backend discovery and selection."""
+
+    def test_get_available_backends(self):
+        """Test get_available_backends() function."""
+        from pymech.pyvista_backend import get_available_backends
+
+        backends = get_available_backends()
+
+        assert isinstance(backends, dict)
+
+        # Check that available backends are present
+        if PYVISTA_AVAILABLE:
+            assert 'pyvista' in backends
+        else:
+            assert 'pyvista' not in backends
+
+        if MATPLOTLIB_AVAILABLE:
+            assert 'matplotlib' in backends
+        else:
+            assert 'matplotlib' not in backends
+
+    def test_backend_availability(self):
+        """Test is_available() for each backend."""
+        # Test PyVista backend
+        if PYVISTA_IMPL_AVAILABLE:
+            from pymech.pyvista_backend_impl import PyVistaBackend
+            backend = PyVistaBackend()
+            assert backend.is_available() == PYVISTA_AVAILABLE
+
+        # Test Matplotlib backend
+        if MATPLOTLIB_IMPL_AVAILABLE:
+            from pymech.matplotlib_backend import MatplotlibBackend
+            backend = MatplotlibBackend()
+            assert backend.is_available() == MATPLOTLIB_AVAILABLE

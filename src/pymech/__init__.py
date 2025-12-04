@@ -10,7 +10,7 @@
    dataset
    meshtools
    log
-   pyvista_backend
+   viz
 
 """
 
@@ -28,9 +28,11 @@ except Exception as err:
 
 from ._version import __version__  # noqa
 
-# Optional visualization backend (PyVista + Matplotlib)
+# Optional visualization subpackage (PyVista + Matplotlib)
 try:
-    from . import pyvista_backend  # noqa
+    from . import viz  # noqa
+    # Backward compatibility alias
+    pyvista_backend = viz
 except ImportError:
     # PyVista/Matplotlib not installed, visualization features unavailable
     pass

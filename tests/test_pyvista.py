@@ -20,19 +20,19 @@ except ImportError:
 
 # Try importing Protocol and backend modules
 try:
-    from pymech.viz_protocol import MeshBackend
+    from pymech.viz.viz_protocol import MeshBackend
     PROTOCOL_AVAILABLE = True
 except ImportError:
     PROTOCOL_AVAILABLE = False
 
 try:
-    from pymech.pyvista_backend_impl import PyVistaBackend
+    from pymech.viz.pyvista_backend_impl import PyVistaBackend
     PYVISTA_IMPL_AVAILABLE = True
 except ImportError:
     PYVISTA_IMPL_AVAILABLE = False
 
 try:
-    from pymech.matplotlib_backend import MatplotlibBackend
+    from pymech.viz.matplotlib_backend import MatplotlibBackend
     MATPLOTLIB_IMPL_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_IMPL_AVAILABLE = False
@@ -43,16 +43,16 @@ class TestPyVistaBackend:
     """Test suite for PyVista backend."""
 
     def test_import(self):
-        """Test that pyvista_backend can be imported."""
-        from pymech import pyvista_backend
-        assert hasattr(pyvista_backend, 'plot_mesh')
-        assert hasattr(pyvista_backend, 'hexa_to_pyvista')
-        assert hasattr(pyvista_backend, 'add_boundary_conditions')
+        """Test that viz module can be imported."""
+        from pymech import viz
+        assert hasattr(viz, 'plot_mesh')
+        assert hasattr(viz, 'hexa_to_pyvista')
+        assert hasattr(viz, 'add_boundary_conditions')
 
     def test_hexa_to_pyvista_linear_3d(self, test_data_dir):
         """Test conversion of 3D mesh with linear resolution."""
         from pymech import readnek
-        from pymech.pyvista_backend import hexa_to_pyvista
+        from pymech.viz import hexa_to_pyvista
 
         # Load test data
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
@@ -71,7 +71,7 @@ class TestPyVistaBackend:
     def test_hexa_to_pyvista_linear_2d(self, test_data_dir):
         """Test conversion of 2D mesh."""
         from pymech import readnek
-        from pymech.pyvista_backend import hexa_to_pyvista
+        from pymech.viz import hexa_to_pyvista
 
         # Try to find a 2D test file
         test_files_2d = ["cbox0.fld", "2d_test.f00001"]
@@ -97,7 +97,7 @@ class TestPyVistaBackend:
     def test_hexa_to_pyvista_spectral(self, test_data_dir):
         """Test conversion with spectral resolution."""
         from pymech import readnek
-        from pymech.pyvista_backend import hexa_to_pyvista
+        from pymech.viz import hexa_to_pyvista
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -113,7 +113,7 @@ class TestPyVistaBackend:
     def test_include_fields(self, test_data_dir):
         """Test that velocity/pressure fields are included."""
         from pymech import readnek
-        from pymech.pyvista_backend import hexa_to_pyvista
+        from pymech.viz import hexa_to_pyvista
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -139,7 +139,7 @@ class TestPyVistaBackend:
     def test_add_boundary_conditions(self, test_data_dir):
         """Test BC extraction and coloring."""
         from pymech import readnek
-        from pymech.pyvista_backend import hexa_to_pyvista, add_boundary_conditions
+        from pymech.viz import hexa_to_pyvista, add_boundary_conditions
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -160,7 +160,7 @@ class TestPyVistaBackend:
         pv.OFF_SCREEN = True  # Enable headless rendering
 
         from pymech import readnek
-        from pymech.pyvista_backend import plot_mesh
+        from pymech.viz import plot_mesh
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -192,7 +192,7 @@ class TestPyVistaBackend:
         pv.OFF_SCREEN = True
 
         from pymech import readnek
-        from pymech.pyvista_backend import plot_mesh
+        from pymech.viz import plot_mesh
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -212,7 +212,7 @@ class TestPyVistaBackend:
     def test_invalid_resolution(self, test_data_dir):
         """Test that invalid resolution raises ValueError."""
         from pymech import readnek
-        from pymech.pyvista_backend import hexa_to_pyvista
+        from pymech.viz import hexa_to_pyvista
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -231,7 +231,7 @@ class TestMatplotlibBackend:
     def test_plot_mesh_matplotlib(self, test_data_dir, tmp_path):
         """Test plot_mesh with Matplotlib backend."""
         from pymech import readnek
-        from pymech.pyvista_backend import plot_mesh
+        from pymech.viz import plot_mesh
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -256,7 +256,7 @@ class TestMatplotlibBackend:
     def test_plot_mesh_matplotlib_views(self, test_data_dir):
         """Test different camera views with Matplotlib."""
         from pymech import readnek
-        from pymech.pyvista_backend import plot_mesh
+        from pymech.viz import plot_mesh
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -282,7 +282,7 @@ class TestBackendSelection:
     def test_auto_backend_selection(self, test_data_dir):
         """Test that 'auto' backend selects appropriately."""
         from pymech import readnek
-        from pymech.pyvista_backend import plot_mesh
+        from pymech.viz import plot_mesh
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -318,7 +318,7 @@ class TestBackendSelection:
     def test_invalid_backend(self, test_data_dir):
         """Test that invalid backend raises ValueError."""
         from pymech import readnek
-        from pymech.pyvista_backend import plot_mesh
+        from pymech.viz import plot_mesh
 
         test_file = test_data_dir / "nek" / "channel3D_0.f00001"
         if not test_file.exists():
@@ -334,7 +334,7 @@ def test_import_without_backends():
     """Test that module can be imported even without backends."""
     # This test ensures graceful degradation
     try:
-        from pymech import pyvista_backend
+        from pymech import viz
         # If import succeeds, module should have main functions defined
         assert hasattr(pyvista_backend, 'plot_mesh')
     except ImportError:
@@ -451,7 +451,7 @@ class TestBackendDiscovery:
 
     def test_get_available_backends(self):
         """Test get_available_backends() function."""
-        from pymech.pyvista_backend import get_available_backends
+        from pymech.viz import get_available_backends
 
         backends = get_available_backends()
 

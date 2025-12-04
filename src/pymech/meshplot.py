@@ -1,8 +1,9 @@
+from math import asin, atan2, cos, sin, sqrt
+
+import numpy as np
+import OpenGL.GL as gl
 import wx
 from wx import glcanvas
-import OpenGL.GL as gl
-import numpy as np
-from math import sqrt, atan2, asin, cos, sin
 
 
 class MeshFrame(wx.Frame):

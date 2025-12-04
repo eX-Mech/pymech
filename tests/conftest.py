@@ -7,6 +7,7 @@ import pytest
 def test_data_dir():
     return Path(__file__).parent / "data"
 
+
 def pytest_addoption(parser):
     # https://pytest.readthedocs.io/en/latest/example/simple.html#control-skipping-of-tests-according-to-command-line-option
     parser.addoption(
@@ -22,4 +23,3 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "slow" in item.keywords:
             item.add_marker(skip_slow)
-

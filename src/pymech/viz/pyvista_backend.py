@@ -23,16 +23,21 @@ Auto-select best available backend:
 
 """
 
-from typing import Optional, Tuple, Any, Literal
 import warnings
+from typing import Any, Literal, Optional, Tuple
 
 from ..core import HexaData
 from ..log import logger
-from .viz_protocol import MeshBackend, DEFAULT_BC_COLORS
+from .viz_protocol import MeshBackend
 
 # Import backend implementations
 try:
-    from .pyvista_backend_impl import PyVistaBackend, hexa_to_pyvista, add_boundary_conditions
+    from .pyvista_backend_impl import (
+        PyVistaBackend,
+        add_boundary_conditions,
+        hexa_to_pyvista,
+    )
+
     PYVISTA_BACKEND_AVAILABLE = True
 except ImportError:
     PYVISTA_BACKEND_AVAILABLE = False
@@ -41,11 +46,17 @@ except ImportError:
 
 try:
     from .matplotlib_backend import MatplotlibBackend
+
     MATPLOTLIB_BACKEND_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_BACKEND_AVAILABLE = False
 
-__all__ = ("plot_mesh", "hexa_to_pyvista", "add_boundary_conditions", "get_available_backends")
+__all__ = (
+    "plot_mesh",
+    "hexa_to_pyvista",
+    "add_boundary_conditions",
+    "get_available_backends",
+)
 
 
 def get_available_backends() -> dict:
@@ -67,12 +78,12 @@ def get_available_backends() -> dict:
     if PYVISTA_BACKEND_AVAILABLE:
         pv_backend = PyVistaBackend()
         if pv_backend.is_available():
-            backends['pyvista'] = pv_backend
+            backends["pyvista"] = pv_backend
 
     if MATPLOTLIB_BACKEND_AVAILABLE:
         mpl_backend = MatplotlibBackend()
         if mpl_backend.is_available():
-            backends['matplotlib'] = mpl_backend
+            backends["matplotlib"] = mpl_backend
 
     return backends
 
@@ -99,12 +110,12 @@ def _get_backend(backend_name: str) -> MeshBackend:
     """
     available_backends = get_available_backends()
 
-    if backend_name == 'auto':
+    if backend_name == "auto":
         # Prefer PyVista if available
-        if 'pyvista' in available_backends:
-            return available_backends['pyvista']
-        elif 'matplotlib' in available_backends:
-            return available_backends['matplotlib']
+        if "pyvista" in available_backends:
+            return available_backends["pyvista"]
+        elif "matplotlib" in available_backends:
+            return available_backends["matplotlib"]
         else:
             raise ImportError(
                 "No visualization backend available. Install with:\n"
@@ -112,7 +123,7 @@ def _get_backend(backend_name: str) -> MeshBackend:
             )
     elif backend_name in available_backends:
         return available_backends[backend_name]
-    elif backend_name in ('pyvista', 'matplotlib'):
+    elif backend_name in ("pyvista", "matplotlib"):
         # Backend name is valid but not available
         raise ImportError(
             f"{backend_name} backend not available. Install with:\n"
@@ -230,7 +241,9 @@ def plot_mesh(
     # Get backend instance
     backend_instance = _get_backend(backend)
 
-    logger.info(f"Using {backend_instance.get_backend_name()} backend for visualization")
+    logger.info(
+        f"Using {backend_instance.get_backend_name()} backend for visualization"
+    )
 
     # Call backend's plot_mesh method
     return backend_instance.plot_mesh(
@@ -253,6 +266,7 @@ def plot_mesh(
 
 # Maintain backward compatibility: export PyVista-specific functions if available
 if not PYVISTA_BACKEND_AVAILABLE:
+
     def hexa_to_pyvista(*args, **kwargs):
         """PyVista not available."""
         raise ImportError(
@@ -278,7 +292,7 @@ def _show_backend_info():
         warnings.warn(
             "No visualization backends available. Install with: pip install pymech[plot]",
             ImportWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
 

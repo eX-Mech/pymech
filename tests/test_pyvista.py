@@ -1,11 +1,12 @@
 """Tests for PyVista visualization backend."""
+
+
 import pytest
-from pathlib import Path
-import numpy as np
 
 # Try importing backends
 try:
     import pyvista as pv
+
     PYVISTA_AVAILABLE = True
 except ImportError:
     PYVISTA_AVAILABLE = False
@@ -13,6 +14,7 @@ except ImportError:
 
 try:
     import matplotlib.pyplot as plt
+
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
@@ -21,18 +23,21 @@ except ImportError:
 # Try importing Protocol and backend modules
 try:
     from pymech.viz.viz_protocol import MeshBackend
+
     PROTOCOL_AVAILABLE = True
 except ImportError:
     PROTOCOL_AVAILABLE = False
 
 try:
     from pymech.viz.pyvista_backend_impl import PyVistaBackend
+
     PYVISTA_IMPL_AVAILABLE = True
 except ImportError:
     PYVISTA_IMPL_AVAILABLE = False
 
 try:
     from pymech.viz.matplotlib_backend import MatplotlibBackend
+
     MATPLOTLIB_IMPL_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_IMPL_AVAILABLE = False
@@ -45,9 +50,10 @@ class TestPyVistaBackend:
     def test_import(self):
         """Test that viz module can be imported."""
         from pymech import viz
-        assert hasattr(viz, 'plot_mesh')
-        assert hasattr(viz, 'hexa_to_pyvista')
-        assert hasattr(viz, 'add_boundary_conditions')
+
+        assert hasattr(viz, "plot_mesh")
+        assert hasattr(viz, "hexa_to_pyvista")
+        assert hasattr(viz, "add_boundary_conditions")
 
     def test_hexa_to_pyvista_linear_3d(self, test_data_dir):
         """Test conversion of 3D mesh with linear resolution."""
@@ -139,7 +145,7 @@ class TestPyVistaBackend:
     def test_add_boundary_conditions(self, test_data_dir):
         """Test BC extraction and coloring."""
         from pymech import readre2
-        from pymech.viz import hexa_to_pyvista, add_boundary_conditions
+        from pymech.viz import add_boundary_conditions, hexa_to_pyvista
 
         test_file = test_data_dir / "nek" / "box3d.re2"
         if not test_file.exists():
@@ -172,7 +178,7 @@ class TestPyVistaBackend:
         try:
             plot_mesh(
                 field,
-                backend='pyvista',
+                backend="pyvista",
                 resolution=resolution,
                 show_bcs=True,
                 screenshot=str(screenshot_path),
@@ -201,7 +207,7 @@ class TestPyVistaBackend:
         field = readre2(str(test_file))
 
         try:
-            plotter = plot_mesh(field, backend='pyvista', return_plotter=True)
+            plotter = plot_mesh(field, backend="pyvista", return_plotter=True)
             assert isinstance(plotter, pv.Plotter)
             plotter.close()
         except Exception as e:
@@ -242,7 +248,7 @@ class TestMatplotlibBackend:
 
         fig = plot_mesh(
             field,
-            backend='matplotlib',
+            backend="matplotlib",
             show_bcs=False,
             screenshot=str(screenshot_path),
             return_plotter=True,
@@ -264,10 +270,10 @@ class TestMatplotlibBackend:
 
         field = readre2(str(test_file))
 
-        for view in ['xy', 'xz', 'yz']:
+        for view in ["xy", "xz", "yz"]:
             fig = plot_mesh(
                 field,
-                backend='matplotlib',
+                backend="matplotlib",
                 view=view,
                 show_bcs=False,
                 return_plotter=True,
@@ -297,14 +303,14 @@ class TestBackendSelection:
             try:
                 result = plot_mesh(
                     field,
-                    backend='auto',
+                    backend="auto",
                     screenshot=None,
                     return_plotter=True,
                 )
                 assert result is not None
-                if hasattr(result, 'close'):
+                if hasattr(result, "close"):
                     result.close()
-                elif hasattr(result, 'clf'):
+                elif hasattr(result, "clf"):
                     plt.close(result)
             except Exception as e:
                 pytest.skip(f"Auto backend selection failed: {e}")
@@ -313,7 +319,7 @@ class TestBackendSelection:
                     pv.OFF_SCREEN = False
         else:
             with pytest.raises(ImportError):
-                plot_mesh(field, backend='auto')
+                plot_mesh(field, backend="auto")
 
     def test_invalid_backend(self, test_data_dir):
         """Test that invalid backend raises ValueError."""
@@ -327,7 +333,7 @@ class TestBackendSelection:
         field = readre2(str(test_file))
 
         with pytest.raises(ValueError, match="Invalid backend"):
-            plot_mesh(field, backend='invalid')
+            plot_mesh(field, backend="invalid")
 
 
 def test_import_without_backends():
@@ -335,8 +341,9 @@ def test_import_without_backends():
     # This test ensures graceful degradation
     try:
         from pymech import viz
+
         # If import succeeds, module should have main functions defined
-        assert hasattr(viz, 'plot_mesh')
+        assert hasattr(viz, "plot_mesh")
     except ImportError:
         # If import fails, it's acceptable (no backends available)
         pass
@@ -363,11 +370,13 @@ def test_bc_colors():
 class TestProtocolCompliance:
     """Test that backends implement the MeshBackend protocol correctly."""
 
-    @pytest.mark.skipif(not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available")
+    @pytest.mark.skipif(
+        not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available"
+    )
     def test_pyvista_backend_protocol(self):
         """Test PyVista backend implements MeshBackend protocol."""
-        from pymech.viz.pyvista_backend_impl import PyVistaBackend
         from pymech.viz import MeshBackend
+        from pymech.viz.pyvista_backend_impl import PyVistaBackend
 
         backend = PyVistaBackend()
 
@@ -375,10 +384,10 @@ class TestProtocolCompliance:
         assert isinstance(backend, MeshBackend)
 
         # Verify required methods exist
-        assert hasattr(backend, 'is_available')
-        assert hasattr(backend, 'plot_mesh')
-        assert hasattr(backend, 'get_backend_name')
-        assert hasattr(backend, 'get_capabilities')
+        assert hasattr(backend, "is_available")
+        assert hasattr(backend, "plot_mesh")
+        assert hasattr(backend, "get_backend_name")
+        assert hasattr(backend, "get_capabilities")
 
         # Verify method return types
         assert isinstance(backend.is_available(), bool)
@@ -388,11 +397,13 @@ class TestProtocolCompliance:
         # Verify backend name
         assert backend.get_backend_name() == "pyvista"
 
-    @pytest.mark.skipif(not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available")
+    @pytest.mark.skipif(
+        not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available"
+    )
     def test_matplotlib_backend_protocol(self):
         """Test Matplotlib backend implements MeshBackend protocol."""
-        from pymech.viz.matplotlib_backend import MatplotlibBackend
         from pymech.viz import MeshBackend
+        from pymech.viz.matplotlib_backend import MatplotlibBackend
 
         backend = MatplotlibBackend()
 
@@ -400,10 +411,10 @@ class TestProtocolCompliance:
         assert isinstance(backend, MeshBackend)
 
         # Verify required methods exist
-        assert hasattr(backend, 'is_available')
-        assert hasattr(backend, 'plot_mesh')
-        assert hasattr(backend, 'get_backend_name')
-        assert hasattr(backend, 'get_capabilities')
+        assert hasattr(backend, "is_available")
+        assert hasattr(backend, "plot_mesh")
+        assert hasattr(backend, "get_backend_name")
+        assert hasattr(backend, "get_capabilities")
 
         # Verify method return types
         assert isinstance(backend.is_available(), bool)
@@ -413,7 +424,9 @@ class TestProtocolCompliance:
         # Verify backend name
         assert backend.get_backend_name() == "matplotlib"
 
-    @pytest.mark.skipif(not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available")
+    @pytest.mark.skipif(
+        not PYVISTA_IMPL_AVAILABLE, reason="PyVista implementation not available"
+    )
     def test_pyvista_capabilities(self):
         """Test PyVista backend capabilities."""
         from pymech.viz import PyVistaBackend
@@ -428,7 +441,9 @@ class TestProtocolCompliance:
         assert "formats" in caps
         assert "png" in caps["formats"]
 
-    @pytest.mark.skipif(not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available")
+    @pytest.mark.skipif(
+        not MATPLOTLIB_IMPL_AVAILABLE, reason="Matplotlib implementation not available"
+    )
     def test_matplotlib_capabilities(self):
         """Test Matplotlib backend capabilities."""
         from pymech.viz import MatplotlibBackend
@@ -459,25 +474,27 @@ class TestBackendDiscovery:
 
         # Check that available backends are present
         if PYVISTA_AVAILABLE:
-            assert 'pyvista' in backends
+            assert "pyvista" in backends
         else:
-            assert 'pyvista' not in backends
+            assert "pyvista" not in backends
 
         if MATPLOTLIB_AVAILABLE:
-            assert 'matplotlib' in backends
+            assert "matplotlib" in backends
         else:
-            assert 'matplotlib' not in backends
+            assert "matplotlib" not in backends
 
     def test_backend_availability(self):
         """Test is_available() for each backend."""
         # Test PyVista backend
         if PYVISTA_IMPL_AVAILABLE:
             from pymech.viz import PyVistaBackend
+
             backend = PyVistaBackend()
             assert backend.is_available() == PYVISTA_AVAILABLE
 
         # Test Matplotlib backend
         if MATPLOTLIB_IMPL_AVAILABLE:
             from pymech.viz import MatplotlibBackend
+
             backend = MatplotlibBackend()
             assert backend.is_available() == MATPLOTLIB_AVAILABLE

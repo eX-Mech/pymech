@@ -4,25 +4,25 @@ This module provides Matplotlib-based mesh visualization for publication-quality
 static figures and basic 3D plots.
 """
 
-from typing import Optional, Tuple, Any
+from typing import Any, Optional, Tuple
+
 import numpy as np
 
 from ..core import HexaData
 from ..log import logger
 from .viz_protocol import (
-    MeshBackend,
     DEFAULT_BC_COLORS,
-    compute_face_center,
-    Resolution,
-    View,
     Color,
     Colormap,
+    Resolution,
+    View,
 )
 
 # Try importing Matplotlib
 try:
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
+
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
@@ -86,11 +86,11 @@ class MatplotlibBackend:
 
         # Filter out PyVista-specific kwargs that matplotlib doesn't understand
         matplotlib_kwargs = kwargs.copy()
-        for key in ['jupyter_backend', 'window_size', 'notebook', 'off_screen']:
+        for key in ["jupyter_backend", "window_size", "notebook", "off_screen"]:
             matplotlib_kwargs.pop(key, None)
 
         fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection="3d")
 
         # Extract edges from elements
         logger.info("Extracting mesh edges for Matplotlib...")
@@ -111,7 +111,7 @@ class MatplotlibBackend:
             elif color:
                 edge_color = color
             else:
-                edge_color = 'blue'
+                edge_color = "blue"
 
             # Plot each edge
             for (ix1, iy1, iz1), (ix2, iy2, iz2) in edges:
@@ -124,25 +124,25 @@ class MatplotlibBackend:
                     [p1[2], p2[2]],
                     color=edge_color,
                     linewidth=0.5,
-                    **matplotlib_kwargs
+                    **matplotlib_kwargs,
                 )
 
         # Set labels
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
 
         # Set view angle
-        if view == 'xy':
+        if view == "xy":
             ax.view_init(elev=90, azim=0)
-        elif view == 'xz':
+        elif view == "xz":
             ax.view_init(elev=0, azim=0)
-        elif view == 'yz':
+        elif view == "yz":
             ax.view_init(elev=0, azim=90)
         elif view:
             # Try to parse as (elev, azim)
             try:
-                elev, azim = map(float, view.split(','))
+                elev, azim = map(float, view.split(","))
                 ax.view_init(elev=elev, azim=azim)
             except (ValueError, AttributeError):
                 pass  # Use default view
@@ -154,7 +154,7 @@ class MatplotlibBackend:
 
         # Save screenshot
         if screenshot:
-            plt.savefig(screenshot, dpi=300, bbox_inches='tight')
+            plt.savefig(screenshot, dpi=300, bbox_inches="tight")
             logger.info(f"Screenshot saved to {screenshot}")
 
         if return_plotter:
@@ -223,11 +223,13 @@ def _set_axes_equal(ax: "Axes3D") -> None:
     ax : Axes3D
         Matplotlib 3D axes object
     """
-    limits = np.array([
-        ax.get_xlim3d(),
-        ax.get_ylim3d(),
-        ax.get_zlim3d(),
-    ])
+    limits = np.array(
+        [
+            ax.get_xlim3d(),
+            ax.get_ylim3d(),
+            ax.get_zlim3d(),
+        ]
+    )
 
     origin = np.mean(limits, axis=1)
     radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))

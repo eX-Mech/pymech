@@ -4,24 +4,25 @@ This module provides PyVista-specific mesh visualization, optimized for
 interactive 3D rendering in Jupyter notebooks.
 """
 
-from typing import Optional, Tuple, Any
+from typing import Any, Optional, Tuple
+
 import numpy as np
 
-from ..core import HexaData, Elem
+from ..core import HexaData
 from ..log import logger
 from .viz_protocol import (
-    MeshBackend,
     DEFAULT_BC_COLORS,
-    compute_face_center,
-    Resolution,
-    View,
     Color,
     Colormap,
+    Resolution,
+    View,
+    compute_face_center,
 )
 
 # Try importing PyVista
 try:
     import pyvista as pv
+
     PYVISTA_AVAILABLE = True
 except ImportError:
     PYVISTA_AVAILABLE = False
@@ -84,7 +85,8 @@ class PyVistaBackend:
         # Auto-detect Jupyter environment
         try:
             from IPython import get_ipython
-            if get_ipython() is not None and 'IPKernelApp' in get_ipython().config:
+
+            if get_ipython() is not None and "IPKernelApp" in get_ipython().config:
                 in_notebook = True
             else:
                 in_notebook = False
@@ -92,7 +94,7 @@ class PyVistaBackend:
             in_notebook = False
 
         # Extract jupyter_backend from kwargs
-        jupyter_backend = kwargs.pop('jupyter_backend', 'trame')
+        jupyter_backend = kwargs.pop("jupyter_backend", "trame")
 
         # Setup plotter
         if in_notebook:
@@ -134,7 +136,7 @@ class PyVistaBackend:
         if view:
             plotter.camera_position = view
         else:
-            plotter.camera_position = 'iso'
+            plotter.camera_position = "iso"
 
         # Show or save
         if screenshot:
@@ -177,10 +179,14 @@ def hexa_to_pyvista(
     elif resolution == "spectral":
         return _hexa_to_pyvista_spectral(field, include_fields)
     else:
-        raise ValueError(f"resolution must be 'linear' or 'spectral', got '{resolution}'")
+        raise ValueError(
+            f"resolution must be 'linear' or 'spectral', got '{resolution}'"
+        )
 
 
-def _hexa_to_pyvista_linear(field: HexaData, include_fields: bool) -> "pv.UnstructuredGrid":
+def _hexa_to_pyvista_linear(
+    field: HexaData, include_fields: bool
+) -> "pv.UnstructuredGrid":
     """Convert using only corner vertices (fast, approximate)."""
     nel = field.nel
     ndim = field.ndim
@@ -190,8 +196,14 @@ def _hexa_to_pyvista_linear(field: HexaData, include_fields: bool) -> "pv.Unstru
         nvert = 8
         cell_type = pv.CellType.HEXAHEDRON
         vertex_indices = [
-            (0, 0, 0), (-1, 0, 0), (-1, -1, 0), (0, -1, 0),  # bottom face
-            (0, 0, -1), (-1, 0, -1), (-1, -1, -1), (0, -1, -1),  # top face
+            (0, 0, 0),
+            (-1, 0, 0),
+            (-1, -1, 0),
+            (0, -1, 0),  # bottom face
+            (0, 0, -1),
+            (-1, 0, -1),
+            (-1, -1, -1),
+            (0, -1, -1),  # top face
         ]
     else:  # 2D
         nvert = 4
@@ -228,7 +240,9 @@ def _hexa_to_pyvista_linear(field: HexaData, include_fields: bool) -> "pv.Unstru
     return mesh
 
 
-def _hexa_to_pyvista_spectral(field: HexaData, include_fields: bool) -> "pv.UnstructuredGrid":
+def _hexa_to_pyvista_spectral(
+    field: HexaData, include_fields: bool
+) -> "pv.UnstructuredGrid":
     """Convert using all GLL points (slow, accurate)."""
     nel = field.nel
     ndim = field.ndim
@@ -383,7 +397,7 @@ def add_boundary_conditions(
 
     # Initialize BC arrays
     n_faces = surface.n_cells
-    bc_types = np.empty(n_faces, dtype='<U3')
+    bc_types = np.empty(n_faces, dtype="<U3")
     bc_colors = np.zeros((n_faces, 3))
 
     # Get face centers

@@ -24,14 +24,14 @@ Auto-select best available backend:
 
 # Import main API from pyvista_backend module (which is the dispatcher)
 from .pyvista_backend import (
-    plot_mesh,
+    add_boundary_conditions,
     get_available_backends,
     hexa_to_pyvista,
-    add_boundary_conditions,
+    plot_mesh,
 )
 
 # Import Protocol and backend classes for advanced use
-from .viz_protocol import MeshBackend, DEFAULT_BC_COLORS
+from .viz_protocol import DEFAULT_BC_COLORS, MeshBackend
 
 # Optional imports for backend implementations
 try:

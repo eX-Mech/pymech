@@ -4,9 +4,10 @@ This module defines the interface that all visualization backends must implement
 using typing.Protocol for structural subtyping.
 """
 
-from typing import Protocol, Optional, Tuple, Any, Literal, runtime_checkable
-from typing_extensions import TypeAlias
+from typing import Any, Literal, Optional, Protocol, Tuple, runtime_checkable
+
 import numpy as np
+from typing_extensions import TypeAlias
 
 from ..core import HexaData
 
@@ -18,18 +19,18 @@ Colormap: TypeAlias = Optional[str]
 
 # BC color scheme - shared across all backends
 DEFAULT_BC_COLORS = {
-    "": (0.0, 0.0, 0.0),       # Default/empty - black
-    "E": (0.0, 0.0, 0.0),       # Element connectivity - black
-    "W": (0.0, 0.0, 0.8),       # Wall - dark blue
-    "v": (0.3, 0.3, 1.0),       # Velocity BC - light blue
-    "O": (0.8, 0.0, 0.0),       # Outflow - dark red
-    "o": (1.0, 0.2, 0.2),       # Outflow variant - red
-    "ON": (0.8, 0.4, 0.0),      # Open Neumann - dark orange
-    "on": (1.0, 0.6, 0.0),      # Open Neumann variant - orange
-    "T": (0.0, 0.8, 0.0),       # Temperature BC - dark green
-    "t": (0.3, 1.0, 0.3),       # Temperature variant - green
-    "I": (0.95, 0.1, 0.6),      # Insulated - magenta
-    "P": (0.5, 0.5, 0.5),       # Periodic - gray
+    "": (0.0, 0.0, 0.0),  # Default/empty - black
+    "E": (0.0, 0.0, 0.0),  # Element connectivity - black
+    "W": (0.0, 0.0, 0.8),  # Wall - dark blue
+    "v": (0.3, 0.3, 1.0),  # Velocity BC - light blue
+    "O": (0.8, 0.0, 0.0),  # Outflow - dark red
+    "o": (1.0, 0.2, 0.2),  # Outflow variant - red
+    "ON": (0.8, 0.4, 0.0),  # Open Neumann - dark orange
+    "on": (1.0, 0.6, 0.0),  # Open Neumann variant - orange
+    "T": (0.0, 0.8, 0.0),  # Temperature BC - dark green
+    "t": (0.3, 1.0, 0.3),  # Temperature variant - green
+    "I": (0.95, 0.1, 0.6),  # Insulated - magenta
+    "P": (0.5, 0.5, 0.5),  # Periodic - gray
 }
 
 

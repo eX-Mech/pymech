@@ -10,6 +10,7 @@
    dataset
    meshtools
    log
+   viz
 
 """
 
@@ -26,3 +27,13 @@ except Exception as err:
     warn(repr(err), ImportWarning)
 
 from ._version import __version__  # noqa
+
+# Optional visualization subpackage (PyVista + Matplotlib)
+try:
+    from . import viz  # noqa
+
+    # Backward compatibility alias
+    pyvista_backend = viz
+except ImportError:
+    # PyVista/Matplotlib not installed, visualization features unavailable
+    pass

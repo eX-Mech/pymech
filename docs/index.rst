@@ -87,6 +87,7 @@ interpreter of your choice:
    neksuite.rst
    simsonsuite.rst
    vtksuite.rst
+   viz.rst
    dataset.rst
    meshtools.rst
    usage.myst.md

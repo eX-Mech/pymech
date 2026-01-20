@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-opt = ["dask", "rich"]
+opt = ["dask", "rich", "uxarray"]
 vtk = ["mayavi", "pygments >= 2.16.1"]
 full = ["pymech[opt,vtk]"]
 docs = [
@@ -53,6 +53,7 @@ tests = [
   "pytest >= 6.2.5",
   "pytest-cov >= 3.0.0",
   "pytest-xdist >= 2.4.0",
+  "uxarray>=2025.10.0",
 ]
 types = ["mypy", "typing-extensions"]
 dev = ["pymech[opt,docs,tests,types]"]
